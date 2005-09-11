@@ -107,8 +107,6 @@ namespace agg
 
         //--------------------------------------------------------------------
         span_gouraud_rgba() {}
-
-        //--------------------------------------------------------------------
         span_gouraud_rgba(const color_type& c1, 
                           const color_type& c2, 
                           const color_type& c3,

@@ -50,6 +50,7 @@ namespace agg
                      double x2, double y2,
                      double x3, double y3,
                      double d) : 
+            m_vertex(0)
         {
             colors(c1, c2, c3);
             triangle(x1, y1, x2, y2, x3, y3, d);

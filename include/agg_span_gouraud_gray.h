@@ -95,8 +95,6 @@ namespace agg
     public:
         //--------------------------------------------------------------------
         span_gouraud_gray() {}
-
-        //--------------------------------------------------------------------
         span_gouraud_gray(const color_type& c1, 
                           const color_type& c2, 
                           const color_type& c3,
@@ -104,7 +102,7 @@ namespace agg
                           double x2, double y2,
                           double x3, double y3, 
                           double d = 0) : 
-            base_type(alloc, c1, c2, c3, x1, y1, x2, y2, x3, y3, d)
+            base_type(c1, c2, c3, x1, y1, x2, y2, x3, y3, d)
         {}
 
         //--------------------------------------------------------------------
