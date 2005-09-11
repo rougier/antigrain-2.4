@@ -7,6 +7,7 @@
 
 #include "agg_rendering_buffer.h"
 #include "agg_pixfmt_rgb.h"
+#include "agg_span_allocator.h"
 #include "agg_span_image_filter_rgb.h"
 #include "agg_span_interpolator_linear.h"
 #include "agg_span_converter.h"

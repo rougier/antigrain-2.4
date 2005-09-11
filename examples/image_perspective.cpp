@@ -11,6 +11,7 @@
 #include "agg_trans_affine.h"
 #include "agg_trans_bilinear.h"
 #include "agg_trans_perspective.h"
+#include "agg_span_allocator.h"
 #include "agg_span_interpolator_linear.h"
 #include "agg_span_interpolator_trans.h"
 #include "agg_span_subdiv_adaptor.h"
