@@ -152,8 +152,6 @@ namespace agg
         double dx2 = (x0 - x2) / 2.0;
         double dy2 = (y0 - y2) / 2.0;
 
-        // Convert angle from degrees to radians
-        //------------------------
         double cos_a = cos(angle);
         double sin_a = sin(angle);
 
