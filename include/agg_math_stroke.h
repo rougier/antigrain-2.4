@@ -36,12 +36,13 @@ namespace agg
     //------------------------------------------------------------line_join_e
     enum line_join_e
     {
-        miter_join,
-        miter_join_revert,
-        miter_join_round,
-        round_join,
-        bevel_join
+        miter_join         = 0,
+        miter_join_revert  = 1,
+        miter_join_round   = 4,
+        round_join         = 2,
+        bevel_join         = 3
     };
+
 
     //-----------------------------------------------------------inner_join_e
     enum inner_join_e

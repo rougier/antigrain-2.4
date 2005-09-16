@@ -163,6 +163,8 @@ template<class VS> void dump_path(VS& path)
 class the_application : public agg::platform_support
 {
     typedef agg::renderer_base<pixfmt_type> base_ren_type;
+    typedef agg::renderer_scanline_aa_solid<base_ren_type> renderer_solid;
+    typedef agg::renderer_scanline_bin_solid<base_ren_type> renderer_bin;
     typedef agg::font_engine_freetype_int32 font_engine_type;
     typedef agg::font_cache_manager<font_engine_type> font_manager_type;
 
@@ -256,8 +258,9 @@ public:
     }
 
 
-    template<class Rasterizer, class Scanline, class RenBase>
-    unsigned draw_text(Rasterizer& ras, Scanline& sl, RenBase& ren)
+    template<class Rasterizer, class Scanline, class RenSolid, class RenBin>
+    unsigned draw_text(Rasterizer& ras, Scanline& sl, 
+                       RenSolid& ren_solid, RenBin& ren_bin)
     {
         agg::glyph_rendering gren = agg::glyph_ren_native_mono;
         switch(m_ren_type.cur_item())
@@ -278,11 +281,13 @@ public:
             m_feng.hinting(m_hinting.status());
             m_feng.height(m_height.value());
             m_feng.width(m_width.value());
-//m_feng.transform(agg::trans_affine_rotation(agg::deg2rad(1.0)));
             m_feng.flip_y(font_flip_y);
 
-//m_feng.transform(agg::trans_affine_rotation(agg::deg2rad(20.0)));
-//m_feng.flip_y(true);
+            agg::trans_affine mtx;
+            mtx *= agg::trans_affine_rotation(agg::deg2rad(-4.0));
+            //mtx *= agg::trans_affine_skewing(-0.4, 0);
+            //mtx *= agg::trans_affine_translation(1, 0);
+            m_feng.transform(mtx);
 
             double x  = 10.0;
             double y0 = height() - m_height.value() - 10.0;
@@ -313,17 +318,17 @@ public:
                     {
                     default: break;
                     case agg::glyph_data_mono:
-                        agg::render_scanlines_bin_solid(m_fman.mono_adaptor(), 
-                                                        m_fman.mono_scanline(), 
-                                                        ren,
-                                                        agg::rgba8(0, 0, 0));
+                        ren_bin.color(agg::rgba8(0, 0, 0));
+                        agg::render_scanlines(m_fman.mono_adaptor(), 
+                                              m_fman.mono_scanline(), 
+                                              ren_bin);
                         break;
 
                     case agg::glyph_data_gray8:
-                        agg::render_scanlines_aa_solid(m_fman.gray8_adaptor(), 
-                                                       m_fman.gray8_scanline(), 
-                                                       ren,
-                                                       agg::rgba8(0, 0, 0));
+                        ren_solid.color(agg::rgba8(0, 0, 0));
+                        agg::render_scanlines(m_fman.gray8_adaptor(), 
+                                              m_fman.gray8_scanline(), 
+                                              ren_solid);
                         break;
 
                     case agg::glyph_data_outline:
@@ -339,7 +344,8 @@ public:
                         {
                             ras.add_path(m_contour);
                         }
-                        agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0, 0, 0));
+                        ren_solid.color(agg::rgba8(0, 0, 0));
+                        agg::render_scanlines(ras, sl, ren_solid);
 //dump_path(m_fman.path_adaptor());
                         break;
                     }
@@ -366,6 +372,8 @@ public:
     {
         pixfmt_type pf(rbuf_window());
         base_ren_type ren_base(pf);
+        renderer_solid ren_solid(ren_base);
+        renderer_bin ren_bin(ren_base);
         ren_base.clear(agg::rgba(1,1,1));
 
         agg::scanline_u8 sl;
@@ -396,7 +404,7 @@ public:
         }
 
 //ren_base.copy_hline(0, int(height() - m_height.value()) - 10, 100, agg::rgba(0,0,0));
-        draw_text(ras, sl, ren_base);
+        draw_text(ras, sl, ren_solid, ren_bin);
 
         ras.gamma(agg::gamma_power(1.0));
 
@@ -419,6 +427,8 @@ public:
         {
             pixfmt_type pf(rbuf_window());
             base_ren_type ren_base(pf);
+            renderer_solid ren_solid(ren_base);
+            renderer_bin ren_bin(ren_base);
             ren_base.clear(agg::rgba(1,1,1));
 
             agg::scanline_u8 sl;
@@ -428,7 +438,7 @@ public:
             start_timer();
             for(int i = 0; i < 50; i++)
             {
-                num_glyphs += draw_text(ras, sl, ren_base);
+                num_glyphs += draw_text(ras, sl, ren_solid, ren_bin);
             }
             double t = elapsed_time();
             char buf[100];

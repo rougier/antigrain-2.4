@@ -36,7 +36,7 @@ namespace agg
         enum coord_scale_e
         {
             coord_shift = CoordShift,
-            coord_mult  = 1 << coord_shift
+            coord_scale  = 1 << coord_shift
         };
 
         T x,y;
@@ -49,8 +49,8 @@ namespace agg
                         double dx=0, double dy=0,
                         double scale=1.0) const
         {
-            *x_ = dx + (double(x >> 1) / coord_mult);// * scale;
-            *y_ = dy + (double(y >> 1) / coord_mult) * scale;
+            *x_ = dx + (double(x >> 1) / coord_scale) * scale;
+            *y_ = dy + (double(y >> 1) / coord_scale) * scale;
             switch(((y & 1) << 1) | (x & 1))
             {
                 case cmd_move_to: return path_cmd_move_to;
@@ -67,6 +67,7 @@ namespace agg
     template<class T, unsigned CoordShift=6> class path_storage_integer
     {
     public:
+        typedef T value_type;
         typedef vertex_integer<T, CoordShift> vertex_integer_type;
 
         //--------------------------------------------------------------------

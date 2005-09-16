@@ -32,6 +32,7 @@
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_conv_curve.h"
 #include "agg_font_cache_manager.h"
+#include "agg_trans_affine.h"
 
 namespace agg
 {
@@ -62,6 +63,7 @@ namespace agg
         bool width(double w);
         void hinting(bool h);
         void flip_y(bool f);
+        void transform(const trans_affine& affine);
 
         // Set Gamma
         //--------------------------------------------------------------------
@@ -136,6 +138,7 @@ namespace agg
         rect            m_bounds;
         double          m_advance_x;
         double          m_advance_y;
+        trans_affine    m_affine;
 
         path_storage_integer<int16, 6>              m_path16;
         path_storage_integer<int32, 6>              m_path32;

@@ -24,7 +24,7 @@ typedef char char_type;
 
 static char_type text[] = 
 //"0123456789ABCDEFGHIJKLMNOPRSTUVWXYZabcdefghijklmnoprstuvwxyz "
-"Anti-Grain Geometry is designed as a set of loosely coupled "
+" Anti-Grain Geometry is designed as a set of loosely coupled "
 "algorithms and class templates united with a common idea, "
 "so that all the components can be easily combined. Also, "
 "the template based design allows you to replace any part of "
@@ -246,7 +246,7 @@ public:
 
     template<class Rasterizer, class Scanline, class RenSolid, class RenBin>
     unsigned draw_text(Rasterizer& ras, Scanline& sl, 
-                       RenSolid& ren_solid, RenBin& ren_bin)
+                   RenSolid& ren_solid, RenBin& ren_bin)
     {
         agg::glyph_rendering gren = agg::glyph_ren_native_mono;
         switch(m_ren_type.cur_item())
@@ -277,6 +277,11 @@ public:
         m_feng.width((m_width.value() == m_height.value()) ? 0.0 : m_width.value() / 2.4);
         m_feng.italic(true);
         m_feng.flip_y(text_flip);
+
+        agg::trans_affine mtx;
+        //mtx *= agg::trans_affine_skewing(-0.3, 0);
+        mtx *= agg::trans_affine_rotation(agg::deg2rad(-4.0));
+        m_feng.transform(mtx);
 
         if(m_feng.create_font("Arial", gren))
         {
@@ -349,7 +354,6 @@ public:
                 ++p;
             }
         }
-
         return num_glyphs;
     }
 

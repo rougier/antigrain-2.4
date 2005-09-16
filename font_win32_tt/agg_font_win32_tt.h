@@ -75,6 +75,12 @@ namespace agg
             m_rasterizer.gamma(f);
         }
 
+        //--------------------------------------------------------------------
+        void transform(const agg::trans_affine& mtx)
+        {
+            m_affine = mtx;
+        }
+
         // Accessors
         //--------------------------------------------------------------------
         unsigned    resolution()   const { return m_resolution; }
@@ -151,7 +157,7 @@ namespace agg
         KERNINGPAIR*    m_kerning_pairs;
         unsigned        m_num_kerning_pairs;
         unsigned        m_max_kerning_pairs;
-
+        trans_affine    m_affine;
 
         path_storage_integer<int16, 6>              m_path16;
         path_storage_integer<int32, 6>              m_path32;

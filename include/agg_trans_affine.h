@@ -230,6 +230,9 @@ namespace agg
         // Direct transformation x and y
         void transform(double* x, double* y) const;
 
+        // Direct transformation x and y, 2x2 matrix only, no translation
+        void transform_2x2(double* x, double* y) const;
+
         // Inverse transformation x and y. It works slower than the 
         // direct transformation, so if the performance is critical 
         // it's better to invert() the matrix and then use transform()
@@ -281,6 +284,14 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
+    inline void trans_affine::transform_2x2(double* x, double* y) const
+    {
+        register double tx = *x;
+        *x = tx * m0 + *y * m2;
+        *y = tx * m1 + *y * m3;
+    }
+
+    //------------------------------------------------------------------------
     inline void trans_affine::inverse_transform(double* x, double* y) const
     {
         register double d = determinant();
@@ -297,7 +308,6 @@ namespace agg
         double y = 0.707106781 * m1 + 0.707106781 * m3;
         return sqrt(x*x + y*y);
     }
-
 
     //------------------------------------------------------------------------
     inline const trans_affine& trans_affine::premultiply(const trans_affine& m)
