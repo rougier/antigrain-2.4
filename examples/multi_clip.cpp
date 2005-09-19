@@ -216,7 +216,7 @@ public:
 //            int x2 = int(width  * (x + 1) / n);
 //            int y2 = int(height * (y + 1) / n);
 //            // r should be of type renderer_base<>
-//            r.clip_box(agg::rect(x1 + 5, y1 + 5, x2 - 5, y2 - 5)); 
+//            r.clip_box(agg::rect_i(x1 + 5, y1 + 5, x2 - 5, y2 - 5)); 
 //            agg::render_scanlines(g_rasterizer, g_scanline, rs);
 //        }
 //    }

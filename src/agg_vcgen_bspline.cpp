@@ -47,13 +47,13 @@ namespace agg
         m_status = initial;
         if(is_move_to(cmd))
         {
-            m_src_vertices.modify_last(point_type(x, y));
+            m_src_vertices.modify_last(point_d(x, y));
         }
         else
         {
             if(is_vertex(cmd))
             {
-                m_src_vertices.add(point_type(x, y));
+                m_src_vertices.add(point_d(x, y));
             }
             else
             {

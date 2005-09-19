@@ -62,8 +62,8 @@ namespace agg
             gpc_vertex* vertices;
         };
 
-        typedef pod_deque<gpc_vertex, 8>          vertex_array_type;
-        typedef pod_deque<contour_header_type, 6> contour_header_array_type;
+        typedef pod_bvector<gpc_vertex, 8>          vertex_array_type;
+        typedef pod_bvector<contour_header_type, 6> contour_header_array_type;
 
 
     public:

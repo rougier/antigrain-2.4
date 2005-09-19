@@ -181,7 +181,8 @@ namespace agg
         return r;
     }
 
-    typedef rect_base<int>    rect;   //----rect
+    typedef rect_base<int>    rect_i; //----rect_i
+    typedef rect_base<float>  rect_f; //----rect_f
     typedef rect_base<double> rect_d; //----rect_d
 
     //---------------------------------------------------------path_commands_e
@@ -324,26 +325,30 @@ namespace agg
         return clear_orientation(c) | o;
     }
 
-    //--------------------------------------------------------------point_type
-    struct point_type
+    //--------------------------------------------------------------point_base
+    template<class T> struct point_base
     {
-        double x, y;
-
-        point_type() {}
-        point_type(double x_, double y_) : x(x_), y(y_) {}
+        typedef T value_type;
+        T x,y;
+        point_base() {}
+        point_base(T x_, T y_) : x(x_), y(y_) {}
     };
+    typedef point_base<int>    point_i; //-----point_i
+    typedef point_base<float>  point_f; //-----point_f
+    typedef point_base<double> point_d; //-----point_d
 
-    //-------------------------------------------------------------vertex_type
-    struct vertex_type
+    //-------------------------------------------------------------vertex_base
+    template<class T> struct vertex_base
     {
-        double   x, y;
+        typedef T value_type;
+        T x,y;
         unsigned cmd;
-
-        vertex_type() {}
-        vertex_type(double x_, double y_, unsigned cmd_) : 
-            x(x_), y(y_), cmd(cmd_) {}
+        vertex_base() {}
+        vertex_base(T x_, T y_, unsigned cmd_) : x(x_), y(y_), cmd(cmd_) {}
     };
-
+    typedef vertex_base<int>    vertex_i; //-----vertex_i
+    typedef vertex_base<float>  vertex_f; //-----vertex_f
+    typedef vertex_base<double> vertex_d; //-----vertex_d
 
 }
 

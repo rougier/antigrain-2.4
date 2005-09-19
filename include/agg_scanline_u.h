@@ -337,7 +337,7 @@ namespace agg
             cover_type* covers;
         };
 
-        typedef pod_deque<span, 4> span_array_type;
+        typedef pod_bvector<span, 4> span_array_type;
 
         //--------------------------------------------------------------------
         class const_iterator

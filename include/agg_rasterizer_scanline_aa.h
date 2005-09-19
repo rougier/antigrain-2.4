@@ -148,8 +148,8 @@ namespace agg
         unsigned  m_num_cells;
         cell_aa** m_cells;
         cell_aa*  m_cur_cell_ptr;
-        pod_array<cell_aa*> m_sorted_cells;
-        pod_array<sorted_y> m_sorted_y;
+        pod_vector<cell_aa*> m_sorted_cells;
+        pod_vector<sorted_y> m_sorted_y;
         cell_aa   m_cur_cell;
         int       m_cur_x;
         int       m_cur_y;
@@ -494,7 +494,7 @@ namespace agg
         int            m_prev_y;
         unsigned       m_prev_flags;
         unsigned       m_status;
-        rect           m_clip_box;
+        rect_i         m_clip_box;
         bool           m_clipping;
         int            m_cur_y;
     };
@@ -528,8 +528,8 @@ namespace agg
     void rasterizer_scanline_aa<XScale, AA_Shift>::clip_box(double x1, double y1, double x2, double y2)
     {
         reset();
-        m_clip_box = rect(poly_coord(x1), poly_coord(y1),
-                          poly_coord(x2), poly_coord(y2));
+        m_clip_box = rect_i(poly_coord(x1), poly_coord(y1),
+                            poly_coord(x2), poly_coord(y2));
         m_clip_box.normalize();
         m_clipping = true;
     }

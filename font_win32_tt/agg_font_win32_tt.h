@@ -104,7 +104,7 @@ namespace agg
         unsigned        glyph_index() const { return m_glyph_index; }
         unsigned        data_size()   const { return m_data_size;   }
         glyph_data_type data_type()   const { return m_data_type;   }
-        const rect&     bounds()      const { return m_bounds;      }
+        const rect_i&   bounds()      const { return m_bounds;      }
         double          advance_x()   const { return m_advance_x;   }
         double          advance_y()   const { return m_advance_y;   }
         void            write_glyph_to(int8u* data) const;
@@ -149,7 +149,7 @@ namespace agg
         unsigned        m_glyph_index;
         unsigned        m_data_size;
         glyph_data_type m_data_type;
-        rect            m_bounds;
+        rect_i          m_bounds;
         double          m_advance_x;
         double          m_advance_y;
         MAT2            m_matrix;

@@ -168,7 +168,7 @@ namespace agg
             coord_type x;
             coord_type len;
         };
-        typedef pod_deque<span, 4> span_array_type;
+        typedef pod_bvector<span, 4> span_array_type;
 
 
         //--------------------------------------------------------------------

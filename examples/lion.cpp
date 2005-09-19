@@ -16,7 +16,7 @@
 //#define AGG_BGR24
 //#define AGG_BGR48 
 //#define AGG_RGB_AAA
-#define AGG_BGRA32 
+#define AGG_BGRA32
 //#define AGG_RGBA32 
 //#define AGG_ARGB32 
 //#define AGG_ABGR32

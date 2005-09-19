@@ -169,7 +169,7 @@ namespace agg
                 }
                 else
                 {
-                    const point_type& c = m_out_vertices[m_out_vertex++];
+                    const point_d& c = m_out_vertices[m_out_vertex++];
                     *x = c.x;
                     *y = c.y;
                     return cmd;

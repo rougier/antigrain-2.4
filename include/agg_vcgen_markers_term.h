@@ -53,7 +53,7 @@ namespace agg
             coord_type(double x_, double y_) : x(x_), y(y_) {}
         };
 
-        typedef pod_deque<coord_type, 6> coord_storage;
+        typedef pod_bvector<coord_type, 6> coord_storage; 
 
         coord_storage m_markers;
         unsigned      m_curr_id;

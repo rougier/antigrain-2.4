@@ -194,9 +194,9 @@ namespace agg
 
 
     private:
-        pod_deque<vertex_integer_type, 6> m_storage;
-        unsigned                          m_vertex_idx;
-        bool                              m_closed;
+        pod_bvector<vertex_integer_type, 6> m_storage;
+        unsigned                            m_vertex_idx;
+        bool                                m_closed;
     };
 
 

@@ -37,7 +37,7 @@ namespace agg
         };
 
     public:
-        typedef pod_deque<point_type, 6> vertex_storage;
+        typedef pod_bvector<point_d, 6> vertex_storage;
 
         vcgen_bspline();
 

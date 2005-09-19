@@ -55,18 +55,18 @@ namespace agg
         unsigned height() const { return m_ren.height(); }
 
         //--------------------------------------------------------------------
-        const rect& clip_box() const { return m_ren.clip_box(); }
-        int         xmin()     const { return m_ren.xmin(); }
-        int         ymin()     const { return m_ren.ymin(); }
-        int         xmax()     const { return m_ren.xmax(); }
-        int         ymax()     const { return m_ren.ymax(); }
+        const rect_i& clip_box() const { return m_ren.clip_box(); }
+        int           xmin()     const { return m_ren.xmin(); }
+        int           ymin()     const { return m_ren.ymin(); }
+        int           xmax()     const { return m_ren.xmax(); }
+        int           ymax()     const { return m_ren.ymax(); }
 
         //--------------------------------------------------------------------
-        const rect& bounding_clip_box() const { return m_bounds;    }
-        int         bounding_xmin()     const { return m_bounds.x1; }
-        int         bounding_ymin()     const { return m_bounds.y1; }
-        int         bounding_xmax()     const { return m_bounds.x2; }
-        int         bounding_ymax()     const { return m_bounds.y2; }
+        const rect_i& bounding_clip_box() const { return m_bounds;    }
+        int           bounding_xmin()     const { return m_bounds.x1; }
+        int           bounding_ymin()     const { return m_bounds.y1; }
+        int           bounding_xmax()     const { return m_bounds.x2; }
+        int           bounding_ymax()     const { return m_bounds.y2; }
 
         //--------------------------------------------------------------------
         void first_clip_box() 
@@ -74,7 +74,7 @@ namespace agg
             m_curr_cb = 0;
             if(m_clip.size())
             {
-                const rect& cb = m_clip[0];
+                const rect_i& cb = m_clip[0];
                 m_ren.clip_box_naked(cb.x1, cb.y1, cb.x2, cb.y2);
             }
         }
@@ -84,7 +84,7 @@ namespace agg
         { 
             if(++m_curr_cb < m_clip.size())
             {
-                const rect& cb = m_clip[m_curr_cb];
+                const rect_i& cb = m_clip[m_curr_cb];
                 m_ren.clip_box_naked(cb.x1, cb.y1, cb.x2, cb.y2);
                 return true;
             }
@@ -103,9 +103,9 @@ namespace agg
         //--------------------------------------------------------------------
         void add_clip_box(int x1, int y1, int x2, int y2)
         {
-            rect cb(x1, y1, x2, y2); 
+            rect_i cb(x1, y1, x2, y2); 
             cb.normalize();
-            if(cb.clip(rect(0, 0, width() - 1, height() - 1)))
+            if(cb.clip(rect_i(0, 0, width() - 1, height() - 1)))
             {
                 m_clip.add(cb);
                 if(cb.x1 < m_bounds.x1) m_bounds.x1 = cb.x1;
@@ -336,7 +336,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         void copy_from(const rendering_buffer& from, 
-                       const rect* rc=0, 
+                       const rect_i* rc=0, 
                        int x_to=0, 
                        int y_to=0)
         {
@@ -353,10 +353,10 @@ namespace agg
         const renderer_mclip<PixelFormat>& 
             operator = (const renderer_mclip<PixelFormat>&);
 
-        base_ren_type      m_ren;
-        pod_deque<rect, 4> m_clip;
-        unsigned           m_curr_cb;
-        rect               m_bounds;
+        base_ren_type          m_ren;
+        pod_bvector<rect_i, 4> m_clip;
+        unsigned               m_curr_cb;
+        rect_i                 m_bounds;
     };
 
 

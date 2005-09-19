@@ -71,7 +71,7 @@ namespace agg
         //--------------------------------------------------------------------
         bool visible(int x, int y, int r) const
         {
-            rect rc(x-r, y-r, x+y, y+r);
+            rect_i rc(x-r, y-r, x+y, y+r);
             return rc.clip(base_type::ren().bounding_clip_box());  
         }
 

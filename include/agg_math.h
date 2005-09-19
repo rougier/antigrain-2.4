@@ -25,6 +25,12 @@
 namespace agg
 {
 
+    //------------------------------------------------------vertex_dist_epsilon
+    // Coinciding points maximal distance (Epsilon)
+    const double vertex_dist_epsilon = 1e-14;
+
+    //-----------------------------------------------------intersection_epsilon
+    // See calc_intersection
     const double intersection_epsilon = 1.0e-30;
 
     //------------------------------------------------------calc_point_location
@@ -66,7 +72,7 @@ namespace agg
         double dx = x2-x1;
         double dy = y2-y1;
         double d = sqrt(dx * dx + dy * dy);
-        if(d < intersection_epsilon)
+        if(d < vertex_dist_epsilon)
         {
             return calc_distance(x1, y1, x, y);
         }

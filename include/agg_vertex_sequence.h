@@ -27,8 +27,8 @@ namespace agg
 {
 
     //----------------------------------------------------------vertex_sequence
-    // Modified agg::pod_deque. The data is interpreted as a sequence of vertices.
-    // It means that the type T must expose:
+    // Modified agg::pod_bvector. The data is interpreted as a sequence 
+    // of vertices. It means that the type T must expose:
     //
     // bool operator() (const T& val)
     // 
@@ -64,10 +64,10 @@ namespace agg
     // necessary.
     //------------------------------------------------------------------------
     template<class T, unsigned S=6> 
-    class vertex_sequence : public pod_deque<T, S>
+    class vertex_sequence : public pod_bvector<T, S>
     {
     public:
-        typedef pod_deque<T, S> base_type;
+        typedef pod_bvector<T, S> base_type;
 
         void add(const T& val);
         void modify_last(const T& val);
@@ -123,10 +123,6 @@ namespace agg
         }
     }
 
-
-
-    // Coinciding points maximal distance (Epsilon)
-    const double vertex_dist_epsilon = 1e-14;
 
     //-------------------------------------------------------------vertex_dist
     // Vertex (x, y) with the distance to the next one. The last vertex has 

@@ -765,13 +765,13 @@ namespace agg
 
         // Get the bounding boxes
         //----------------
-        rect r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
-        rect r2(sg2.min_x(), sg2.min_y(), sg2.max_x(), sg2.max_y());
+        rect_i r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
+        rect_i r2(sg2.min_x(), sg2.min_y(), sg2.max_x(), sg2.max_y());
 
         // Calculate the intersection of the bounding 
         // boxes and return if they don't intersect.
         //-----------------
-        rect ir = intersect_rectangles(r1, r2);
+        rect_i ir = intersect_rectangles(r1, r2);
         if(!ir.is_valid()) return;
 
         // Reset the scanlines and get two first ones
@@ -1041,12 +1041,12 @@ namespace agg
 
         // Get the bounding boxes
         //----------------
-        rect r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
-        rect r2(sg2.min_x(), sg2.min_y(), sg2.max_x(), sg2.max_y());
+        rect_i r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
+        rect_i r2(sg2.min_x(), sg2.min_y(), sg2.max_x(), sg2.max_y());
 
         // Calculate the union of the bounding boxes
         //-----------------
-        rect ur = unite_rectangles(r1, r2);
+        rect_i ur = unite_rectangles(r1, r2);
         if(!ur.is_valid()) return;
 
         ren.prepare();
@@ -1162,7 +1162,7 @@ namespace agg
 
         // Get the bounding box
         //----------------
-        rect r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
+        rect_i r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
 
         // Reset the scanlines and get two first ones
         //-----------------

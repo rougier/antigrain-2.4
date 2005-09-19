@@ -135,7 +135,7 @@ namespace agg
         unsigned vertex(double* x, double* y)
         {
             if(m_count >= m_points.size()) return path_cmd_stop;
-            const point_type& p = m_points[m_count++];
+            const point_d& p = m_points[m_count++];
             *x = p.x;
             *y = p.y;
             return (m_count == 1) ? path_cmd_move_to : path_cmd_line_to;
@@ -150,12 +150,12 @@ namespace agg
                               double x3, double y3,
                               unsigned level);
 
-        double                m_approximation_scale;
-        double                m_distance_tolerance_square;
-        double                m_distance_tolerance_manhattan;
-        double                m_angle_tolerance;
-        unsigned              m_count;
-        pod_deque<point_type> m_points;
+        double               m_approximation_scale;
+        double               m_distance_tolerance_square;
+        double               m_distance_tolerance_manhattan;
+        double               m_angle_tolerance;
+        unsigned             m_count;
+        pod_bvector<point_d> m_points;
     };
 
 
@@ -443,7 +443,7 @@ namespace agg
         unsigned vertex(double* x, double* y)
         {
             if(m_count >= m_points.size()) return path_cmd_stop;
-            const point_type& p = m_points[m_count++];
+            const point_d& p = m_points[m_count++];
             *x = p.x;
             *y = p.y;
             return (m_count == 1) ? path_cmd_move_to : path_cmd_line_to;
@@ -461,13 +461,13 @@ namespace agg
                               double x4, double y4,
                               unsigned level);
 
-        double                m_approximation_scale;
-        double                m_distance_tolerance_square;
-        double                m_distance_tolerance_manhattan;
-        double                m_angle_tolerance;
-        double                m_cusp_limit;
-        unsigned              m_count;
-        pod_deque<point_type> m_points;
+        double               m_approximation_scale;
+        double               m_distance_tolerance_square;
+        double               m_distance_tolerance_manhattan;
+        double               m_angle_tolerance;
+        double               m_cusp_limit;
+        unsigned             m_count;
+        pod_bvector<point_d> m_points;
     };
 
 

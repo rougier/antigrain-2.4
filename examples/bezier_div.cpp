@@ -236,7 +236,7 @@ public:
                    m_curve1.x3(), m_curve1.y3(),
                    m_curve1.x4(), m_curve1.y4());
 
-        agg::pod_deque<agg::vertex_dist, 8> curve_points;
+        agg::pod_bvector<agg::vertex_dist, 8> curve_points;
         unsigned cmd;
         double x, y;
         curve.rewind(0);
@@ -257,7 +257,7 @@ public:
         }
         curve_points[curve_points.size() - 1].dist = curve_dist;
         
-        agg::pod_deque<curve_point, 8> reference_points;
+        agg::pod_bvector<curve_point, 8> reference_points;
         for(i = 0; i < 4096; i++)
         {
             double mu = i / 4095.0;

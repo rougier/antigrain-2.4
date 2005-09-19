@@ -148,8 +148,8 @@ namespace agg
             }
         }
 
-        pod_deque<T, 12>         m_cells;
-        pod_deque<extra_span, 6> m_extra_storage;
+        pod_bvector<T, 12>         m_cells;
+        pod_bvector<extra_span, 6> m_extra_storage;
     };
 
 
@@ -511,9 +511,9 @@ namespace agg
         }
 
     private:
-        scanline_cell_storage<T>    m_covers;
-        pod_deque<span_data, 10>    m_spans;
-        pod_deque<scanline_data, 8> m_scanlines;
+        scanline_cell_storage<T>      m_covers;
+        pod_bvector<span_data, 10>    m_spans;
+        pod_bvector<scanline_data, 8> m_scanlines;
         span_data     m_fake_span;
         scanline_data m_fake_scanline;
         int           m_min_x;

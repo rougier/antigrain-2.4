@@ -316,8 +316,8 @@ namespace agg
 
 
     private:
-        pod_deque<span_data, 10>    m_spans;
-        pod_deque<scanline_data, 8> m_scanlines;
+        pod_bvector<span_data, 10>    m_spans;
+        pod_bvector<scanline_data, 8> m_scanlines;
         span_data     m_fake_span;
         scanline_data m_fake_scanline;
         int           m_min_x;

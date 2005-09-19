@@ -181,7 +181,7 @@ namespace agg
                 //----------------------
                 if(m_angle_tolerance < curve_angle_tolerance_epsilon)
                 {
-                    m_points.add(point_type(x123, y123));
+                    m_points.add(point_d(x123, y123));
                     return;
                 }
 
@@ -194,7 +194,7 @@ namespace agg
                 {
                     // Finally we can stop the recursion
                     //----------------------
-                    m_points.add(point_type(x123, y123));
+                    m_points.add(point_d(x123, y123));
                     return;                 
                 }
             }
@@ -204,7 +204,7 @@ namespace agg
             if(fabs(x1 + x3 - x2 - x2) +
                fabs(y1 + y3 - y2 - y2) <= m_distance_tolerance_manhattan)
             {
-                m_points.add(point_type(x123, y123));
+                m_points.add(point_d(x123, y123));
                 return;
             }    
         }
@@ -220,9 +220,9 @@ namespace agg
                             double x2, double y2, 
                             double x3, double y3)
     {
-        m_points.add(point_type(x1, y1));
+        m_points.add(point_d(x1, y1));
         recursive_bezier(x1, y1, x2, y2, x3, y3, 0);
-        m_points.add(point_type(x3, y3));
+        m_points.add(point_d(x3, y3));
     }
 
 
@@ -422,7 +422,7 @@ namespace agg
                fabs(x2 + x4 - x3 - x3) +
                fabs(y2 + y4 - y3 - y3) <= m_distance_tolerance_manhattan)
             {
-                m_points.add(point_type(x1234, y1234));
+                m_points.add(point_d(x1234, y1234));
                 return;
             }    
             break;
@@ -434,7 +434,7 @@ namespace agg
             {
                 if(m_angle_tolerance < curve_angle_tolerance_epsilon)
                 {
-                    m_points.add(point_type(x23, y23));
+                    m_points.add(point_d(x23, y23));
                     return;
                 }
 
@@ -445,8 +445,8 @@ namespace agg
 
                 if(da1 < m_angle_tolerance)
                 {
-                    m_points.add(point_type(x2, y2));
-                    m_points.add(point_type(x3, y3));
+                    m_points.add(point_d(x2, y2));
+                    m_points.add(point_d(x3, y3));
                     return;
                 }
 
@@ -454,7 +454,7 @@ namespace agg
                 {
                     if(da1 > m_cusp_limit)
                     {
-                        m_points.add(point_type(x3, y3));
+                        m_points.add(point_d(x3, y3));
                         return;
                     }
                 }
@@ -468,7 +468,7 @@ namespace agg
             {
                 if(m_angle_tolerance < curve_angle_tolerance_epsilon)
                 {
-                    m_points.add(point_type(x23, y23));
+                    m_points.add(point_d(x23, y23));
                     return;
                 }
 
@@ -479,8 +479,8 @@ namespace agg
 
                 if(da1 < m_angle_tolerance)
                 {
-                    m_points.add(point_type(x2, y2));
-                    m_points.add(point_type(x3, y3));
+                    m_points.add(point_d(x2, y2));
+                    m_points.add(point_d(x3, y3));
                     return;
                 }
 
@@ -488,7 +488,7 @@ namespace agg
                 {
                     if(da1 > m_cusp_limit)
                     {
-                        m_points.add(point_type(x2, y2));
+                        m_points.add(point_d(x2, y2));
                         return;
                     }
                 }
@@ -505,7 +505,7 @@ namespace agg
                 //----------------------
                 if(m_angle_tolerance < curve_angle_tolerance_epsilon)
                 {
-                    m_points.add(point_type(x23, y23));
+                    m_points.add(point_d(x23, y23));
                     return;
                 }
 
@@ -521,7 +521,7 @@ namespace agg
                 {
                     // Finally we can stop the recursion
                     //----------------------
-                    m_points.add(point_type(x23, y23));
+                    m_points.add(point_d(x23, y23));
                     return;
                 }
 
@@ -529,13 +529,13 @@ namespace agg
                 {
                     if(da1 > m_cusp_limit)
                     {
-                        m_points.add(point_type(x2, y2));
+                        m_points.add(point_d(x2, y2));
                         return;
                     }
 
                     if(da2 > m_cusp_limit)
                     {
-                        m_points.add(point_type(x3, y3));
+                        m_points.add(point_d(x3, y3));
                         return;
                     }
                 }
@@ -555,9 +555,9 @@ namespace agg
                             double x3, double y3, 
                             double x4, double y4)
     {
-        m_points.add(point_type(x1, y1));
+        m_points.add(point_d(x1, y1));
         recursive_bezier(x1, y1, x2, y2, x3, y3, x4, y4, 0);
-        m_points.add(point_type(x4, y4));
+        m_points.add(point_d(x4, y4));
     }
 
 }
