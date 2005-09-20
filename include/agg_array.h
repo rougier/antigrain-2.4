@@ -22,8 +22,6 @@
 namespace agg
 {
 
-
-
     //-------------------------------------------------------pod_array_adaptor
     template<class T> class pod_array_adaptor
     {
@@ -43,7 +41,6 @@ namespace agg
         T*       m_array;
         unsigned m_size;
     };
-
 
 
     //---------------------------------------------------------pod_auto_array
@@ -77,18 +74,45 @@ namespace agg
     };
 
 
-
-    //---------------------------------------------------------pod_heap_array
-    template<class T> class pod_heap_array
+    //--------------------------------------------------------pod_auto_vector
+    template<class T, unsigned Size> class pod_auto_vector
     {
     public:
         typedef T value_type;
-        typedef pod_heap_array<T> self_type;
+        typedef pod_auto_vector<T, Size> self_type;
 
-        ~pod_heap_array() { delete [] m_array; }
-        pod_heap_array() : m_array(0), m_size(0) {}
-        pod_heap_array(unsigned size) : m_array(new T[size]), m_size(size) {}
-        pod_heap_array(const self_type& v) : 
+        pod_auto_vector() : m_size(0) {}
+
+        void remove_all()            { m_size = 0; }
+        void clear()                 { m_size = 0; }
+        void add(const T& v)         { m_array[m_size++] = v; }
+        void push_back(const T& v)   { m_array[m_size++] = v; }
+        void inc_size(unsigned size) { m_size += size; }
+        
+        unsigned size() const { return m_size; }
+        const T& operator [] (unsigned i) const { return m_array[i]; }
+              T& operator [] (unsigned i)       { return m_array[i]; }
+        const T& at(unsigned i) const           { return m_array[i]; }
+              T& at(unsigned i)                 { return m_array[i]; }
+        T  value_at(unsigned i) const           { return m_array[i]; }
+
+    private:
+        T m_array[Size];
+        unsigned m_size;
+    };
+
+
+    //---------------------------------------------------------------pod_array
+    template<class T> class pod_array
+    {
+    public:
+        typedef T value_type;
+        typedef pod_array<T> self_type;
+
+        ~pod_array() { delete [] m_array; }
+        pod_array() : m_array(0), m_size(0) {}
+        pod_array(unsigned size) : m_array(new T[size]), m_size(size) {}
+        pod_array(const self_type& v) : 
             m_array(new T[v.m_size]), m_size(v.m_size) 
         {
             memcpy(m_array, v.m_array, sizeof(T) * m_size);
@@ -118,7 +142,6 @@ namespace agg
         T*       m_array;
         unsigned m_size;
     };
-
 
 
 
@@ -157,7 +180,7 @@ namespace agg
 
         void add(const T& v)         { m_array[m_size++] = v; }
         void push_back(const T& v)   { m_array[m_size++] = v; }
-        void inc_size(unsigned size) { m_size += size; } 
+        void inc_size(unsigned size) { m_size += size; }
         unsigned size()      const   { return m_size; }
         unsigned byte_size() const   { return m_size * sizeof(T); }
         void serialize(int8u* ptr) const;
@@ -173,7 +196,6 @@ namespace agg
 
         void remove_all()         { m_size = 0; }
         void clear()              { m_size = 0; }
-        void free_all()           {}
         void cut_at(unsigned num) { if(num < m_size) m_size = num; }
 
     private:

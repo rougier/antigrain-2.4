@@ -235,7 +235,7 @@ namespace agg
                 {
                     m_ellipse.init(calc_xp(i), calc_yp(i), 
                                    m_point_size, m_point_size, 32);
-                    m_curve_pnt.add_path(m_ellipse, 0, false);
+                    m_curve_pnt.concat_path(m_ellipse);
                 }
             }
             m_curve_poly.rewind(0);
@@ -249,7 +249,7 @@ namespace agg
                 m_ellipse.init(calc_xp(m_active_pnt), calc_yp(m_active_pnt), 
                                m_point_size, m_point_size, 32);
 
-                m_curve_pnt.add_path(m_ellipse);
+                m_curve_pnt.concat_path(m_ellipse);
             }
             m_curve_poly.rewind(0);
             break;

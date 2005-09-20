@@ -97,7 +97,16 @@ public:
         if(m_cap.cur_item() == 1) cap = agg::square_cap;
         if(m_cap.cur_item() == 2) cap = agg::round_cap;
 
-        agg::path_storage path;
+        // Here we declare a very cheap-in-use path storage.
+        // It allocates space for at most 20 vertices in stack and
+        // never allocates memory. But be aware that adding more than
+        // 20 vertices is fatal! 
+        //------------------------
+        typedef agg::path_base<
+            agg::vertex_stl_storage<
+                agg::pod_auto_vector<
+                    agg::vertex_d, 20> > > path_storage_type;
+        path_storage_type path;
 
         path.move_to(m_x[0], m_y[0]);
         path.line_to(m_x[1], m_y[1]);
@@ -118,7 +127,7 @@ public:
         // (1)
 
         // Start of (2, 3, 4)
-        agg::conv_smooth_poly1<agg::path_storage> smooth(path);
+        agg::conv_smooth_poly1<path_storage_type> smooth(path);
         smooth.smooth_value(m_smooth.value());
 
         // (2)
@@ -128,15 +137,15 @@ public:
 
 
         // (3)
-        agg::conv_stroke<agg::conv_smooth_poly1<agg::path_storage> > smooth_outline(smooth);
+        agg::conv_stroke<agg::conv_smooth_poly1<path_storage_type> > smooth_outline(smooth);
         ras.add_path(smooth_outline);
         agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba(0.0, 0.6, 0.0, 0.8));
         // (3) 
 
         // (4)
-        agg::conv_curve<agg::conv_smooth_poly1<agg::path_storage> > curve(smooth);
-        agg::conv_dash<agg::conv_curve<agg::conv_smooth_poly1<agg::path_storage> >, agg::vcgen_markers_term> dash(curve);
-        agg::conv_stroke<agg::conv_dash<agg::conv_curve<agg::conv_smooth_poly1<agg::path_storage> >, agg::vcgen_markers_term> > stroke(dash);
+        agg::conv_curve<agg::conv_smooth_poly1<path_storage_type> > curve(smooth);
+        agg::conv_dash<agg::conv_curve<agg::conv_smooth_poly1<path_storage_type> >, agg::vcgen_markers_term> dash(curve);
+        agg::conv_stroke<agg::conv_dash<agg::conv_curve<agg::conv_smooth_poly1<path_storage_type> >, agg::vcgen_markers_term> > stroke(dash);
         stroke.line_cap(cap);
         stroke.width(m_width.value());
 

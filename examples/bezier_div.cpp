@@ -359,7 +359,7 @@ public:
                    m_curve1.x2(), m_curve1.y2(),
                    m_curve1.x3(), m_curve1.y3(),
                    m_curve1.x4(), m_curve1.y4());
-        path.add_path(curve, 0, false);
+        path.concat_path(curve);
 
 
         agg::conv_stroke<agg::path_storage> stroke(path);

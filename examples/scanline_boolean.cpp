@@ -58,7 +58,7 @@ void generate_circles(agg::path_storage& ps,
             agg::ellipse ell(quad[n1]     + (quad[n2]     - quad[n1])     * j / num_circles, 
                              quad[n1 + 1] + (quad[n2 + 1] - quad[n1 + 1]) * j / num_circles, 
                              radius, radius, 100);
-            ps.add_path(ell, 0, false);
+            ps.concat_path(ell);
         }
     }
 }

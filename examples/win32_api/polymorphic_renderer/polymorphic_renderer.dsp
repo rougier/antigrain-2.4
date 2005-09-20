@@ -96,10 +96,6 @@ SOURCE=..\..\..\src\agg_bezier_arc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\agg_path_storage.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\platform\win32\agg_platform_support.cpp
 # End Source File
 # Begin Source File

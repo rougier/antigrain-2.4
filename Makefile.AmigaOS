@@ -84,7 +84,6 @@ src/agg_gsv_text.cpp \
 src/agg_image_filters.cpp \
 src/agg_line_aa_basics.cpp \
 src/agg_line_profile_aa.cpp \
-src/agg_path_storage.cpp \
 src/agg_rasterizer_scanline_aa.cpp \
 src/agg_rounded_rect.cpp \
 src/agg_sqrt_tables.cpp \

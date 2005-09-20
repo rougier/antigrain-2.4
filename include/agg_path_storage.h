@@ -19,6 +19,7 @@
 #include <string.h>
 #include <math.h>
 #include "agg_math.h"
+#include "agg_array.h"
 #include "agg_bezier_arc.h"
 
 namespace agg
@@ -542,6 +543,9 @@ namespace agg
 
         // Accessors
         //--------------------------------------------------------------------
+        const container_type& vertices() const { return m_vertices; } 
+              container_type& vertices()       { return m_vertices; } 
+
         unsigned total_vertices() const;
 
         void rel_to_abs(double* x, double* y) const;
@@ -585,7 +589,7 @@ namespace agg
             vs.rewind(path_id);
             while(!is_stop(cmd = vs.vertex(&x, &y)))
             {
-                add_vertex(x, y, cmd);
+                m_vertices.add_vertex(x, y, cmd);
             }
         }
 
@@ -604,13 +608,13 @@ namespace agg
                 if(is_vertex(cmd))
                 {
                     double x0, y0;
-                    double cmd0;
-                    if(is_vertex(last_vertex(&x0, &y0)))
+                    unsigned cmd0 = last_vertex(&x0, &y0);
+                    if(is_vertex(cmd0))
                     {
                         if(calc_distance(x, y, x0, y0) > vertex_dist_epsilon)
                         {
                             if(is_move_to(cmd)) cmd = path_cmd_line_to;
-                            add_vertex(x, y, cmd);
+                            m_vertices.add_vertex(x, y, cmd);
                         }
                     }
                     else
@@ -623,12 +627,14 @@ namespace agg
                         {
                             if(is_move_to(cmd)) cmd = path_cmd_line_to;
                         }
-                        add_vertex(x, y, cmd);
+                        m_vertices.add_vertex(x, y, cmd);
                     }
                 }
                 while(!is_stop(cmd = vs.vertex(&x, &y)))
                 {
-                    add_vertex(x, y, is_move_to(cmd) ? path_cmd_line_to : cmd);
+                    m_vertices.add_vertex(x, y, is_move_to(cmd) ? 
+                                                    path_cmd_line_to : 
+                                                    cmd);
                 }
             }
         }
@@ -724,7 +730,7 @@ namespace agg
     template<class VC> 
     inline void path_base<VC>::hline_to(double x)
     {
-        m_vertices.add_vertex(x, last_y(), path_cmd_line_to)
+        m_vertices.add_vertex(x, last_y(), path_cmd_line_to);
     }
 
     //------------------------------------------------------------------------
@@ -760,7 +766,7 @@ namespace agg
                                bool sweep_flag,
                                double x, double y)
     {
-        if(m_vertices.total_vertices && is_vertex(m_vertices.last_command()))
+        if(m_vertices.total_vertices() && is_vertex(m_vertices.last_command()))
         {
             const double epsilon = 1e-30;
             double x0 = 0.0;
@@ -1272,22 +1278,21 @@ namespace agg
 
     //-----------------------------------------------------------path_storage
     typedef path_base<vertex_block_storage<double> > path_storage;
+
+    // Example of declarations path_storage with pod_bvector as a container
+    //-----------------------------------------------------------------------
+    //typedef path_base<vertex_stl_storage<pod_bvector<vertex_d> > > path_storage;
+
 }
 
 
 
-// Examples of declarations path_storage with std::vector as a container
+// Example of declarations path_storage with std::vector as a container
 //---------------------------------------------------------------------------
 //#include <vector>
 //namespace agg
 //{
 //    typedef path_base<vertex_stl_storage<std::vector<vertex_d> > > stl_path_storage; 
-//}
-
-//#include "agg_array.h"
-//namespace agg
-//{
-//    typedef path_base<vertex_stl_storage<pod_bvector<vertex_d> > > path_storage;
 //}
 
 

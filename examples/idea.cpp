@@ -179,29 +179,29 @@ public:
                                              agg::rgba8(0,   0,   0),
                                              1.0);
 
-        g_path.add_poly(g_poly_bulb, AGG_POLY_SIZE(g_poly_bulb), false, agg::path_flags_close);
+        g_path.concat_poly(g_poly_bulb, AGG_POLY_SIZE(g_poly_bulb), true);
 
         g_attr[g_npaths++] = path_attributes(g_path.start_new_path(),
                                              agg::rgba8(255,  255, 200),
                                              agg::rgba8(90,   0,   0),
                                              0.7);
 
-        g_path.add_poly(g_poly_beam1, AGG_POLY_SIZE(g_poly_beam1), false, agg::path_flags_close); 
-        g_path.add_poly(g_poly_beam2, AGG_POLY_SIZE(g_poly_beam2), false, agg::path_flags_close); 
-        g_path.add_poly(g_poly_beam3, AGG_POLY_SIZE(g_poly_beam3), false, agg::path_flags_close); 
-        g_path.add_poly(g_poly_beam4, AGG_POLY_SIZE(g_poly_beam4), false, agg::path_flags_close); 
+        g_path.concat_poly(g_poly_beam1, AGG_POLY_SIZE(g_poly_beam1), true); 
+        g_path.concat_poly(g_poly_beam2, AGG_POLY_SIZE(g_poly_beam2), true); 
+        g_path.concat_poly(g_poly_beam3, AGG_POLY_SIZE(g_poly_beam3), true); 
+        g_path.concat_poly(g_poly_beam4, AGG_POLY_SIZE(g_poly_beam4), true); 
 
         g_attr[g_npaths++] = path_attributes(g_path.start_new_path(),
                                              agg::rgba8(0, 0, 0),
                                              agg::rgba8(0, 0, 0),
                                              0.0);
 
-        g_path.add_poly(g_poly_fig1, AGG_POLY_SIZE(g_poly_fig1)); 
-        g_path.add_poly(g_poly_fig2, AGG_POLY_SIZE(g_poly_fig2)); 
-        g_path.add_poly(g_poly_fig3, AGG_POLY_SIZE(g_poly_fig3)); 
-        g_path.add_poly(g_poly_fig4, AGG_POLY_SIZE(g_poly_fig4)); 
-        g_path.add_poly(g_poly_fig5, AGG_POLY_SIZE(g_poly_fig5)); 
-        g_path.add_poly(g_poly_fig6, AGG_POLY_SIZE(g_poly_fig6)); 
+        g_path.concat_poly(g_poly_fig1, AGG_POLY_SIZE(g_poly_fig1), true); 
+        g_path.concat_poly(g_poly_fig2, AGG_POLY_SIZE(g_poly_fig2), true); 
+        g_path.concat_poly(g_poly_fig3, AGG_POLY_SIZE(g_poly_fig3), true); 
+        g_path.concat_poly(g_poly_fig4, AGG_POLY_SIZE(g_poly_fig4), true); 
+        g_path.concat_poly(g_poly_fig5, AGG_POLY_SIZE(g_poly_fig5), true); 
+        g_path.concat_poly(g_poly_fig6, AGG_POLY_SIZE(g_poly_fig6), true); 
 
         m_rotate.text_size(7);
         m_even_odd.text_size(7);
