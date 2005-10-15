@@ -1,7 +1,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-includedir=@includedir@
+includedir=@includedir@/agg2
 
 Name: libagg
 Description: Anti Grain Geometry - A High Quality Rendering Engine for C++
