@@ -1,6 +1,11 @@
-INCLUDES = -I$(top_srcdir)/include `freetype-config --cflags`
 
+if ENABLE_FT
+aggincludedir = $(includedir)/agg2
+agginclude_HEADERS = agg_font_freetype.h
 noinst_LTLIBRARIES = libaggfontfreetype.la
 
-libaggfontfreetype_la_LDFLAGS = -version-info 2:1:0 `freetype-config --libs`
+libaggfontfreetype_la_LDFLAGS = -version-info @AGG_LIB_VERSION@ @FREETYPE_LIBS@ 
 libaggfontfreetype_la_SOURCES = agg_font_freetype.cpp
+libaggfontfreetype_la_CXXFLAGS = -I$(top_srcdir)/include @FREETYPE_CFLAGS@ 
+endif
+

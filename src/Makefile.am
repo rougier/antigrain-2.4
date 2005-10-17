@@ -4,7 +4,7 @@ INCLUDES = -I$(top_srcdir)/include
 
 lib_LTLIBRARIES = libagg.la
 
-libagg_la_LDFLAGS = -version-info 2:1:0
+libagg_la_LDFLAGS = -version-info @AGG_LIB_VERSION@
 libagg_la_SOURCES = agg_arc.cpp agg_arrowhead.cpp agg_bezier_arc.cpp agg_bspline.cpp agg_curves.cpp \
 					agg_vcgen_bspline.cpp agg_vcgen_contour.cpp agg_vcgen_dash.cpp agg_vcgen_markers_term.cpp \
 					agg_vcgen_smooth_poly1.cpp agg_vcgen_stroke.cpp agg_gsv_text.cpp agg_image_filters.cpp \

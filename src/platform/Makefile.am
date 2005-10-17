@@ -1,1 +1,1 @@
-SUBDIRS = $(AGG_PLATFORM)
+SUBDIRS = X11 sdl win32 AmigaOS BeOS mac

@@ -1,0 +1,69 @@
+
+EXTRA_DIST= X11/Makefile \
+						aa_demo.cpp \
+						aa_test.cpp \
+						alpha_gradient.cpp \
+						alpha_mask2.cpp \
+						alpha_mask3.cpp \
+						alpha_mask.cpp \
+						bezier_div.cpp \
+						bspline.cpp \
+						circles.cpp \
+						component_rendering.cpp \
+						compositing.cpp \
+						conv_contour.cpp \
+						conv_dash_marker.cpp \
+						conv_stroke.cpp \
+						distortions.cpp \
+						freetype_test.cpp \
+						gamma_correction.cpp \
+						gamma_ctrl.cpp \
+						gouraud.cpp \
+						gpc_test.cpp \
+						gradients.cpp \
+						graph_test.cpp \
+						idea.cpp \
+						image1.cpp \
+						image_alpha.cpp \
+						image_filters2.cpp \
+						image_filters.cpp \
+						image_fltr_graph.cpp \
+						image_perspective.cpp \
+						image_resample.cpp \
+						image_transforms.cpp \
+						interactive_polygon.cpp \
+						interactive_polygon.h \
+						line_patterns.cpp \
+						lion.cpp \
+						lion_lens.cpp \
+						lion_outline.cpp \
+						make_arrows.cpp \
+						make_gb_poly.cpp \
+						mol_view.cpp \
+						multi_clip.cpp \
+						parse_lion.cpp \
+						pattern_fill.cpp \
+						pattern_perspective.cpp \
+						pattern_resample.cpp \
+						perspective.cpp \
+						pixel_formats.h \
+						polymorphic_renderer.cpp \
+						rasterizers2.cpp \
+						rasterizers.cpp \
+						raster_text.cpp \
+						rounded_rect.cpp \
+						scanline_boolean2.cpp \
+						scanline_boolean.cpp \
+						simple_blur.cpp \
+						trans_curve1.cpp \
+						trans_curve1_ft.cpp \
+						trans_curve2.cpp \
+						trans_curve2_ft.cpp \
+						trans_polar.cpp \
+						truetype_test.cpp \
+						truetype_test.cpp
+
+if ENABLE_EXAMPLES
+## todo
+endif
+
