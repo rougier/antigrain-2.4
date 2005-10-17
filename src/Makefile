@@ -16,7 +16,6 @@ agg_vcgen_stroke.cpp \
 agg_vcgen_bspline.cpp \
 agg_gsv_text.cpp \
 agg_image_filters.cpp \
-agg_rasterizer_scanline_aa.cpp \
 agg_line_aa_basics.cpp \
 agg_line_profile_aa.cpp \
 agg_rounded_rect.cpp \

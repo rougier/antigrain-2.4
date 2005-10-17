@@ -114,10 +114,6 @@ SOURCE=..\..\..\src\platform\win32\agg_platform_support.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\agg_rasterizer_scanline_aa.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\ctrl\agg_rbox_ctrl.cpp
 # End Source File
 # Begin Source File
