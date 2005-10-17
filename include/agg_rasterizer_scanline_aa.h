@@ -49,7 +49,14 @@ namespace agg
         int cover;
         int area;
 
-        cell_aa() : x(0x7FFFFFFF), y(0x7FFFFFFF), cover(0), area(0) {}
+        void initial()
+        {
+            x = 0x7FFFFFFF;
+            y = 0x7FFFFFFF;
+            cover = 0;
+            area  = 0;
+        }
+
         bool operator != (const cell_aa&) const
         {
             return false;
