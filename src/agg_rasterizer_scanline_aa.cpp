@@ -42,6 +42,7 @@
 // 
 //----------------------------------------------------------------------------
 
+/*
 #include <string.h>
 #include "agg_rasterizer_scanline_aa.h"
 
@@ -49,83 +50,11 @@
 namespace agg
 {
 
-    //------------------------------------------------------------------------
-    AGG_INLINE void cell_aa::set_cover(int c, int a)
-    {
-        cover = c;
-        area = a;
-    }
-
-    //------------------------------------------------------------------------
-    AGG_INLINE void cell_aa::add_cover(int c, int a)
-    {
-        cover += c;
-        area += a;
-    }
-
-    //------------------------------------------------------------------------
-    AGG_INLINE void cell_aa::set_coord(int cx, int cy)
-    {
-        x = cx;
-        y = cy;
-    }
-
-    //------------------------------------------------------------------------
-    AGG_INLINE void cell_aa::set(int cx, int cy, int c, int a)
-    {
-        x = cx;
-        y = cy;
-        cover = c;
-        area = a;
-    }
-
-    //------------------------------------------------------------------------
-    outline_aa::~outline_aa()
-    {
-        if(m_num_blocks)
-        {
-            cell_aa** ptr = m_cells + m_num_blocks - 1;
-            while(m_num_blocks--)
-            {
-                delete [] *ptr;
-                ptr--;
-            }
-            delete [] m_cells;
-        }
-    }
-
-
-    //------------------------------------------------------------------------
-    outline_aa::outline_aa() :
-        m_num_blocks(0),
-        m_max_blocks(0),
-        m_cur_block(0),
-        m_num_cells(0),
-        m_cells(0),
-        m_cur_cell_ptr(0),
-        m_cur_x(0),
-        m_cur_y(0),
-        m_min_x(0x7FFFFFFF),
-        m_min_y(0x7FFFFFFF),
-        m_max_x(-0x7FFFFFFF),
-        m_max_y(-0x7FFFFFFF),
-        m_sorted(false)
-    {
-        m_cur_cell.set(0x7FFF, 0x7FFF, 0, 0);
-    }
 
 
     //------------------------------------------------------------------------
     void outline_aa::reset()
     { 
-        m_num_cells = 0; 
-        m_cur_block = 0;
-        m_cur_cell.set(0x7FFF, 0x7FFF, 0, 0);
-        m_sorted = false;
-        m_min_x =  0x7FFFFFFF;
-        m_min_y =  0x7FFFFFFF;
-        m_max_x = -0x7FFFFFFF;
-        m_max_y = -0x7FFFFFFF;
     }
 
 
@@ -133,42 +62,12 @@ namespace agg
     //------------------------------------------------------------------------
     void outline_aa::allocate_block()
     {
-        if(m_cur_block >= m_num_blocks)
-        {
-            if(m_num_blocks >= m_max_blocks)
-            {
-                cell_aa** new_cells = new cell_aa* [m_max_blocks + cell_block_pool];
-                if(m_cells)
-                {
-                    memcpy(new_cells, m_cells, m_max_blocks * sizeof(cell_aa*));
-                    delete [] m_cells;
-                }
-                m_cells = new_cells;
-                m_max_blocks += cell_block_pool;
-            }
-            m_cells[m_num_blocks++] = new cell_aa [unsigned(cell_block_size)];
-        }
-        m_cur_cell_ptr = m_cells[m_cur_block++];
     }
 
 
     //------------------------------------------------------------------------
     AGG_INLINE void outline_aa::add_cur_cell()
     {
-        if(m_cur_cell.area | m_cur_cell.cover)
-        {
-            if((m_num_cells & cell_block_mask) == 0)
-            {
-                if(m_num_blocks >= cell_block_limit) return;
-                allocate_block();
-            }
-            *m_cur_cell_ptr++ = m_cur_cell;
-            ++m_num_cells;
-            if(m_cur_cell.x < m_min_x) m_min_x = m_cur_cell.x;
-            if(m_cur_cell.x > m_max_x) m_max_x = m_cur_cell.x;
-            if(m_cur_cell.y < m_min_y) m_min_y = m_cur_cell.y;
-            if(m_cur_cell.y > m_max_y) m_max_y = m_cur_cell.y;
-        }
     }
 
 
@@ -176,11 +75,6 @@ namespace agg
     //------------------------------------------------------------------------
     AGG_INLINE void outline_aa::set_cur_cell(int x, int y)
     {
-        if(m_cur_cell.x != x || m_cur_cell.y != y)
-        {
-            add_cur_cell();
-            m_cur_cell.set(x, y, 0, 0);
-        }
     }
 
 
@@ -655,3 +549,4 @@ namespace agg
     }
 
 }
+*/

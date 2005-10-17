@@ -29,11 +29,7 @@
 #ifndef AGG_RASTERIZER_SCANLINE_AA_INCLUDED
 #define AGG_RASTERIZER_SCANLINE_AA_INCLUDED
 
-#include <string.h>
-#include <math.h>
-#include "agg_basics.h"
-#include "agg_math.h"
-#include "agg_array.h"
+#include "agg_rasterizer_cells_aa.h"
 #include "agg_gamma_functions.h"
 #include "agg_clip_liang_barsky.h"
 
@@ -41,24 +37,6 @@
 namespace agg
 {
 
-    //------------------------------------------------------------------------
-    // These constants determine the subpixel accuracy, to be more precise, 
-    // the number of bits of the fractional part of the coordinates. 
-    // The possible coordinate capacity in bits can be calculated by formula:
-    // sizeof(int) * 8 - poly_base_shift * 2, i.e, for 32-bit integers and
-    // 8-bits fractional part the capacity is 16 bits or [-32768...32767].
-    enum poly_base_scale_e
-    {
-        poly_base_shift = 8,                       //----poly_base_shift
-        poly_base_size  = 1 << poly_base_shift,    //----poly_base_size 
-        poly_base_mask  = poly_base_size - 1       //----poly_base_mask 
-    };
-    
-    //--------------------------------------------------------------poly_coord
-    inline int poly_coord(double c)
-    {
-        return int(c * poly_base_size);
-    }
 
     //-----------------------------------------------------------------cell_aa
     // A pixel cell. There're no constructors defined and it was done 
@@ -71,94 +49,13 @@ namespace agg
         int cover;
         int area;
 
-        void set(int x, int y, int c, int a);
-        void set_coord(int x, int y);
-        void set_cover(int c, int a);
-        void add_cover(int c, int a);
+        cell_aa() : x(0x7FFFFFFF), y(0x7FFFFFFF), cover(0), area(0) {}
+        bool operator != (const cell_aa&) const
+        {
+            return false;
+        }
     };
 
-
-    //--------------------------------------------------------------outline_aa
-    // An internal class that implements the main rasterization algorithm.
-    // Used in the rasterizer. Should not be used direcly.
-    class outline_aa
-    {
-        enum cell_block_scale_e
-        {
-            cell_block_shift = 12,
-            cell_block_size  = 1 << cell_block_shift,
-            cell_block_mask  = cell_block_size - 1,
-            cell_block_pool  = 256,
-            cell_block_limit = 1024
-        };
-
-        struct sorted_y
-        {
-            unsigned start;
-            unsigned num;
-        };
-
-    public:
-        ~outline_aa();
-        outline_aa();
-
-        void reset();
-
-        void move_to(int x, int y);
-        void line_to(int x, int y);
-
-        int min_x() const { return m_min_x; }
-        int min_y() const { return m_min_y; }
-        int max_x() const { return m_max_x; }
-        int max_y() const { return m_max_y; }
-
-        void sort_cells();
-
-        unsigned total_cells() const 
-        {
-            return m_num_cells;
-        }
-
-        unsigned scanline_num_cells(unsigned y) const 
-        { 
-            return m_sorted_y[y - m_min_y].num; 
-        }
-
-        const cell_aa* const* scanline_cells(unsigned y) const
-        { 
-            return m_sorted_cells.data() + m_sorted_y[y - m_min_y].start; 
-        }
-
-        bool sorted() const { return m_sorted; }
-
-    private:
-        outline_aa(const outline_aa&);
-        const outline_aa& operator = (const outline_aa&);
-
-        void set_cur_cell(int x, int y);
-        void add_cur_cell();
-        void render_hline(int ey, int x1, int y1, int x2, int y2);
-        void render_line(int x1, int y1, int x2, int y2);
-        void allocate_block();
-        
-    private:
-        unsigned  m_num_blocks;
-        unsigned  m_max_blocks;
-        unsigned  m_cur_block;
-        unsigned  m_num_cells;
-        cell_aa** m_cells;
-        cell_aa*  m_cur_cell_ptr;
-        pod_vector<cell_aa*> m_sorted_cells;
-        pod_vector<sorted_y> m_sorted_y;
-        cell_aa   m_cur_cell;
-        int       m_cur_x;
-        int       m_cur_y;
-        int       m_min_x;
-        int       m_min_y;
-        int       m_max_x;
-        int       m_max_y;
-        bool      m_sorted;
-    };
 
 
     //------------------------------------------------------scanline_hit_test
@@ -483,7 +380,7 @@ namespace agg
         void clip_segment(int x, int y);
 
     private:
-        outline_aa     m_outline;
+        rasterizer_cells_aa<cell_aa> m_outline;
         int            m_gamma[aa_num];
         filling_rule_e m_filling_rule;
         int            m_clipped_start_x;
