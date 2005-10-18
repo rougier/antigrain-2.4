@@ -2,7 +2,7 @@
 if ENABLE_FT
 aggincludedir = $(includedir)/agg2
 agginclude_HEADERS = agg_font_freetype.h
-noinst_LTLIBRARIES = libaggfontfreetype.la
+lib_LTLIBRARIES = libaggfontfreetype.la
 
 libaggfontfreetype_la_LDFLAGS = -version-info @AGG_LIB_VERSION@ @FREETYPE_LIBS@ 
 libaggfontfreetype_la_SOURCES = agg_font_freetype.cpp

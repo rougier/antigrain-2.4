@@ -40,6 +40,10 @@ case "$host" in
 dnl ####  Check if we are compiling for win32 #####
   *mingw*)
     win32_host=yes
+    WINDOWS_LIBS=-lgdi32
+    WINDOWS_CFLAGS=
+    AC_SUBST(WINDOWS_CFLAGS)
+    AC_SUBST(WINDOWS_LIBS)
   ;;
 esac
 AM_CONDITIONAL(ENABLE_WIN32,[test x$win32_host = xyes -a x$enable_platform != xno ])
@@ -65,6 +69,16 @@ AM_CONDITIONAL(ENABLE_FT,[test xyes = x$ft_enabled])
 dnl ###############################################
 
 
+dnl #########  Ask for GPC: #######################
+AC_ARG_ENABLE(gpc,
+    AC_HELP_STRING([--enable-gpc],[gpc polygon clipper library]) ) 
+
+AM_CONDITIONAL(ENABLE_GPC,[test xyes = x$enable_gpc])
+dnl ###############################################
+
+
+
+
 dnl #########  Check for SDL: #####################
 sdl_enabled=""
 SDL_VERSION=1.2.0
@@ -74,7 +88,7 @@ AM_PATH_SDL($SDL_VERSION,
     )
 AC_SUBST(SDL_CFLAGS)
 AC_SUBST(SDL_LIBS)
-AM_CONDITIONAL(ENABLE_SDL,[test xyes = x$sdl_enabled -a xno != x$enable_platform])
+AM_CONDITIONAL(ENABLE_SDL,[test xyes = x$sdl_enabled -a xno != x$enable_platform -a x$win32_host != xyes])
 dnl ###############################################
 
 
@@ -83,12 +97,10 @@ AC_PATH_X
 if test "$no_x" = "yes"; then
   AC_MSG_WARN([*** X11 not found! Omitting X11 layer.])
 fi
-AM_CONDITIONAL(ENABLE_X11,[test x$no_x = x -a xno != x$enable_platform])
+AM_CONDITIONAL(ENABLE_X11,[test x$no_x = x -a xno != x$enable_platform -a x$win32_host != xyes])
 AC_SUBST(x_includes)
 AC_SUBST(x_libraries)
 dnl ###############################################
-
-echo "DEB:" $enable_platform
 
 dnl Settung up library version
 AGG_LIB_VERSION="2:4:0"
