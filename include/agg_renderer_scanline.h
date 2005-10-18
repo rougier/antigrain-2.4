@@ -708,19 +708,44 @@ namespace agg
 
 
 /*
-    template<class Rasterizer, class Scanline, class BaseRenderer>
+    template<class Rasterizer, 
+             class ScanlineAA, 
+             class ScanlineBin, 
+             class BaseRenderer, 
+             class SpanAllocator,
+             class StyleHandler>
     void render_scanlines_compound(Rasterizer& ras, 
-                                   Scanline& sl, 
-                                   BaseRenderer& ren)
+                                   ScanlineAA& sl_aa,
+                                   ScanlineBin& sl_bin,
+                                   BaseRenderer& ren,
+                                   SpanAllocator& alloc,
+                                   StyleHandler& sh)
     {
         if(ras.rewind_scanlines())
         {
-            sl.reset(ras.min_x(), ras.max_x());
-            ren.prepare(unsigned(ras.max_x() - ras.min_x() + 2));
+            unsigned len = ras.max_x() - ras.min_x() + 2;
+            sl_aa.reset(ras.min_x(), ras.max_x());
+            sl_bin.reset(ras.min_x(), ras.max_x());
+
+            typename BaseRenderer::color_type* color_span = alloc.allocate(len * 2);
+            typename BaseRenderer::color_type* mix_buffer = color_span + len;
 
             unsigned num_styles;
             while((num_styles = ras.sweep_styles()) > 0)
             {
+                if(num_styles == 1)
+                {
+                    // Optimization for a single style. Happens often
+                    //-------------------------
+                }
+                else
+                {
+                    if(ras.sweep_scanline(sl_bin, -1))
+                    {
+                    }
+                }
+
+
                 unsigned i;
                 for(i = 0; i < num_styles; i++)
                 {
@@ -732,7 +757,6 @@ namespace agg
                 }
             }
         }
-
     }
 */
 
