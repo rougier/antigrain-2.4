@@ -106,10 +106,6 @@ namespace agg
             return x >= m_clip_box.x1 && y >= m_clip_box.y1 &&
                    x <= m_clip_box.x2 && y <= m_clip_box.y2;
         }
-        
-        //--------------------------------------------------------------------
-        void first_clip_box() {}
-        bool next_clip_box() { return false; }
 
         //--------------------------------------------------------------------
         const rect_i& clip_box() const { return m_clip_box;    }
@@ -402,35 +398,6 @@ namespace agg
             }
             m_ren->blend_color_vspan(x, y, len, colors, covers, cover);
         }
-
-
-        //--------------------------------------------------------------------
-        void copy_color_hspan_no_clip(int x, int y, int len, 
-                                      const color_type* colors)
-        {
-            m_ren->copy_color_hspan(x, y, len, colors);
-        }
-
-
-        //--------------------------------------------------------------------
-        void blend_color_hspan_no_clip(int x, int y, int len, 
-                                       const color_type* colors, 
-                                       const cover_type* covers,
-                                       cover_type cover = cover_full)
-        {
-            m_ren->blend_color_hspan(x, y, len, colors, covers, cover);
-        }
-
-
-        //--------------------------------------------------------------------
-        void blend_color_vspan_no_clip(int x, int y, int len, 
-                                       const color_type* colors, 
-                                       const cover_type* covers,
-                                       cover_type cover = cover_full)
-        {
-            m_ren->blend_color_vspan(x, y, len, colors, covers, cover);
-        }
-
 
         //--------------------------------------------------------------------
         rect_i clip_rect_area(rect_i& dst, rect_i& src, int wsrc, int hsrc) const

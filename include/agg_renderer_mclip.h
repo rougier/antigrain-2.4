@@ -305,35 +305,6 @@ namespace agg
             while(next_clip_box());
         }
 
-
-        //--------------------------------------------------------------------
-        void copy_color_hspan_no_clip(int x, int y, int len, 
-                                      const color_type* colors)
-        {
-            m_ren.copy_color_hspan_no_clip(x, y, len, colors);
-        }
-
-
-        //--------------------------------------------------------------------
-        void blend_color_hspan_no_clip(int x, int y, int len, 
-                                       const color_type* colors, 
-                                       const cover_type* covers,
-                                       cover_type cover = cover_full)
-        {
-            m_ren.blend_color_hspan_no_clip(x, y, len, colors, covers, cover);
-        }
-
-
-        //--------------------------------------------------------------------
-        void blend_color_vspan_no_clip(int x, int y, int len, 
-                                       const color_type* colors, 
-                                       const cover_type* covers,
-                                       cover_type cover = cover_full)
-        {
-            m_ren.blend_color_vspan_no_clip(x, y, len, colors, covers, cover);
-        }
-
-
         //--------------------------------------------------------------------
         void copy_from(const rendering_buffer& from, 
                        const rect_i* rc=0, 
@@ -347,6 +318,24 @@ namespace agg
             }
             while(next_clip_box());
         }
+
+
+        //--------------------------------------------------------------------
+        template<class SrcPixelFormatRenderer>
+        void blend_from(const SrcPixelFormatRenderer& src, 
+                        const rect_i* rect_src_ptr = 0, 
+                        int dx = 0, 
+                        int dy = 0,
+                        cover_type cover = cover_full)
+        {
+            first_clip_box();
+            do
+            {
+                m_ren.blend_from(src, rect_src_ptr, dx, dy, cover);
+            }
+            while(next_clip_box());
+        }
+
         
     private:
         renderer_mclip(const renderer_mclip<PixelFormat>&);

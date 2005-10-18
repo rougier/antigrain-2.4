@@ -156,60 +156,24 @@ namespace agg
                             SpanAllocator& alloc, SpanGenerator& span_gen)
     {
         int y = sl.y();
-        ren.first_clip_box();
-        do
+
+        unsigned num_spans = sl.num_spans();
+        typename Scanline::const_iterator span = sl.begin();
+        for(;;)
         {
-            int xmin = ren.xmin();
-            int xmax = ren.xmax();
+            int x = span->x;
+            int len = span->len;
+            const typename Scanline::cover_type* covers = span->covers;
 
-            if(y >= ren.ymin() && y <= ren.ymax())
-            {
-                unsigned num_spans = sl.num_spans();
-                typename Scanline::const_iterator span = sl.begin();
-                for(;;)
-                {
-                    int x = span->x;
-                    int len = span->len;
-                    bool solid = false;
-                    const typename Scanline::cover_type* covers = span->covers;
+            if(len < 0) len = -len;
+            typename BaseRenderer::color_type* colors = alloc.allocate(len);
+            span_gen.generate(colors, x, y, len);
+            ren.blend_color_hspan(x, y, len, colors, 
+                                  (span->len < 0) ? 0 : covers, *covers);
 
-                    if(len < 0)
-                    {
-                        solid = true;
-                        len = -len;
-                    }
-
-                    if(x < xmin)
-                    {
-                        len -= xmin - x;
-                        if(!solid) 
-                        {
-                            covers += xmin - x;
-                        }
-                        x = xmin;
-                    }
-
-                    if(len > 0)
-                    {
-                        if(x + len > xmax)
-                        {
-                            len = xmax - x + 1;
-                        }
-                        if(len > 0)
-                        {
-                            typename BaseRenderer::color_type* colors = alloc.allocate(len);
-                            span_gen.generate(colors, x, y, len),
-                            ren.blend_color_hspan_no_clip(x, y, len, colors,
-                                                          solid ? 0 : covers,
-                                                          *covers);
-                        }
-                    }
-                    if(--num_spans == 0) break;
-                    ++span;
-                }
-            }
+            if(--num_spans == 0) break;
+            ++span;
         }
-        while(ren.next_clip_box());
     }
 
 
@@ -739,6 +703,40 @@ namespace agg
             render_scanlines(ras, sl, r);
         }
     }
+
+
+
+
+/*
+    template<class Rasterizer, class Scanline, class BaseRenderer>
+    void render_scanlines_compound(Rasterizer& ras, 
+                                   Scanline& sl, 
+                                   BaseRenderer& ren)
+    {
+        if(ras.rewind_scanlines())
+        {
+            sl.reset(ras.min_x(), ras.max_x());
+            ren.prepare(unsigned(ras.max_x() - ras.min_x() + 2));
+
+            unsigned num_styles;
+            while((num_styles = ras.sweep_styles()) > 0)
+            {
+                unsigned i;
+                for(i = 0; i < num_styles; i++)
+                {
+                    if(ras.sweep_scanline(sl, i))
+                    {
+                        ren.color(st[ras.style(i)]);
+                        ren.render(sl);
+                    }
+                }
+            }
+        }
+
+    }
+*/
+
+
 
 
 }

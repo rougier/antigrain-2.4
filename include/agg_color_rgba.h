@@ -139,6 +139,16 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
+        void add(const rgba& c)
+        {
+            double t;
+            t = r + c.r; r = (t > 1.0) ? 1.0 : t;
+            t = g + c.g; g = (t > 1.0) ? 1.0 : t;
+            t = b + c.b; b = (t > 1.0) ? 1.0 : t;
+            t = a + c.a; a = (t > 1.0) ? 1.0 : t;
+        }
+
+        //--------------------------------------------------------------------
         static rgba no_color() { return rgba(0,0,0,0); }
 
         //--------------------------------------------------------------------
@@ -360,6 +370,16 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
+        void add(const self_type& c)
+        {
+            calc_type t;
+            t = r + c.r; r = (t > base_mask) ? base_mask : t;
+            t = g + c.g; g = (t > base_mask) ? base_mask : t;
+            t = b + c.b; b = (t > base_mask) ? base_mask : t;
+            t = a + c.a; a = (t > base_mask) ? base_mask : t;
+        }
+
+        //--------------------------------------------------------------------
         static self_type no_color() { return self_type(0,0,0,0); }
 
         //--------------------------------------------------------------------
@@ -570,6 +590,16 @@ namespace agg
             ret.b = value_type(calc_type(b) + (((calc_type(c.b) - b) * ik) >> base_shift));
             ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
             return ret;
+        }
+
+        //--------------------------------------------------------------------
+        void add(const self_type& c)
+        {
+            calc_type t;
+            t = r + c.r; r = (t > base_mask) ? base_mask : t;
+            t = g + c.g; g = (t > base_mask) ? base_mask : t;
+            t = b + c.b; b = (t > base_mask) ? base_mask : t;
+            t = a + c.a; a = (t > base_mask) ? base_mask : t;
         }
 
         //--------------------------------------------------------------------
