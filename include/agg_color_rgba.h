@@ -341,9 +341,9 @@ namespace agg
             calc_type r_ = (calc_type(r) * base_mask) / a;
             calc_type g_ = (calc_type(g) * base_mask) / a;
             calc_type b_ = (calc_type(b) * base_mask) / a;
-            r = value_type((r_ > base_mask) ? base_mask : r_);
-            g = value_type((g_ > base_mask) ? base_mask : g_);
-            b = value_type((b_ > base_mask) ? base_mask : b_);
+            r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
+            g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
+            b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
             return *this;
         }
 
@@ -371,10 +371,10 @@ namespace agg
                 }
                 else
                 {
-                    cr = r + c.r; r = (cr > base_mask) ? base_mask : cr;
-                    cg = g + c.g; g = (cg > base_mask) ? base_mask : cg;
-                    cb = b + c.b; b = (cb > base_mask) ? base_mask : cb;
-                    ca = a + c.a; a = (ca > base_mask) ? base_mask : ca;
+                    cr = r + c.r; r = (cr > calc_type(base_mask)) ? calc_type(base_mask) : cr;
+                    cg = g + c.g; g = (cg > calc_type(base_mask)) ? calc_type(base_mask) : cg;
+                    cb = b + c.b; b = (cb > calc_type(base_mask)) ? calc_type(base_mask) : cb;
+                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
                 }
             }
             else
@@ -383,10 +383,10 @@ namespace agg
                 cg = g + ((c.g * cover + cover_mask) >> cover_shift);
                 cb = b + ((c.b * cover + cover_mask) >> cover_shift);
                 ca = a + ((c.a * cover + cover_mask) >> cover_shift);
-                r = (cr > base_mask) ? base_mask : cr;
-                g = (cg > base_mask) ? base_mask : cg;
-                b = (cb > base_mask) ? base_mask : cb;
-                a = (ca > base_mask) ? base_mask : ca;
+                r = (cr > calc_type(base_mask)) ? calc_type(base_mask) : cr;
+                g = (cg > calc_type(base_mask)) ? calc_type(base_mask) : cg;
+                b = (cb > calc_type(base_mask)) ? calc_type(base_mask) : cb;
+                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
             }
         }
 
@@ -603,9 +603,9 @@ namespace agg
             calc_type r_ = (calc_type(r) * base_mask) / a;
             calc_type g_ = (calc_type(g) * base_mask) / a;
             calc_type b_ = (calc_type(b) * base_mask) / a;
-            r = value_type((r_ > base_mask) ? base_mask : r_);
-            g = value_type((g_ > base_mask) ? base_mask : g_);
-            b = value_type((b_ > base_mask) ? base_mask : b_);
+            r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
+            g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
+            b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
             return *this;
         }
 
@@ -633,10 +633,10 @@ namespace agg
                 }
                 else
                 {
-                    cr = r + c.r; r = (cr > base_mask) ? base_mask : cr;
-                    cg = g + c.g; g = (cg > base_mask) ? base_mask : cg;
-                    cb = b + c.b; b = (cb > base_mask) ? base_mask : cb;
-                    ca = a + c.a; a = (ca > base_mask) ? base_mask : ca;
+                    cr = r + c.r; r = (cr > calc_type(base_mask)) ? calc_type(base_mask) : cr;
+                    cg = g + c.g; g = (cg > calc_type(base_mask)) ? calc_type(base_mask) : cg;
+                    cb = b + c.b; b = (cb > calc_type(base_mask)) ? calc_type(base_mask) : cb;
+                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
                 }
             }
             else
@@ -645,10 +645,10 @@ namespace agg
                 cg = g + ((c.g * cover + cover_mask) >> cover_shift);
                 cb = b + ((c.b * cover + cover_mask) >> cover_shift);
                 ca = a + ((c.a * cover + cover_mask) >> cover_shift);
-                r = (cr > base_mask) ? base_mask : cr;
-                g = (cg > base_mask) ? base_mask : cg;
-                b = (cb > base_mask) ? base_mask : cb;
-                a = (ca > base_mask) ? base_mask : ca;
+                r = (cr > calc_type(base_mask)) ? calc_type(base_mask) : cr;
+                g = (cg > calc_type(base_mask)) ? calc_type(base_mask) : cg;
+                b = (cb > calc_type(base_mask)) ? calc_type(base_mask) : cb;
+                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
             }
         }
 
