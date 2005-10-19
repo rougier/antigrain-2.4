@@ -139,16 +139,6 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add(const rgba& c)
-        {
-            double t;
-            t = r + c.r; r = (t > 1.0) ? 1.0 : t;
-            t = g + c.g; g = (t > 1.0) ? 1.0 : t;
-            t = b + c.b; b = (t > 1.0) ? 1.0 : t;
-            t = a + c.a; a = (t > 1.0) ? 1.0 : t;
-        }
-
-        //--------------------------------------------------------------------
         static rgba no_color() { return rgba(0,0,0,0); }
 
         //--------------------------------------------------------------------
@@ -306,7 +296,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& premultiply()
+        AGG_INLINE const self_type& premultiply()
         {
             if(a == base_mask) return *this;
             if(a == 0)
@@ -321,7 +311,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& premultiply(unsigned a_)
+        AGG_INLINE const self_type& premultiply(unsigned a_)
         {
             if(a == base_mask && a_ >= base_mask) return *this;
             if(a == 0 || a_ == 0)
@@ -340,7 +330,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& demultiply()
+        AGG_INLINE const self_type& demultiply()
         {
             if(a == base_mask) return *this;
             if(a == 0)
@@ -358,7 +348,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        self_type gradient(const self_type& c, double k) const
+        AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
             calc_type ik = calc_type(k * base_size);
@@ -370,13 +360,52 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add(const self_type& c)
+        AGG_INLINE void add(const self_type& c, unsigned cover)
         {
-            calc_type t;
-            t = r + c.r; r = (t > base_mask) ? base_mask : t;
-            t = g + c.g; g = (t > base_mask) ? base_mask : t;
-            t = b + c.b; b = (t > base_mask) ? base_mask : t;
-            t = a + c.a; a = (t > base_mask) ? base_mask : t;
+            calc_type cr, cg, cb, ca;
+            if(cover == cover_mask)
+            {
+                if(c.a == base_mask) 
+                {
+                    *this = c;
+                }
+                else
+                {
+                    cr = r + c.r; r = (cr > base_mask) ? base_mask : cr;
+                    cg = g + c.g; g = (cg > base_mask) ? base_mask : cg;
+                    cb = b + c.b; b = (cb > base_mask) ? base_mask : cb;
+                    ca = a + c.a; a = (ca > base_mask) ? base_mask : ca;
+                }
+            }
+            else
+            {
+                cr = r + ((c.r * cover + cover_mask) >> cover_shift);
+                cg = g + ((c.g * cover + cover_mask) >> cover_shift);
+                cb = b + ((c.b * cover + cover_mask) >> cover_shift);
+                ca = a + ((c.a * cover + cover_mask) >> cover_shift);
+                r = (cr > base_mask) ? base_mask : cr;
+                g = (cg > base_mask) ? base_mask : cg;
+                b = (cb > base_mask) ? base_mask : cb;
+                a = (ca > base_mask) ? base_mask : ca;
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_dir(const GammaLUT& gamma)
+        {
+            r = gamma.dir(r);
+            g = gamma.dir(g);
+            b = gamma.dir(b);
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_inv(const GammaLUT& gamma)
+        {
+            r = gamma.inv(r);
+            g = gamma.inv(g);
+            b = gamma.inv(b);
         }
 
         //--------------------------------------------------------------------
@@ -514,7 +543,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& opacity(double a_)
+        AGG_INLINE const self_type& opacity(double a_)
         {
             if(a_ < 0.0) a_ = 0.0;
             if(a_ > 1.0) a_ = 1.0;
@@ -529,7 +558,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& premultiply()
+        AGG_INLINE const self_type& premultiply()
         {
             if(a == base_mask) return *this;
             if(a == 0)
@@ -544,7 +573,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& premultiply(unsigned a_)
+        AGG_INLINE const self_type& premultiply(unsigned a_)
         {
             if(a == base_mask && a_ >= base_mask) return *this;
             if(a == 0 || a_ == 0)
@@ -563,7 +592,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& demultiply()
+        AGG_INLINE const self_type& demultiply()
         {
             if(a == base_mask) return *this;
             if(a == 0)
@@ -581,7 +610,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        self_type gradient(const self_type& c, double k) const
+        AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
             calc_type ik = calc_type(k * base_size);
@@ -593,13 +622,52 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add(const self_type& c)
+        AGG_INLINE void add(const self_type& c, unsigned cover)
         {
-            calc_type t;
-            t = r + c.r; r = (t > base_mask) ? base_mask : t;
-            t = g + c.g; g = (t > base_mask) ? base_mask : t;
-            t = b + c.b; b = (t > base_mask) ? base_mask : t;
-            t = a + c.a; a = (t > base_mask) ? base_mask : t;
+            calc_type cr, cg, cb, ca;
+            if(cover == cover_mask)
+            {
+                if(c.a == base_mask) 
+                {
+                    *this = c;
+                }
+                else
+                {
+                    cr = r + c.r; r = (cr > base_mask) ? base_mask : cr;
+                    cg = g + c.g; g = (cg > base_mask) ? base_mask : cg;
+                    cb = b + c.b; b = (cb > base_mask) ? base_mask : cb;
+                    ca = a + c.a; a = (ca > base_mask) ? base_mask : ca;
+                }
+            }
+            else
+            {
+                cr = r + ((c.r * cover + cover_mask) >> cover_shift);
+                cg = g + ((c.g * cover + cover_mask) >> cover_shift);
+                cb = b + ((c.b * cover + cover_mask) >> cover_shift);
+                ca = a + ((c.a * cover + cover_mask) >> cover_shift);
+                r = (cr > base_mask) ? base_mask : cr;
+                g = (cg > base_mask) ? base_mask : cg;
+                b = (cb > base_mask) ? base_mask : cb;
+                a = (ca > base_mask) ? base_mask : ca;
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_dir(const GammaLUT& gamma)
+        {
+            r = gamma.dir(r);
+            g = gamma.dir(g);
+            b = gamma.dir(b);
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_inv(const GammaLUT& gamma)
+        {
+            r = gamma.inv(r);
+            g = gamma.inv(g);
+            b = gamma.inv(b);
         }
 
         //--------------------------------------------------------------------
