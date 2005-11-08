@@ -413,7 +413,8 @@ namespace agg
             init(cp[0], cp[1], cp[2], cp[3], cp[4], cp[5], cp[6], cp[7]);
         }
 
-        void approximation_method(curve_approximation_method_e v) {}
+        void approximation_method(curve_approximation_method_e) {}
+
         curve_approximation_method_e approximation_method() const 
         { 
             return curve_div; 
