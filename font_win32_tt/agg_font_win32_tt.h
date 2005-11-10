@@ -116,7 +116,7 @@ namespace agg
         const font_engine_win32_tt_base& operator = (const font_engine_win32_tt_base&);
 
         void update_signature();
-        static bool pair_less(const KERNINGPAIR v1, const KERNINGPAIR v2);
+//        static bool pair_less(const KERNINGPAIR v1, const KERNINGPAIR v2);
         void load_kerning_pairs();
         void sort_kerning_pairs();
         int  find_font(const char* name) const;

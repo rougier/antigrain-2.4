@@ -51,6 +51,20 @@ namespace agg
                ((y < clip_box.y1) << 3);
     }
 
+    //--------------------------------------------------------clipping_flags_x
+    template<class T>
+    inline unsigned clipping_flags_x(T x, const rect_base<T>& clip_box)
+    {
+        return  (x > clip_box.x2) | ((x < clip_box.x1) << 2);
+    }
+
+
+    //--------------------------------------------------------clipping_flags_y
+    template<class T>
+    inline unsigned clipping_flags_y(T y, const rect_base<T>& clip_box)
+    {
+        return ((y > clip_box.y2) << 1) | ((y < clip_box.y1) << 3);
+    }
 
 
     //-------------------------------------------------------clip_liang_barsky
@@ -202,8 +216,120 @@ namespace agg
         }
         return np;
     }
+
     
 
+
+
+    inline unsigned clip_segment(double x1, double y1, double x2, double y2,
+                                 const rect_d& clip_box,
+                                 double* x, double* y)
+    {
+        unsigned f1 = clipping_flags(x1, y1, clip_box);
+        unsigned f2 = clipping_flags(x2, y2, clip_box);
+        unsigned np = 0;
+
+        if((f1 & 10) == (f2 & 10) && (f1 & 10) != 0)
+        {
+            return 0;
+        }
+
+        switch(((f1 & 5) << 1) | (f2 & 5))
+        {
+        case 0: // Visible by X
+            x[0] = x1;
+            y[0] = y1;
+            x[1] = x2;
+            y[1] = y2;
+            np = 2;
+            break;
+
+        case 1: // x2 > clip.x2
+            x[0] = x1;
+            y[0] = y1;
+            x[1] = clip_box.x2;
+            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = clip_box.x2;
+            y[2] = y2;
+            np = 3;
+            break;
+
+        case 2: // x1 > clip.x2
+            x[0] = clip_box.x2;
+            y[0] = y1;
+            x[1] = clip_box.x2;
+            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = x2;
+            y[2] = y2;
+            np = 3;
+            break;
+
+        case 3: // x1 > clip.x2 && x2 > clip.x2
+            x[0] = clip_box.x2;
+            y[0] = y1;
+            x[1] = clip_box.x2;
+            y[1] = y2;
+            np = 2;
+            break;
+
+        case 4: // x2 < clip.x1
+            x[0] = x1;
+            y[0] = y1;
+            x[1] = clip_box.x1;
+            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = clip_box.x1;
+            y[2] = y2;
+            np = 3;
+            break;
+
+        case 6: // x1 > clip.x2 && x2 < clip.x1
+            x[0] = clip_box.x2;
+            y[0] = y1;
+            x[1] = clip_box.x2;
+            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = clip_box.x1;
+            y[2] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
+            x[3] = clip_box.x1;
+            y[3] = y2;
+            np = 4;
+            break;
+
+        case 8: // x1 < clip.x1
+            x[0] = clip_box.x1;
+            y[0] = y1;
+            x[1] = clip_box.x1;
+            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = x2;
+            y[2] = y2;
+            np = 3;
+            break;
+
+        case 9:  // x1 < clip.x1 && x2 > clip.x2
+            x[0] = clip_box.x1;
+            y[0] = y1;
+            x[1] = clip_box.x1;
+            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
+            x[2] = clip_box.x2;
+            y[2] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
+            x[3] = clip_box.x2;
+            y[3] = y2;
+            np = 4;
+            break;
+
+        case 12: // x1 < clip.x1 && x2 < clip.x1
+            x[0] = clip_box.x1;
+            y[0] = y1;
+            x[1] = clip_box.x1;
+            y[1] = y2;
+            np = 2;
+            break;
+        }
+        return np;
+    }
+
+
+
 }
+
 
 #endif

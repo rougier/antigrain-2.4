@@ -84,10 +84,8 @@ namespace agg
         rasterizer_cells_aa();
 
         void reset();
-
-        void seed_cell(const cell_type& seed);
-        void move_to(int x, int y);
-        void line_to(int x, int y);
+        void style(const cell_type& style_cell);
+        void line(int x1, int y1, int x2, int y2);
 
         int min_x() const { return m_min_x; }
         int min_y() const { return m_min_y; }
@@ -117,25 +115,22 @@ namespace agg
         rasterizer_cells_aa(const self_type&);
         const self_type& operator = (const self_type&);
 
-        void set_cur_cell(int x, int y);
-        void add_cur_cell();
+        void set_curr_cell(int x, int y);
+        void add_curr_cell();
         void render_hline(int ey, int x1, int y1, int x2, int y2);
-        void render_line(int x1, int y1, int x2, int y2);
         void allocate_block();
         
     private:
         unsigned    m_num_blocks;
         unsigned    m_max_blocks;
-        unsigned    m_cur_block;
+        unsigned    m_curr_block;
         unsigned    m_num_cells;
         cell_type** m_cells;
-        cell_type*  m_cur_cell_ptr;
+        cell_type*  m_curr_cell_ptr;
         pod_vector<cell_type*> m_sorted_cells;
         pod_vector<sorted_y>   m_sorted_y;
-        cell_type   m_cur_cell;
-        cell_type   m_seed_cell;
-        int         m_cur_x;
-        int         m_cur_y;
+        cell_type   m_curr_cell;
+        cell_type   m_style_cell;
         int         m_min_x;
         int         m_min_y;
         int         m_max_x;
@@ -167,22 +162,20 @@ namespace agg
     rasterizer_cells_aa<Cell>::rasterizer_cells_aa() :
         m_num_blocks(0),
         m_max_blocks(0),
-        m_cur_block(0),
+        m_curr_block(0),
         m_num_cells(0),
         m_cells(0),
-        m_cur_cell_ptr(0),
+        m_curr_cell_ptr(0),
         m_sorted_cells(),
         m_sorted_y(),
-        m_cur_x(0),
-        m_cur_y(0),
         m_min_x(0x7FFFFFFF),
         m_min_y(0x7FFFFFFF),
         m_max_x(-0x7FFFFFFF),
         m_max_y(-0x7FFFFFFF),
         m_sorted(false)
     {
-        m_seed_cell.initial();
-        m_cur_cell = m_seed_cell;
+        m_style_cell.initial();
+        m_curr_cell.initial();
     }
 
     //------------------------------------------------------------------------
@@ -190,8 +183,9 @@ namespace agg
     void rasterizer_cells_aa<Cell>::reset()
     {
         m_num_cells = 0; 
-        m_cur_block = 0;
-        m_cur_cell = m_seed_cell;
+        m_curr_block = 0;
+        m_curr_cell.initial();
+        m_style_cell.initial();
         m_sorted = false;
         m_min_x =  0x7FFFFFFF;
         m_min_y =  0x7FFFFFFF;
@@ -201,75 +195,36 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class Cell> 
-    void rasterizer_cells_aa<Cell>::seed_cell(const cell_type& seed)
+    AGG_INLINE void rasterizer_cells_aa<Cell>::add_curr_cell()
     {
-        m_seed_cell = seed;
-    }
-
-    //------------------------------------------------------------------------
-    template<class Cell> 
-    void rasterizer_cells_aa<Cell>::move_to(int x, int y)
-    {
-        if(m_sorted) reset();
-
-        int ex = x >> poly_base_shift;
-        int ey = y >> poly_base_shift;
-        if(m_cur_cell.x != ex || 
-           m_cur_cell.y != ey || 
-           m_cur_cell != m_seed_cell)
-        {
-            add_cur_cell();
-            m_cur_cell = m_seed_cell;
-            m_cur_cell.x = ex;
-            m_cur_cell.y = ey;
-            m_cur_cell.cover = 0;
-            m_cur_cell.area  = 0;
-        }
-        m_cur_x = x;
-        m_cur_y = y;
-    }
-
-    //------------------------------------------------------------------------
-    template<class Cell> 
-    void rasterizer_cells_aa<Cell>::line_to(int x, int y)
-    {
-        render_line(m_cur_x, m_cur_y, x, y);
-        m_cur_x = x;
-        m_cur_y = y;
-        m_sorted = false;
-    }
-
-    //------------------------------------------------------------------------
-    template<class Cell> 
-    AGG_INLINE void rasterizer_cells_aa<Cell>::set_cur_cell(int x, int y)
-    {
-        if(m_cur_cell.x != x || m_cur_cell.y != y)
-        {
-            add_cur_cell();
-            m_cur_cell.x = x;
-            m_cur_cell.y = y;
-            m_cur_cell.cover = 0;
-            m_cur_cell.area  = 0;
-        }
-    }
-
-    //------------------------------------------------------------------------
-    template<class Cell> 
-    AGG_INLINE void rasterizer_cells_aa<Cell>::add_cur_cell()
-    {
-        if(m_cur_cell.area | m_cur_cell.cover)
+        if(m_curr_cell.area | m_curr_cell.cover)
         {
             if((m_num_cells & cell_block_mask) == 0)
             {
                 if(m_num_blocks >= cell_block_limit) return;
                 allocate_block();
             }
-            *m_cur_cell_ptr++ = m_cur_cell;
+            *m_curr_cell_ptr++ = m_curr_cell;
             ++m_num_cells;
-            if(m_cur_cell.x < m_min_x) m_min_x = m_cur_cell.x;
-            if(m_cur_cell.x > m_max_x) m_max_x = m_cur_cell.x;
-            if(m_cur_cell.y < m_min_y) m_min_y = m_cur_cell.y;
-            if(m_cur_cell.y > m_max_y) m_max_y = m_cur_cell.y;
+            //if(m_curr_cell.x < m_min_x) m_min_x = m_curr_cell.x;
+            //if(m_curr_cell.x > m_max_x) m_max_x = m_curr_cell.x;
+            //if(m_curr_cell.y < m_min_y) m_min_y = m_curr_cell.y;
+            //if(m_curr_cell.y > m_max_y) m_max_y = m_curr_cell.y;
+        }
+    }
+
+    //------------------------------------------------------------------------
+    template<class Cell> 
+    AGG_INLINE void rasterizer_cells_aa<Cell>::set_curr_cell(int x, int y)
+    {
+        if(m_curr_cell.not_equal(x, y, m_style_cell))
+        {
+            add_curr_cell();
+            m_curr_cell.style(m_style_cell);
+            m_curr_cell.x     = x;
+            m_curr_cell.y     = y;
+            m_curr_cell.cover = 0;
+            m_curr_cell.area  = 0;
         }
     }
 
@@ -290,7 +245,7 @@ namespace agg
         //trivial case. Happens often
         if(y1 == y2)
         {
-            set_cur_cell(ex2, ey);
+            set_curr_cell(ex2, ey);
             return;
         }
 
@@ -298,8 +253,8 @@ namespace agg
         if(ex1 == ex2)
         {
             delta = y2 - y1;
-            m_cur_cell.cover += delta;
-            m_cur_cell.area  += (fx1 + fx2) * delta;
+            m_curr_cell.cover += delta;
+            m_curr_cell.area  += (fx1 + fx2) * delta;
             return;
         }
 
@@ -328,11 +283,11 @@ namespace agg
             mod += dx;
         }
 
-        m_cur_cell.cover += delta;
-        m_cur_cell.area  += (fx1 + first) * delta;
+        m_curr_cell.cover += delta;
+        m_curr_cell.area  += (fx1 + first) * delta;
 
         ex1 += incr;
-        set_cur_cell(ex1, ey);
+        set_curr_cell(ex1, ey);
         y1  += delta;
 
         if(ex1 != ex2)
@@ -359,21 +314,28 @@ namespace agg
                     delta++;
                 }
 
-                m_cur_cell.cover += delta;
-                m_cur_cell.area  += poly_base_size * delta;
+                m_curr_cell.cover += delta;
+                m_curr_cell.area  += poly_base_size * delta;
                 y1  += delta;
                 ex1 += incr;
-                set_cur_cell(ex1, ey);
+                set_curr_cell(ex1, ey);
             }
         }
         delta = y2 - y1;
-        m_cur_cell.cover += delta;
-        m_cur_cell.area  += (fx2 + poly_base_size - first) * delta;
+        m_curr_cell.cover += delta;
+        m_curr_cell.area  += (fx2 + poly_base_size - first) * delta;
     }
 
     //------------------------------------------------------------------------
     template<class Cell> 
-    void rasterizer_cells_aa<Cell>::render_line(int x1, int y1, int x2, int y2)
+    AGG_INLINE void rasterizer_cells_aa<Cell>::style(const cell_type& style_cell)
+    { 
+        m_style_cell.style(style_cell); 
+    }
+
+    //------------------------------------------------------------------------
+    template<class Cell> 
+    void rasterizer_cells_aa<Cell>::line(int x1, int y1, int x2, int y2)
     {
         enum dx_limit_e { dx_limit = 16384 << poly_base_shift };
 
@@ -383,11 +345,13 @@ namespace agg
         {
             int cx = (x1 + x2) >> 1;
             int cy = (y1 + y2) >> 1;
-            render_line(x1, y1, cx, cy);
-            render_line(cx, cy, x2, y2);
+            line(x1, y1, cx, cy);
+            line(cx, cy, x2, y2);
         }
 
         int dy = y2 - y1;
+        int ex1 = x1 >> poly_base_shift;
+        int ex2 = x2 >> poly_base_shift;
         int ey1 = y1 >> poly_base_shift;
         int ey2 = y2 >> poly_base_shift;
         int fy1 = y1 & poly_base_mask;
@@ -395,6 +359,17 @@ namespace agg
 
         int x_from, x_to;
         int p, rem, mod, lift, delta, first, incr;
+
+        if(ex1 < m_min_x) m_min_x = ex1;
+        if(ex1 > m_max_x) m_max_x = ex1;
+        if(ey1 < m_min_y) m_min_y = ey1;
+        if(ey1 > m_max_y) m_max_y = ey1;
+        if(ex2 < m_min_x) m_min_x = ex2;
+        if(ex2 > m_max_x) m_max_x = ex2;
+        if(ey2 < m_min_y) m_min_y = ey2;
+        if(ey2 > m_max_y) m_max_y = ey2;
+
+        set_curr_cell(ex1, ey1);
 
         //everything is on a single hline
         if(ey1 == ey2)
@@ -425,26 +400,26 @@ namespace agg
 
             //render_hline(ey1, x_from, fy1, x_from, first);
             delta = first - fy1;
-            m_cur_cell.cover += delta;
-            m_cur_cell.area  += two_fx * delta;
+            m_curr_cell.cover += delta;
+            m_curr_cell.area  += two_fx * delta;
 
             ey1 += incr;
-            set_cur_cell(ex, ey1);
+            set_curr_cell(ex, ey1);
 
             delta = first + first - poly_base_size;
             area = two_fx * delta;
             while(ey1 != ey2)
             {
                 //render_hline(ey1, x_from, poly_base_size - first, x_from, first);
-                m_cur_cell.cover = delta;
-                m_cur_cell.area  = area;
+                m_curr_cell.cover = delta;
+                m_curr_cell.area  = area;
                 ey1 += incr;
-                set_cur_cell(ex, ey1);
+                set_curr_cell(ex, ey1);
             }
             //render_hline(ey1, x_from, poly_base_size - first, x_from, fy2);
             delta = fy2 - poly_base_size + first;
-            m_cur_cell.cover += delta;
-            m_cur_cell.area  += two_fx * delta;
+            m_curr_cell.cover += delta;
+            m_curr_cell.area  += two_fx * delta;
             return;
         }
 
@@ -473,7 +448,7 @@ namespace agg
         render_hline(ey1, x1, fy1, x_from, first);
 
         ey1 += incr;
-        set_cur_cell(x_from >> poly_base_shift, ey1);
+        set_curr_cell(x_from >> poly_base_shift, ey1);
 
         if(ey1 != ey2)
         {
@@ -503,7 +478,7 @@ namespace agg
                 x_from = x_to;
 
                 ey1 += incr;
-                set_cur_cell(x_from >> poly_base_shift, ey1);
+                set_curr_cell(x_from >> poly_base_shift, ey1);
             }
         }
         render_hline(ey1, x_from, poly_base_size - first, x2, fy2);
@@ -513,7 +488,7 @@ namespace agg
     template<class Cell> 
     void rasterizer_cells_aa<Cell>::allocate_block()
     {
-        if(m_cur_block >= m_num_blocks)
+        if(m_curr_block >= m_num_blocks)
         {
             if(m_num_blocks >= m_max_blocks)
             {
@@ -528,7 +503,7 @@ namespace agg
             }
             m_cells[m_num_blocks++] = new cell_type [unsigned(cell_block_size)];
         }
-        m_cur_cell_ptr = m_cells[m_cur_block++];
+        m_curr_cell_ptr = m_cells[m_curr_block++];
     }
 
 
@@ -665,9 +640,22 @@ namespace agg
     {
         if(m_sorted) return; //Perform sort only the first time.
 
-        add_cur_cell();
+        add_curr_cell();
 
         if(m_num_cells == 0) return;
+
+
+//for(unsigned nc = 0; nc < m_num_cells; nc++)
+//{
+//    cell_type* cell = m_cells[nc >> cell_block_shift] + (nc & cell_block_mask);
+//    if(cell->x < m_min_x || 
+//       cell->y < m_min_y || 
+//       cell->x > m_max_x || 
+//       cell->y > m_max_y)
+//    {
+//        cell = cell;
+//    }
+//}
 
         // Allocate the array of cell pointers
         m_sorted_cells.allocate(m_num_cells, 16);
@@ -718,9 +706,9 @@ namespace agg
             i = cell_block_size;
             while(i--) 
             {
-                sorted_y& cur_y = m_sorted_y[cell_ptr->y - m_min_y];
-                m_sorted_cells[cur_y.start + cur_y.num] = cell_ptr;
-                ++cur_y.num;
+                sorted_y& curr_y = m_sorted_y[cell_ptr->y - m_min_y];
+                m_sorted_cells[curr_y.start + curr_y.num] = cell_ptr;
+                ++curr_y.num;
                 ++cell_ptr;
             }
         }
@@ -729,19 +717,19 @@ namespace agg
         i = m_num_cells & cell_block_mask;
         while(i--) 
         {
-            sorted_y& cur_y = m_sorted_y[cell_ptr->y - m_min_y];
-            m_sorted_cells[cur_y.start + cur_y.num] = cell_ptr;
-            ++cur_y.num;
+            sorted_y& curr_y = m_sorted_y[cell_ptr->y - m_min_y];
+            m_sorted_cells[curr_y.start + curr_y.num] = cell_ptr;
+            ++curr_y.num;
             ++cell_ptr;
         }
 
         // Finally arrange the X-arrays
         for(i = 0; i < m_sorted_y.size(); i++)
         {
-            const sorted_y& cur_y = m_sorted_y[i];
-            if(cur_y.num)
+            const sorted_y& curr_y = m_sorted_y[i];
+            if(curr_y.num)
             {
-                qsort_cells(m_sorted_cells.data() + cur_y.start, cur_y.num);
+                qsort_cells(m_sorted_cells.data() + curr_y.start, curr_y.num);
             }
         }
         m_sorted = true;

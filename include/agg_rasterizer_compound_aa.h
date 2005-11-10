@@ -30,6 +30,7 @@
 #define AGG_RASTERIZER_COMPOUND_AA_INCLUDED
 
 #include "agg_rasterizer_cells_aa.h"
+#include "agg_clip_liang_barsky.h"
 
 namespace agg
 {
@@ -56,10 +57,17 @@ namespace agg
             right = -1;
         }
 
-        bool operator != (const cell_style_aa& c) const
+        void style(const cell_style_aa& c)
         {
-            return left != c.left || right != c.right;
+            left  = c.left;
+            right = c.right;
         }
+
+        int not_equal(int ex, int ey, const cell_style_aa& c) const
+        {
+            return (ex - x) | (ey - y) | (left - c.left) | (right - c.right);
+        }
+
     };
 
     //------------------------------------------------------------------------
@@ -96,13 +104,19 @@ namespace agg
 
         //--------------------------------------------------------------------
         rasterizer_compound_aa() : 
+            m_clip_box(0,0,0,0),
+            m_clipping(false),
             m_min_style(0x7FFFFFFF),
-            m_max_style(-0x7FFFFFFF)
-        {
-        }
+            m_max_style(-0x7FFFFFFF),
+            m_curr_x(0),
+            m_curr_y(0),
+            m_curr_flags(0)
+        {}
 
         //--------------------------------------------------------------------
         void reset(); 
+        void clip_box(double x1, double y1, double x2, double y2);
+        void reset_clipping();
         void styles(int left, int right);
         void add_vertex(double x, double y, unsigned cmd);
         void move_to(int x, int y);
@@ -120,6 +134,7 @@ namespace agg
 
             unsigned cmd;
             vs.rewind(path_id);
+            if(m_outline.sorted()) reset();
             while(!is_stop(cmd = vs.vertex(&x, &y)))
             {
                 add_vertex(x, y, cmd);
@@ -138,7 +153,6 @@ namespace agg
         //--------------------------------------------------------------------
         void sort();
         bool rewind_scanlines();
-        void add_style(int style_id);
         unsigned sweep_styles();
         unsigned style(unsigned style_idx) const;
 
@@ -146,27 +160,18 @@ namespace agg
         AGG_INLINE unsigned calculate_alpha(int area) const
         {
             int cover = area >> (poly_base_shift*2 + 1 - aa_shift);
-
             if(cover < 0) cover = -cover;
-
-            //cover &= aa_2mask;
-            //if(cover > aa_num)
-            //{
-            //    cover = aa_2num - cover;
-            //}
-
             if(cover > aa_mask) cover = aa_mask;
             return cover;
         }
-
 
         //--------------------------------------------------------------------
         // Sweeps one scanline with one style index. The style ID can be 
         // determined by calling style(). 
         template<class Scanline> bool sweep_scanline(Scanline& sl, int style_idx)
         {
-            int cur_y = m_cur_y - 1;
-            if(cur_y > m_outline.max_y()) return false;
+            int curr_y = m_curr_y - 1;
+            if(curr_y > m_outline.max_y()) return false;
 
             sl.reset_spans();
 
@@ -207,12 +212,18 @@ namespace agg
             }
 
             if(sl.num_spans() == 0) return false;
-            sl.finalize(cur_y);
+            sl.finalize(curr_y);
             return true;
 
         }
 
     private:
+        void add_style(int style_id);
+        void line_to_clipped(int x2, int y2, unsigned flags);
+        void line_clip_y(int x1, int y1, int x2, int y2, unsigned f1, unsigned f2);
+        void line_clip_y2(int x1, int y1, int x2, int y2, int x3, int y3);
+        void line_clip_y3(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
+
         //--------------------------------------------------------------------
         // Disable copying
         rasterizer_compound_aa(const rasterizer_compound_aa<XScale, AA_Shift>&);
@@ -226,9 +237,13 @@ namespace agg
         pod_vector<int8u>      m_asm;     // Active Style Mask 
         pod_vector<cell_info>  m_cells;
 
-        int m_min_style;
-        int m_max_style;
-        int m_cur_y;
+        rect_i   m_clip_box;
+        bool     m_clipping;
+        int      m_min_style;
+        int      m_max_style;
+        int      m_curr_x;
+        int      m_curr_y;
+        unsigned m_curr_flags;
     };
 
 
@@ -251,13 +266,32 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::clip_box(double x1, double y1, double x2, double y2)
+    {
+        reset();
+        m_clip_box = rect_i(poly_coord(x1), poly_coord(y1),
+                            poly_coord(x2), poly_coord(y2));
+        m_clip_box.normalize();
+        m_clipping = true;
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::reset_clipping()
+    {
+        reset();
+        m_clipping = false;
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_compound_aa<XScale, AA_Shift>::styles(int left, int right)
     {
         cell_style_aa cell;
         cell.initial();
         cell.left = (int16)left;
         cell.right = (int16)right;
-        m_outline.seed_cell(cell);
+        m_outline.style(cell);
         if(left  >= 0 && left  < m_min_style) m_min_style = left;
         if(left  >= 0 && left  > m_max_style) m_max_style = left;
         if(right >= 0 && right < m_min_style) m_min_style = right;
@@ -268,19 +302,206 @@ namespace agg
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_compound_aa<XScale, AA_Shift>::move_to(int x, int y)
     {
-        if(m_outline.sorted()) 
+        if(m_outline.sorted()) reset();
+        m_curr_x = x;
+        m_curr_y = y;
+        if(m_clipping)
         {
-            reset();
+            m_curr_flags = clipping_flags(x, y, m_clip_box);
         }
-        m_outline.move_to(x * XScale, y); 
     }
 
+    //------------------------------------------------------------------------
+    inline int mul_div(double a, double b, double c)
+    {
+        return (int)(a * b / c);
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y(int x1, int y1, 
+                                                               int x2, int y2, 
+                                                               unsigned f1, 
+                                                               unsigned f2)
+    {
+        f1 &= 10;
+        f2 &= 10;
+        if((f1 | f2) == 0)
+        {
+            // Fully visible
+            m_outline.line(x1 * XScale, y1, x2 * XScale, y2); 
+        }
+        else
+        {
+            if(f1 == f2)
+            {
+                // Invisible by Y
+                return;
+            }
+
+            int tx1 = x1;
+            int ty1 = y1;
+            int tx2 = x2;
+            int ty2 = y2;
+
+            if(f1 & 8) // y1 < clip.y1
+            {
+                tx1 = x1 + mul_div(m_clip_box.y1 - y1, x2 - x1, y2 - y1);
+                ty1 = m_clip_box.y1;
+            }
+
+            if(f1 & 2) // y1 > clip.y2
+            {
+                tx1 = x1 + mul_div(m_clip_box.y2 - y1, x2 - x1, y2 - y1);
+                ty1 = m_clip_box.y2;
+            }
+
+            if(f2 & 8) // y2 < clip.y1
+            {
+                tx2 = x1 + mul_div(m_clip_box.y1 - y1, x2 - x1, y2 - y1);
+                ty2 = m_clip_box.y1;
+            }
+
+            if(f2 & 2) // y2 > clip.y2
+            {
+                tx2 = x1 + mul_div(m_clip_box.y2 - y1, x2 - x1, y2 - y1);
+                ty2 = m_clip_box.y2;
+            }
+            m_outline.line(tx1 * XScale, ty1, tx2 * XScale, ty2); 
+        }
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y2(int x1, int y1, 
+                                                                int x2, int y2, 
+                                                                int x3, int y3)
+    {
+        unsigned flags2 = clipping_flags_y(y2, m_clip_box);
+        line_clip_y(x1, y1, x2, y2, clipping_flags_y(y1, m_clip_box), flags2);
+        line_clip_y(x2, y2, x3, y3, flags2, clipping_flags_y(y3, m_clip_box));
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y3(int x1, int y1, 
+                                                                int x2, int y2, 
+                                                                int x3, int y3, 
+                                                                int x4, int y4)
+    {
+        unsigned flags2 = clipping_flags_y(y2, m_clip_box);
+        unsigned flags3 = clipping_flags_y(y3, m_clip_box);
+        line_clip_y(x1, y1, x2, y2, clipping_flags_y(y1, m_clip_box), flags2);
+        line_clip_y(x2, y2, x3, y3, flags2, flags3);
+        line_clip_y(x3, y3, x4, y4, flags3, clipping_flags_y(y4, m_clip_box));
+    }
+
+    //------------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_compound_aa<XScale, AA_Shift>::line_to_clipped(int x2, 
+                                                                   int y2,
+                                                                   unsigned flags)
+    {
+        if((m_curr_flags & 10) == (flags & 10) && (m_curr_flags & 10) != 0)
+        {
+            // Invisible by Y
+            return;
+        }
+
+        int x1 = m_curr_x;
+        int y1 = m_curr_y;
+
+        switch(((m_curr_flags & 5) << 1) | (flags & 5))
+        {
+        case 0: // Visible by X
+            line_clip_y(x1, y1, x2, y2, m_curr_flags, flags);
+            break;
+
+        case 1: // x2 > clip.x2
+            line_clip_y2(x1,
+                         y1, 
+                         m_clip_box.x2, 
+                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x2, 
+                         y2);
+            break;
+
+        case 2: // x1 > clip.x2
+            line_clip_y2(m_clip_box.x2,
+                         y1,
+                         m_clip_box.x2,
+                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
+                         x2,
+                         y2);
+            break;
+
+        case 3: // x1 > clip.x2 && x2 > clip.x2
+            line_clip_y(m_clip_box.x2, y1, m_clip_box.x2, y2, m_curr_flags, flags);
+            break;
+
+        case 4: // x2 < clip.x1
+            line_clip_y2(x1,
+                         y1,
+                         m_clip_box.x1,
+                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x1,
+                         y2);
+            break;
+
+        case 6: // x1 > clip.x2 && x2 < clip.x1
+            line_clip_y3(m_clip_box.x2,
+                         y1,
+                         m_clip_box.x2,
+                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x1,
+                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x1,
+                         y2);
+            break;
+
+        case 8: // x1 < clip.x1
+            line_clip_y2(m_clip_box.x1, 
+                         y1,
+                         m_clip_box.x1,
+                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
+                         x2,
+                         y2);
+            break;
+
+        case 9:  // x1 < clip.x1 && x2 > clip.x2
+            line_clip_y3(m_clip_box.x1,
+                         y1,
+                         m_clip_box.x1,
+                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x2,
+                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
+                         m_clip_box.x2,
+                         y2);
+            break;
+
+        case 12: // x1 < clip.x1 && x2 < clip.x1
+            line_clip_y(m_clip_box.x1, y1, m_clip_box.x1, y2, m_curr_flags, flags);
+            break;
+        }
+
+    }
 
     //------------------------------------------------------------------------
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_compound_aa<XScale, AA_Shift>::line_to(int x, int y)
     {
-        m_outline.line_to(x * XScale, y); 
+        if(m_clipping)
+        {
+            unsigned flags = clipping_flags(x, y, m_clip_box);
+            line_to_clipped(x, y, flags);
+            m_curr_flags = flags;
+        }
+        else
+        {
+            m_outline.line(m_curr_x * XScale, m_curr_y, x * XScale, y); 
+        }
+        m_curr_x = x;
+        m_curr_y = y;
     }
 
 
@@ -321,6 +542,7 @@ namespace agg
                                                           const double* y, 
                                                           unsigned n)
     {
+        if(m_outline.sorted()) reset();
         if(n > 2)
         {
             move_to_d(*x++, *y++);
@@ -353,7 +575,7 @@ namespace agg
         {
             return false;
         }
-        m_cur_y = m_outline.min_y();
+        m_curr_y = m_outline.min_y();
         m_styles.allocate(m_max_style - m_min_style + 2, 128);
         return true;
     }
@@ -388,11 +610,11 @@ namespace agg
     {
         for(;;)
         {
-            if(m_cur_y > m_outline.max_y()) return 0;
-            unsigned num_cells = m_outline.scanline_num_cells(m_cur_y);
-            const cell_style_aa* const* cells = m_outline.scanline_cells(m_cur_y);
+            if(m_curr_y > m_outline.max_y()) return 0;
+            unsigned num_cells = m_outline.scanline_num_cells(m_curr_y);
+            const cell_style_aa* const* cells = m_outline.scanline_cells(m_curr_y);
             unsigned num_styles = m_max_style - m_min_style + 2;
-            const cell_style_aa* cur_cell;
+            const cell_style_aa* curr_cell;
             unsigned style_id;
             style_info* style;
             cell_info* cell;
@@ -413,9 +635,9 @@ namespace agg
 
             while(num_cells--)
             {
-                cur_cell = *cells++;
-                add_style(cur_cell->left);
-                add_style(cur_cell->right);
+                curr_cell = *cells++;
+                add_style(curr_cell->left);
+                add_style(curr_cell->right);
             }
 
             // Convert the Y-histogram into the array of starting indexes
@@ -429,56 +651,56 @@ namespace agg
                 start_cell += v;
             }
 
-            cells = m_outline.scanline_cells(m_cur_y);
-            num_cells = m_outline.scanline_num_cells(m_cur_y);
+            cells = m_outline.scanline_cells(m_curr_y);
+            num_cells = m_outline.scanline_num_cells(m_curr_y);
 
             while(num_cells--)
             {
-                cur_cell = *cells++;
-                style_id = (cur_cell->left < 0) ? 0 : 
-                            cur_cell->left - m_min_style + 1;
+                curr_cell = *cells++;
+                style_id = (curr_cell->left < 0) ? 0 : 
+                            curr_cell->left - m_min_style + 1;
 
                 style = &m_styles[style_id];
-                if(cur_cell->x == style->last_x)
+                if(curr_cell->x == style->last_x)
                 {
                     cell = &m_cells[style->start_cell + style->num_cells - 1];
-                    cell->area  += cur_cell->area;
-                    cell->cover += cur_cell->cover;
+                    cell->area  += curr_cell->area;
+                    cell->cover += curr_cell->cover;
                 }
                 else
                 {
                     cell = &m_cells[style->start_cell + style->num_cells];
-                    cell->x       = cur_cell->x;
-                    cell->area    = cur_cell->area;
-                    cell->cover   = cur_cell->cover;
-                    style->last_x = cur_cell->x;
+                    cell->x       = curr_cell->x;
+                    cell->area    = curr_cell->area;
+                    cell->cover   = curr_cell->cover;
+                    style->last_x = curr_cell->x;
                     style->num_cells++;
                 }
 
-                style_id = (cur_cell->right < 0) ? 0 : 
-                            cur_cell->right - m_min_style + 1;
+                style_id = (curr_cell->right < 0) ? 0 : 
+                            curr_cell->right - m_min_style + 1;
 
                 style = &m_styles[style_id];
-                if(cur_cell->x == style->last_x)
+                if(curr_cell->x == style->last_x)
                 {
                     cell = &m_cells[style->start_cell + style->num_cells - 1];
-                    cell->area  -= cur_cell->area;
-                    cell->cover -= cur_cell->cover;
+                    cell->area  -= curr_cell->area;
+                    cell->cover -= curr_cell->cover;
                 }
                 else
                 {
                     cell = &m_cells[style->start_cell + style->num_cells];
-                    cell->x       =  cur_cell->x;
-                    cell->area    = -cur_cell->area;
-                    cell->cover   = -cur_cell->cover;
-                    style->last_x =  cur_cell->x;
+                    cell->x       =  curr_cell->x;
+                    cell->area    = -curr_cell->area;
+                    cell->cover   = -curr_cell->cover;
+                    style->last_x =  curr_cell->x;
                     style->num_cells++;
                 }
             }
-            if(m_ast.size()) break;
-            ++m_cur_y;
+            if(m_ast.size() > 1) break;
+            ++m_curr_y;
         }
-        ++m_cur_y;
+        ++m_curr_y;
         return m_ast.size() - 1;
     }
 

@@ -379,10 +379,10 @@ namespace agg
             }
             else
             {
-                cr = r + ((c.r * cover + cover_mask) >> cover_shift);
-                cg = g + ((c.g * cover + cover_mask) >> cover_shift);
-                cb = b + ((c.b * cover + cover_mask) >> cover_shift);
-                ca = a + ((c.a * cover + cover_mask) >> cover_shift);
+                cr = r + ((c.r * cover + cover_mask/2) >> cover_shift);
+                cg = g + ((c.g * cover + cover_mask/2) >> cover_shift);
+                cb = b + ((c.b * cover + cover_mask/2) >> cover_shift);
+                ca = a + ((c.a * cover + cover_mask/2) >> cover_shift);
                 r = (cr > calc_type(base_mask)) ? calc_type(base_mask) : cr;
                 g = (cg > calc_type(base_mask)) ? calc_type(base_mask) : cg;
                 b = (cb > calc_type(base_mask)) ? calc_type(base_mask) : cb;

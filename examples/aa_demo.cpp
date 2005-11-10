@@ -212,7 +212,7 @@ public:
         ps.line_to(m_x[0], m_y[0]);
         ras.add_path(pg);
         agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0,150,160, 200));
- 
+
         // Render the controls
         agg::render_ctrl(ras, sl, ren, m_slider1);
         agg::render_ctrl(ras, sl, ren, m_slider2);

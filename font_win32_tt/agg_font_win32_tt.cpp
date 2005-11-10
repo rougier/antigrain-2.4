@@ -833,8 +833,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool font_engine_win32_tt_base::pair_less(const KERNINGPAIR v1, 
-                                              const KERNINGPAIR v2)
+    static bool pair_less(const KERNINGPAIR& v1, const KERNINGPAIR& v2)
     {
         if(v1.wFirst != v2.wFirst) return v1.wFirst < v2.wFirst;
         return v1.wSecond < v2.wSecond;

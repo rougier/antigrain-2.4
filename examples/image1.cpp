@@ -120,7 +120,8 @@ public:
 */
 
 
-        agg::rasterizer_scanline_aa<> pf;
+        agg::rasterizer_scanline_aa<> ras;
+        ras.clip_box(0, 0, width(), height());
         agg::scanline_u8 sl;
         double r = initial_width();
         if(initial_height() - 60 < r) r = initial_height() - 60;
@@ -132,11 +133,11 @@ public:
 
         agg::conv_transform<agg::ellipse> tr(ell, src_mtx);
 
-        pf.add_path(tr);
-        agg::render_scanlines_aa(pf, sl, rb_pre, sa, sg);
+        ras.add_path(tr);
+        agg::render_scanlines_aa(ras, sl, rb_pre, sa, sg);
 
-        agg::render_ctrl(pf, sl, rb, m_angle);
-        agg::render_ctrl(pf, sl, rb, m_scale);
+        agg::render_ctrl(ras, sl, rb, m_angle);
+        agg::render_ctrl(ras, sl, rb, m_scale);
     }
 
 };

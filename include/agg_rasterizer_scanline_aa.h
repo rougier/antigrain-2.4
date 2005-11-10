@@ -57,38 +57,14 @@ namespace agg
             area  = 0;
         }
 
-        bool operator != (const cell_aa&) const
+        void style(const cell_aa&) {}
+
+        int not_equal(int ex, int ey, const cell_aa&) const
         {
-            return false;
+            return (ex - x) | (ey - y);
         }
+
     };
-
-
-
-    //------------------------------------------------------scanline_hit_test
-    class scanline_hit_test
-    {
-    public:
-        scanline_hit_test(int x) : m_x(x), m_hit(false) {}
-
-        void reset_spans() {}
-        void finalize(int) {}
-        void add_cell(int x, int)
-        {
-            if(m_x == x) m_hit = true;
-        }
-        void add_span(int x, int len, int)
-        {
-            if(m_x >= x && m_x < x+len) m_hit = true;
-        }
-        unsigned num_spans() const { return 1; }
-        bool hit() const { return m_hit; }
-
-    private:
-        int  m_x;
-        bool m_hit;
-    };
-
 
 
     //----------------------------------------------------------filling_rule_e
@@ -206,18 +182,40 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add_vertex(double x, double y, unsigned cmd);
         void move_to(int x, int y);
         void line_to(int x, int y);
         void close_polygon();
         void move_to_d(double x, double y);
         void line_to_d(double x, double y);
+        void add_vertex(double x, double y, unsigned cmd);
+        void add_xy(const double* x, const double* y, unsigned n);
+
+        //-------------------------------------------------------------------
+        template<class VertexSource>
+        void add_path(VertexSource& vs, unsigned path_id=0)
+        {
+            double x;
+            double y;
+
+            unsigned cmd;
+            vs.rewind(path_id);
+            if(m_outline.sorted()) reset();
+            while(!is_stop(cmd = vs.vertex(&x, &y)))
+            {
+                add_vertex(x, y, cmd);
+            }
+        }
         
         //--------------------------------------------------------------------
         int min_x() const { return m_outline.min_x(); }
         int min_y() const { return m_outline.min_y(); }
         int max_x() const { return m_outline.max_x(); }
         int max_y() const { return m_outline.max_y(); }
+
+        //--------------------------------------------------------------------
+        void sort();
+        bool rewind_scanlines();
+        bool navigate_scanline(int y);
 
         //--------------------------------------------------------------------
         AGG_INLINE unsigned calculate_alpha(int area) const
@@ -238,50 +236,14 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE void sort()
-        {
-            m_outline.sort_cells();
-        }
-
-        //--------------------------------------------------------------------
-        AGG_INLINE bool rewind_scanlines()
-        {
-            close_polygon();
-            m_outline.sort_cells();
-            if(m_outline.total_cells() == 0) 
-            {
-                return false;
-            }
-            m_cur_y = m_outline.min_y();
-            return true;
-        }
-
-
-        //--------------------------------------------------------------------
-        AGG_INLINE bool navigate_scanline(int y)
-        {
-            close_polygon();
-            m_outline.sort_cells();
-            if(m_outline.total_cells() == 0 || 
-               y < m_outline.min_y() || 
-               y > m_outline.max_y()) 
-            {
-                return false;
-            }
-            m_cur_y = y;
-            return true;
-        }
-
-
-        //--------------------------------------------------------------------
         template<class Scanline> bool sweep_scanline(Scanline& sl)
         {
             for(;;)
             {
-                if(m_cur_y > m_outline.max_y()) return false;
+                if(m_curr_y > m_outline.max_y()) return false;
                 sl.reset_spans();
-                unsigned num_cells = m_outline.scanline_num_cells(m_cur_y);
-                const cell_aa* const* cells = m_outline.scanline_cells(m_cur_y);
+                unsigned num_cells = m_outline.scanline_num_cells(m_curr_y);
+                const cell_aa* const* cells = m_outline.scanline_cells(m_curr_y);
                 int cover = 0;
 
                 while(num_cells)
@@ -323,54 +285,16 @@ namespace agg
                 }
         
                 if(sl.num_spans()) break;
-                ++m_cur_y;
+                ++m_curr_y;
             }
 
-            sl.finalize(m_cur_y);
-            ++m_cur_y;
+            sl.finalize(m_curr_y);
+            ++m_curr_y;
             return true;
         }
 
-
         //--------------------------------------------------------------------
-        bool hit_test(int tx, int ty)
-        {
-            if(!navigate_scanline(ty)) return false;
-            scanline_hit_test sl(tx);
-            sweep_scanline(sl);
-            return sl.hit();
-        }
-
-
-        //--------------------------------------------------------------------
-        void add_xy(const double* x, const double* y, unsigned n)
-        {
-            if(n > 2)
-            {
-                move_to_d(*x++, *y++);
-                --n;
-                do
-                {
-                    line_to_d(*x++, *y++);
-                }
-                while(--n);
-            }
-        }
-
-        //-------------------------------------------------------------------
-        template<class VertexSource>
-        void add_path(VertexSource& vs, unsigned path_id=0)
-        {
-            double x;
-            double y;
-
-            unsigned cmd;
-            vs.rewind(path_id);
-            while(!is_stop(cmd = vs.vertex(&x, &y)))
-            {
-                add_vertex(x, y, cmd);
-            }
-        }
+        bool hit_test(int tx, int ty);
 
 
     private:
@@ -400,8 +324,11 @@ namespace agg
         unsigned       m_status;
         rect_i         m_clip_box;
         bool           m_clipping;
-        int            m_cur_y;
+        int            m_curr_x;
+        int            m_curr_y;
     };
+
+
 
 
 
@@ -447,18 +374,17 @@ namespace agg
     }
 
 
-
     //------------------------------------------------------------------------
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_scanline_aa<XScale, AA_Shift>::move_to_no_clip(int x, int y)
     {
+        if(m_outline.sorted()) reset();
         if(m_status == status_line_to)
         {
             close_polygon_no_clip();
         }
-        m_outline.move_to(x * XScale, y); 
-        m_clipped_start_x = x;
-        m_clipped_start_y = y;
+        m_clipped_start_x = m_curr_x = x;
+        m_clipped_start_y = m_curr_y = y;
         m_status = status_line_to;
     }
 
@@ -469,7 +395,9 @@ namespace agg
     {
         if(m_status != status_initial)
         {
-            m_outline.line_to(x * XScale, y); 
+            m_outline.line(m_curr_x * XScale, m_curr_y, x * XScale, y); 
+            m_curr_x = x;
+            m_curr_y = y;
             m_status = status_line_to;
         }
     }
@@ -481,7 +409,12 @@ namespace agg
     {
         if(m_status == status_line_to)
         {
-            m_outline.line_to(m_clipped_start_x * XScale, m_clipped_start_y);
+            m_outline.line(m_curr_x * XScale, 
+                           m_curr_y,
+                           m_clipped_start_x * XScale, 
+                           m_clipped_start_y);
+            m_curr_x = m_clipped_start_x;
+            m_curr_y = m_clipped_start_y;
             m_status = status_closed;
         }
     }
@@ -534,7 +467,6 @@ namespace agg
     }
 
 
-
     //------------------------------------------------------------------------
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_scanline_aa<XScale, AA_Shift>::add_vertex(double x, double y, unsigned cmd)
@@ -560,17 +492,13 @@ namespace agg
     }
 
 
-
     //------------------------------------------------------------------------
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_scanline_aa<XScale, AA_Shift>::move_to(int x, int y) 
     { 
+        if(m_outline.sorted()) reset();
         if(m_clipping)
         {
-            if(m_outline.sorted()) 
-            {
-                reset();
-            }
             if(m_status == status_line_to)
             {
                 close_polygon();
@@ -594,6 +522,7 @@ namespace agg
     template<unsigned XScale, unsigned AA_Shift> 
     void rasterizer_scanline_aa<XScale, AA_Shift>::line_to(int x, int y) 
     { 
+        if(m_outline.sorted()) reset();
         if(m_clipping)
         {
             clip_segment(x, y);
@@ -628,6 +557,100 @@ namespace agg
     { 
         line_to(poly_coord(x), poly_coord(y)); 
     }
+
+    //--------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_scanline_aa<XScale, AA_Shift>::add_xy(const double* x, 
+                                                          const double* y, 
+                                                          unsigned n)
+    {
+        if(m_outline.sorted()) reset();
+        if(n > 2)
+        {
+            move_to_d(*x++, *y++);
+            --n;
+            do
+            {
+                line_to_d(*x++, *y++);
+            }
+            while(--n);
+        }
+    }
+
+    //--------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    void rasterizer_scanline_aa<XScale, AA_Shift>::sort()
+    {
+        m_outline.sort_cells();
+    }
+
+    //--------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    AGG_INLINE bool rasterizer_scanline_aa<XScale, AA_Shift>::rewind_scanlines()
+    {
+        close_polygon();
+        m_outline.sort_cells();
+        if(m_outline.total_cells() == 0) 
+        {
+            return false;
+        }
+        m_curr_y = m_outline.min_y();
+        return true;
+    }
+
+
+    //--------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    AGG_INLINE bool rasterizer_scanline_aa<XScale, AA_Shift>::navigate_scanline(int y)
+    {
+        close_polygon();
+        m_outline.sort_cells();
+        if(m_outline.total_cells() == 0 || 
+           y < m_outline.min_y() || 
+           y > m_outline.max_y()) 
+        {
+            return false;
+        }
+        m_curr_y = y;
+        return true;
+    }
+
+    //------------------------------------------------------scanline_hit_test
+    class scanline_hit_test
+    {
+    public:
+        scanline_hit_test(int x) : m_x(x), m_hit(false) {}
+
+        void reset_spans() {}
+        void finalize(int) {}
+        void add_cell(int x, int)
+        {
+            if(m_x == x) m_hit = true;
+        }
+        void add_span(int x, int len, int)
+        {
+            if(m_x >= x && m_x < x+len) m_hit = true;
+        }
+        unsigned num_spans() const { return 1; }
+        bool hit() const { return m_hit; }
+
+    private:
+        int  m_x;
+        bool m_hit;
+    };
+
+
+    //--------------------------------------------------------------------
+    template<unsigned XScale, unsigned AA_Shift> 
+    bool rasterizer_scanline_aa<XScale, AA_Shift>::hit_test(int tx, int ty)
+    {
+        if(!navigate_scanline(ty)) return false;
+        scanline_hit_test sl(tx);
+        sweep_scanline(sl);
+        return sl.hit();
+    }
+
+
 
 }
 
