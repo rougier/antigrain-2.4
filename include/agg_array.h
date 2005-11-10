@@ -279,7 +279,7 @@ namespace agg
     void pod_vector<T>::deserialize(const int8u* data, unsigned byte_size)
     {
         byte_size /= sizeof(T);
-        capacity(byte_size);
+        allocate(byte_size);
         if(byte_size) memcpy(m_array, data, byte_size * sizeof(T));
     }
 
