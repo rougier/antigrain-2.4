@@ -28,7 +28,7 @@
 
 namespace agg
 {
-    //==============================================================scanline_u
+    //=============================================================scanline_u8
     //
     // Unpacked scanline container class
     //
@@ -106,12 +106,12 @@ namespace agg
     // are better, because switching between two different areas of memory 
     // (that can be very large) occurs less frequently.
     //------------------------------------------------------------------------
-    template<class CoverT> class scanline_u
+    class scanline_u8
     {
     public:
-        typedef scanline_u<CoverT> self_type;
-        typedef CoverT cover_type;
-        typedef int16  coord_type;
+        typedef scanline_u8 self_type;
+        typedef int8u       cover_type;
+        typedef int16       coord_type;
 
         //--------------------------------------------------------------------
         struct span
@@ -125,13 +125,13 @@ namespace agg
         typedef const span* const_iterator;
 
         //--------------------------------------------------------------------
-        ~scanline_u()
+        ~scanline_u8()
         {
             delete [] m_spans;
             delete [] m_covers;
         }
 
-        scanline_u() :
+        scanline_u8() :
             m_min_x(0),
             m_max_len(0),
             m_last_x(0x7FFFFFF0),
@@ -177,10 +177,10 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add_cells(int x, unsigned len, const CoverT* covers)
+        void add_cells(int x, unsigned len, const cover_type* covers)
         {
             x -= m_min_x;
-            memcpy(m_covers + x, covers, len * sizeof(CoverT));
+            memcpy(m_covers + x, covers, len * sizeof(cover_type));
             if(x == m_last_x+1)
             {
                 m_cur_span->len += (coord_type)len;
@@ -234,7 +234,7 @@ namespace agg
         iterator       begin()       { return m_spans + 1; }
 
     private:
-        scanline_u(const self_type&);
+        scanline_u8(const self_type&);
         const self_type& operator = (const self_type&);
 
     private:
@@ -249,45 +249,36 @@ namespace agg
 
 
 
-    //=============================================================scanline_u8
-    typedef scanline_u<int8u> scanline_u8;
 
-    //============================================================scanline_u16
-    typedef scanline_u<int16u> scanline_u16;
-
-    //============================================================scanline_u32
-    typedef scanline_u<int32u> scanline_u32;
-
-
-    //=============================================================scanline_am
+    //==========================================================scanline_u8_am
     // 
     // The scanline container with alpha-masking
     // 
     //------------------------------------------------------------------------
-    template<class AlphaMask, class CoverT> 
-    class scanline_am : public scanline_u<CoverT>
+    template<class AlphaMask> 
+    class scanline_u8_am : public scanline_u8
     {
     public:
-        typedef AlphaMask alpha_mask_type;
-        typedef CoverT cover_type;
-        typedef int16  coord_type;
-        typedef scanline_u<CoverT> scanline_type;
+        typedef scanline_u8           base_type;
+        typedef AlphaMask             alpha_mask_type;
+        typedef base_type::cover_type cover_type;
+        typedef base_type::coord_type coord_type;
 
-        scanline_am() : scanline_type(), m_alpha_mask(0) {}
-        scanline_am(const AlphaMask& am) : scanline_type(), m_alpha_mask(&am) {}
+        scanline_u8_am() : base_type(), m_alpha_mask(0) {}
+        scanline_u8_am(const AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
 
         //--------------------------------------------------------------------
         void finalize(int span_y)
         {
-            scanline_type::finalize(span_y);
+            base_type::finalize(span_y);
             if(m_alpha_mask)
             {
-                typename scanline_type::iterator span = scanline_type::begin();
-                unsigned count = scanline_type::num_spans();
+                typename base_type::iterator span = base_type::begin();
+                unsigned count = base_type::num_spans();
                 do
                 {
                     m_alpha_mask->combine_hspan(span->x, 
-                                                scanline_type::y(), 
+                                                base_type::y(), 
                                                 span->covers, 
                                                 span->len);
                     ++span;
@@ -301,29 +292,15 @@ namespace agg
     };
 
 
-    //==========================================================scanline_u8_am
-    template<class AlphaMask> 
-    class scanline_u8_am : public scanline_am<AlphaMask, int8u>
+
+
+    //===========================================================scanline32_u8
+    class scanline32_u8
     {
     public:
-        typedef AlphaMask alpha_mask_type;
-        typedef int8u cover_type;
-        typedef scanline_am<alpha_mask_type, cover_type> self_type;
-
-        scanline_u8_am() : self_type() {}
-        scanline_u8_am(const AlphaMask& am) : self_type(am) {}
-    };
-
-
-
-
-    //============================================================scanline32_u
-    template<class CoverT> class scanline32_u
-    {
-    public:
-        typedef scanline32_u<CoverT> self_type;
-        typedef CoverT cover_type;
-        typedef int32  coord_type;
+        typedef scanline32_u8 self_type;
+        typedef int8u         cover_type;
+        typedef int32         coord_type;
 
         //--------------------------------------------------------------------
         struct span
@@ -362,7 +339,7 @@ namespace agg
         class iterator
         {
         public:
-            iterator(const span_array_type& spans) :
+            iterator(span_array_type& spans) :
                 m_spans(spans),
                 m_span_idx(0)
             {}
@@ -380,12 +357,12 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        ~scanline32_u()
+        ~scanline32_u8()
         {
             delete [] m_covers;
         }
 
-        scanline32_u() :
+        scanline32_u8() :
             m_min_x(0),
             m_max_len(0),
             m_last_x(0x7FFFFFF0),
@@ -475,7 +452,7 @@ namespace agg
         iterator       begin()       { return iterator(m_spans); }
 
     private:
-        scanline32_u(const self_type&);
+        scanline32_u8(const self_type&);
         const self_type& operator = (const self_type&);
 
     private:
@@ -488,47 +465,38 @@ namespace agg
     };
 
 
-    //===========================================================scanline32_u8
-    typedef scanline32_u<int8u> scanline32_u8;
-
-    //==========================================================scanline32_u16
-    typedef scanline32_u<int16u> scanline32_u16;
-
-    //==========================================================scanline32_u32
-    typedef scanline32_u<int32u> scanline32_u32;
 
 
-
-
-    //===========================================================scanline32_am
+    //========================================================scanline32_u8_am
     // 
     // The scanline container with alpha-masking
     // 
     //------------------------------------------------------------------------
-    template<class AlphaMask, class CoverT> 
-    class scanline32_am : public scanline32_u<CoverT>
+    template<class AlphaMask> 
+    class scanline32_u8_am : public scanline32_u8
     {
     public:
-        typedef AlphaMask alpha_mask_type;
-        typedef CoverT cover_type;
-        typedef int32  coord_type;
-        typedef scanline32_u<CoverT> scanline_type;
+        typedef scanline_u8           base_type;
+        typedef AlphaMask             alpha_mask_type;
+        typedef base_type::cover_type cover_type;
+        typedef base_type::coord_type coord_type;
 
-        scanline32_am() : scanline_type(), m_alpha_mask(0) {}
-        scanline32_am(const AlphaMask& am) : scanline_type(), m_alpha_mask(&am) {}
+
+        scanline32_u8_am() : base_type(), m_alpha_mask(0) {}
+        scanline32_u8_am(const AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
 
         //--------------------------------------------------------------------
         void finalize(int span_y)
         {
-            scanline_type::finalize(span_y);
+            base_type::finalize(span_y);
             if(m_alpha_mask)
             {
-                typename scanline_type::iterator span = scanline_type::begin();
-                unsigned count = scanline_type::num_spans();
+                typename base_type::iterator span = base_type::begin();
+                unsigned count = base_type::num_spans();
                 do
                 {
                     m_alpha_mask->combine_hspan(span->x, 
-                                                scanline_type::y(), 
+                                                base_type::y(), 
                                                 span->covers, 
                                                 span->len);
                     ++span;
@@ -539,21 +507,6 @@ namespace agg
 
     private:
         const AlphaMask* m_alpha_mask;
-    };
-
-
-    //========================================================scanline32_u8_am
-    template<class AlphaMask> 
-    class scanline32_u8_am : public scanline32_am<AlphaMask, int8u>
-    {
-    public:
-        typedef AlphaMask alpha_mask_type;
-        typedef int8u cover_type;
-        typedef int32 coord_type;
-        typedef scanline32_am<alpha_mask_type, cover_type> self_type;
-
-        scanline32_u8_am() : self_type() {}
-        scanline32_u8_am(const AlphaMask& am) : self_type(am) {}
     };
 
 

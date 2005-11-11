@@ -30,7 +30,7 @@
 #define AGG_RASTERIZER_COMPOUND_AA_INCLUDED
 
 #include "agg_rasterizer_cells_aa.h"
-#include "agg_clip_liang_barsky.h"
+#include "agg_rasterizer_sl_clip.h"
 
 namespace agg
 {
@@ -67,19 +67,40 @@ namespace agg
         {
             return (ex - x) | (ey - y) | (left - c.left) | (right - c.right);
         }
-
     };
 
-    //------------------------------------------------------------------------
-    template<unsigned XScale=1, unsigned AA_Shift=8> class rasterizer_compound_aa
-    {
-        enum status
-        {
-            status_initial,
-            status_line_to,
-            status_closed
-        };
 
+
+    //                                        -----ras_compound_clipper_int
+    //                                        -----ras_compound_clipper_int_x3
+    //                                        -----ras_compound_clipper_dbl
+    //                                        -----ras_compound_clipper_dbl_x3
+    //                                        -----ras_compound_no_clip
+    //------------------------------------------------------------------------
+    typedef 
+        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_int>
+            ras_compound_clipper_int;
+
+    typedef 
+        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_int_x3>
+            ras_compound_clipper_int_x3;
+
+    typedef 
+        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_dbl>
+            ras_compound_clipper_dbl;
+
+    typedef 
+        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_dbl_x3>
+            ras_compound_clipper_dbl_x3;
+
+
+    typedef 
+        rasterizer_sl_no_clip<rasterizer_cells_aa<cell_style_aa> > 
+            ras_compound_no_clip;
+
+    //==================================================rasterizer_compound_aa
+    template<class Clip=ras_compound_clipper_int> class rasterizer_compound_aa
+    {
         struct style_info 
         { 
             unsigned start_cell;
@@ -93,37 +114,41 @@ namespace agg
         };
 
     public:
+        typedef Clip                     clip_type;
+        typedef typename Clip::conv_type conv_type;
+
         enum aa_scale_e
         {
-            aa_shift = AA_Shift,
-            aa_num   = 1 << aa_shift,
-            aa_mask  = aa_num - 1,
-            aa_2num  = aa_num * 2,
-            aa_2mask = aa_2num - 1
+            aa_shift  = 8,
+            aa_scale  = 1 << aa_shift,
+            aa_mask   = aa_scale - 1
         };
 
         //--------------------------------------------------------------------
         rasterizer_compound_aa() : 
-            m_clip_box(0,0,0,0),
-            m_clipping(false),
+            m_outline(),
+            m_clipper(m_outline),
+            m_styles(),  // Active Styles
+            m_ast(),     // Active Style Table (unique values)
+            m_asm(),     // Active Style Mask 
+            m_cells(),
             m_min_style(0x7FFFFFFF),
             m_max_style(-0x7FFFFFFF),
-            m_curr_x(0),
-            m_curr_y(0),
-            m_curr_flags(0)
+            m_scan_y(0x7FFFFFFF)
         {}
 
         //--------------------------------------------------------------------
         void reset(); 
-        void clip_box(double x1, double y1, double x2, double y2);
         void reset_clipping();
+        void clip_box(double x1, double y1, double x2, double y2);
+
+        //--------------------------------------------------------------------
         void styles(int left, int right);
-        void add_vertex(double x, double y, unsigned cmd);
         void move_to(int x, int y);
         void line_to(int x, int y);
         void move_to_d(double x, double y);
         void line_to_d(double x, double y);
-        void add_xy(const double* x, const double* y, unsigned n);
+        void add_vertex(double x, double y, unsigned cmd);
 
         //-------------------------------------------------------------------
         template<class VertexSource>
@@ -170,8 +195,8 @@ namespace agg
         // determined by calling style(). 
         template<class Scanline> bool sweep_scanline(Scanline& sl, int style_idx)
         {
-            int curr_y = m_curr_y - 1;
-            if(curr_y > m_outline.max_y()) return false;
+            int scan_y = m_scan_y - 1;
+            if(scan_y > m_outline.max_y()) return false;
 
             sl.reset_spans();
 
@@ -212,38 +237,31 @@ namespace agg
             }
 
             if(sl.num_spans() == 0) return false;
-            sl.finalize(curr_y);
+            sl.finalize(scan_y);
             return true;
 
         }
 
     private:
         void add_style(int style_id);
-        void line_to_clipped(int x2, int y2, unsigned flags);
-        void line_clip_y(int x1, int y1, int x2, int y2, unsigned f1, unsigned f2);
-        void line_clip_y2(int x1, int y1, int x2, int y2, int x3, int y3);
-        void line_clip_y3(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
         //--------------------------------------------------------------------
         // Disable copying
-        rasterizer_compound_aa(const rasterizer_compound_aa<XScale, AA_Shift>&);
-        const rasterizer_compound_aa<XScale, AA_Shift>& 
-            operator = (const rasterizer_compound_aa<XScale, AA_Shift>&);
+        rasterizer_compound_aa(const rasterizer_compound_aa<Clip>&);
+        const rasterizer_compound_aa<Clip>& 
+        operator = (const rasterizer_compound_aa<Clip>&);
 
     private:
         rasterizer_cells_aa<cell_style_aa> m_outline;
+        clip_type              m_clipper;
         pod_vector<style_info> m_styles;  // Active Styles
         pod_vector<unsigned>   m_ast;     // Active Style Table (unique values)
         pod_vector<int8u>      m_asm;     // Active Style Mask 
         pod_vector<cell_info>  m_cells;
 
-        rect_i   m_clip_box;
-        bool     m_clipping;
         int      m_min_style;
         int      m_max_style;
-        int      m_curr_x;
-        int      m_curr_y;
-        unsigned m_curr_flags;
+        int      m_scan_y;
     };
 
 
@@ -256,36 +274,36 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::reset() 
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::reset() 
     { 
         m_outline.reset(); 
         m_min_style =  0x7FFFFFFF;
         m_max_style = -0x7FFFFFFF;
+        m_scan_y    =  0x7FFFFFFF;
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::clip_box(double x1, double y1, double x2, double y2)
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::clip_box(double x1, double y1, 
+                                                double x2, double y2)
     {
         reset();
-        m_clip_box = rect_i(poly_coord(x1), poly_coord(y1),
-                            poly_coord(x2), poly_coord(y2));
-        m_clip_box.normalize();
-        m_clipping = true;
+        m_clipper.clip_box(conv_type::upscale(x1), conv_type::upscale(y1), 
+                           conv_type::upscale(x2), conv_type::upscale(y2));
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::reset_clipping()
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::reset_clipping()
     {
         reset();
-        m_clipping = false;
+        m_clipper.reset_clipping();
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::styles(int left, int right)
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::styles(int left, int right)
     {
         cell_style_aa cell;
         cell.initial();
@@ -299,272 +317,62 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::move_to(int x, int y)
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::move_to(int x, int y)
     {
         if(m_outline.sorted()) reset();
-        m_curr_x = x;
-        m_curr_y = y;
-        if(m_clipping)
-        {
-            m_curr_flags = clipping_flags(x, y, m_clip_box);
-        }
+        m_clipper.move_to(conv_type::downscale(x), conv_type::downscale(y));
     }
 
     //------------------------------------------------------------------------
-    inline int mul_div(double a, double b, double c)
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::line_to(int x, int y)
     {
-        return (int)(a * b / c);
+        m_clipper.line_to(conv_type::downscale(x), conv_type::downscale(y));
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y(int x1, int y1, 
-                                                               int x2, int y2, 
-                                                               unsigned f1, 
-                                                               unsigned f2)
-    {
-        f1 &= 10;
-        f2 &= 10;
-        if((f1 | f2) == 0)
-        {
-            // Fully visible
-            m_outline.line(x1 * XScale, y1, x2 * XScale, y2); 
-        }
-        else
-        {
-            if(f1 == f2)
-            {
-                // Invisible by Y
-                return;
-            }
-
-            int tx1 = x1;
-            int ty1 = y1;
-            int tx2 = x2;
-            int ty2 = y2;
-
-            if(f1 & 8) // y1 < clip.y1
-            {
-                tx1 = x1 + mul_div(m_clip_box.y1 - y1, x2 - x1, y2 - y1);
-                ty1 = m_clip_box.y1;
-            }
-
-            if(f1 & 2) // y1 > clip.y2
-            {
-                tx1 = x1 + mul_div(m_clip_box.y2 - y1, x2 - x1, y2 - y1);
-                ty1 = m_clip_box.y2;
-            }
-
-            if(f2 & 8) // y2 < clip.y1
-            {
-                tx2 = x1 + mul_div(m_clip_box.y1 - y1, x2 - x1, y2 - y1);
-                ty2 = m_clip_box.y1;
-            }
-
-            if(f2 & 2) // y2 > clip.y2
-            {
-                tx2 = x1 + mul_div(m_clip_box.y2 - y1, x2 - x1, y2 - y1);
-                ty2 = m_clip_box.y2;
-            }
-            m_outline.line(tx1 * XScale, ty1, tx2 * XScale, ty2); 
-        }
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::move_to_d(double x, double y) 
+    { 
+        if(m_outline.sorted()) reset();
+        m_clipper.move_to(conv_type::upscale(x), conv_type::upscale(y)); 
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y2(int x1, int y1, 
-                                                                int x2, int y2, 
-                                                                int x3, int y3)
-    {
-        unsigned flags2 = clipping_flags_y(y2, m_clip_box);
-        line_clip_y(x1, y1, x2, y2, clipping_flags_y(y1, m_clip_box), flags2);
-        line_clip_y(x2, y2, x3, y3, flags2, clipping_flags_y(y3, m_clip_box));
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::line_to_d(double x, double y) 
+    { 
+        m_clipper.line_to(conv_type::upscale(x), conv_type::upscale(y)); 
     }
 
     //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_clip_y3(int x1, int y1, 
-                                                                int x2, int y2, 
-                                                                int x3, int y3, 
-                                                                int x4, int y4)
-    {
-        unsigned flags2 = clipping_flags_y(y2, m_clip_box);
-        unsigned flags3 = clipping_flags_y(y3, m_clip_box);
-        line_clip_y(x1, y1, x2, y2, clipping_flags_y(y1, m_clip_box), flags2);
-        line_clip_y(x2, y2, x3, y3, flags2, flags3);
-        line_clip_y(x3, y3, x4, y4, flags3, clipping_flags_y(y4, m_clip_box));
-    }
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_to_clipped(int x2, 
-                                                                   int y2,
-                                                                   unsigned flags)
-    {
-        if((m_curr_flags & 10) == (flags & 10) && (m_curr_flags & 10) != 0)
-        {
-            // Invisible by Y
-            return;
-        }
-
-        int x1 = m_curr_x;
-        int y1 = m_curr_y;
-
-        switch(((m_curr_flags & 5) << 1) | (flags & 5))
-        {
-        case 0: // Visible by X
-            line_clip_y(x1, y1, x2, y2, m_curr_flags, flags);
-            break;
-
-        case 1: // x2 > clip.x2
-            line_clip_y2(x1,
-                         y1, 
-                         m_clip_box.x2, 
-                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x2, 
-                         y2);
-            break;
-
-        case 2: // x1 > clip.x2
-            line_clip_y2(m_clip_box.x2,
-                         y1,
-                         m_clip_box.x2,
-                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
-                         x2,
-                         y2);
-            break;
-
-        case 3: // x1 > clip.x2 && x2 > clip.x2
-            line_clip_y(m_clip_box.x2, y1, m_clip_box.x2, y2, m_curr_flags, flags);
-            break;
-
-        case 4: // x2 < clip.x1
-            line_clip_y2(x1,
-                         y1,
-                         m_clip_box.x1,
-                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x1,
-                         y2);
-            break;
-
-        case 6: // x1 > clip.x2 && x2 < clip.x1
-            line_clip_y3(m_clip_box.x2,
-                         y1,
-                         m_clip_box.x2,
-                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x1,
-                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x1,
-                         y2);
-            break;
-
-        case 8: // x1 < clip.x1
-            line_clip_y2(m_clip_box.x1, 
-                         y1,
-                         m_clip_box.x1,
-                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
-                         x2,
-                         y2);
-            break;
-
-        case 9:  // x1 < clip.x1 && x2 > clip.x2
-            line_clip_y3(m_clip_box.x1,
-                         y1,
-                         m_clip_box.x1,
-                         y1 + mul_div(m_clip_box.x1 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x2,
-                         y1 + mul_div(m_clip_box.x2 - x1, y2 - y1, x2 - x1),
-                         m_clip_box.x2,
-                         y2);
-            break;
-
-        case 12: // x1 < clip.x1 && x2 < clip.x1
-            line_clip_y(m_clip_box.x1, y1, m_clip_box.x1, y2, m_curr_flags, flags);
-            break;
-        }
-
-    }
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_to(int x, int y)
-    {
-        if(m_clipping)
-        {
-            unsigned flags = clipping_flags(x, y, m_clip_box);
-            line_to_clipped(x, y, flags);
-            m_curr_flags = flags;
-        }
-        else
-        {
-            m_outline.line(m_curr_x * XScale, m_curr_y, x * XScale, y); 
-        }
-        m_curr_x = x;
-        m_curr_y = y;
-    }
-
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::add_vertex(double x, double y, unsigned cmd)
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::add_vertex(double x, double y, unsigned cmd)
     {
         if(is_move_to(cmd)) 
         {
-            move_to(poly_coord(x), poly_coord(y));
+            move_to_d(x, y);
         }
         else 
         {
             if(is_vertex(cmd))
             {
-                line_to(poly_coord(x), poly_coord(y));
+                line_to_d(x, y);
             }
-        }
-    }
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::move_to_d(double x, double y) 
-    { 
-        move_to(poly_coord(x), poly_coord(y)); 
-    }
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::line_to_d(double x, double y) 
-    { 
-        line_to(poly_coord(x), poly_coord(y)); 
-    }
-
-    //------------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    void rasterizer_compound_aa<XScale, AA_Shift>::add_xy(const double* x, 
-                                                          const double* y, 
-                                                          unsigned n)
-    {
-        if(m_outline.sorted()) reset();
-        if(n > 2)
-        {
-            move_to_d(*x++, *y++);
-            --n;
-            do
-            {
-                line_to_d(*x++, *y++);
-            }
-            while(--n);
         }
     }
 
     //--------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    AGG_INLINE void rasterizer_compound_aa<XScale, AA_Shift>::sort()
+    template<class Clip> 
+    AGG_INLINE void rasterizer_compound_aa<Clip>::sort()
     {
         m_outline.sort_cells();
     }
 
     //--------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    AGG_INLINE bool rasterizer_compound_aa<XScale, AA_Shift>::rewind_scanlines()
+    template<class Clip> 
+    AGG_INLINE bool rasterizer_compound_aa<Clip>::rewind_scanlines()
     {
         m_outline.sort_cells();
         if(m_outline.total_cells() == 0) 
@@ -575,15 +383,14 @@ namespace agg
         {
             return false;
         }
-        m_curr_y = m_outline.min_y();
+        m_scan_y = m_outline.min_y();
         m_styles.allocate(m_max_style - m_min_style + 2, 128);
         return true;
     }
 
     //--------------------------------------------------------------------
-    template<unsigned XScale, unsigned AA_Shift> 
-    AGG_INLINE void 
-    rasterizer_compound_aa<XScale, AA_Shift>::add_style(int style_id)
+    template<class Clip> 
+    AGG_INLINE void rasterizer_compound_aa<Clip>::add_style(int style_id)
     {
         if(style_id < 0) style_id  = 0;
         else             style_id -= m_min_style - 1;
@@ -605,14 +412,14 @@ namespace agg
 
     //--------------------------------------------------------------------
     // Returns the number of styles
-    template<unsigned XScale, unsigned AA_Shift> 
-    unsigned rasterizer_compound_aa<XScale, AA_Shift>::sweep_styles()
+    template<class Clip> 
+    unsigned rasterizer_compound_aa<Clip>::sweep_styles()
     {
         for(;;)
         {
-            if(m_curr_y > m_outline.max_y()) return 0;
-            unsigned num_cells = m_outline.scanline_num_cells(m_curr_y);
-            const cell_style_aa* const* cells = m_outline.scanline_cells(m_curr_y);
+            if(m_scan_y > m_outline.max_y()) return 0;
+            unsigned num_cells = m_outline.scanline_num_cells(m_scan_y);
+            const cell_style_aa* const* cells = m_outline.scanline_cells(m_scan_y);
             unsigned num_styles = m_max_style - m_min_style + 2;
             const cell_style_aa* curr_cell;
             unsigned style_id;
@@ -651,8 +458,8 @@ namespace agg
                 start_cell += v;
             }
 
-            cells = m_outline.scanline_cells(m_curr_y);
-            num_cells = m_outline.scanline_num_cells(m_curr_y);
+            cells = m_outline.scanline_cells(m_scan_y);
+            num_cells = m_outline.scanline_num_cells(m_scan_y);
 
             while(num_cells--)
             {
@@ -698,17 +505,17 @@ namespace agg
                 }
             }
             if(m_ast.size() > 1) break;
-            ++m_curr_y;
+            ++m_scan_y;
         }
-        ++m_curr_y;
+        ++m_scan_y;
         return m_ast.size() - 1;
     }
 
     //--------------------------------------------------------------------
     // Returns style ID depending of the existing style index
-    template<unsigned XScale, unsigned AA_Shift> 
-    AGG_INLINE unsigned 
-    rasterizer_compound_aa<XScale, AA_Shift>::style(unsigned style_idx) const
+    template<class Clip> 
+    AGG_INLINE 
+    unsigned rasterizer_compound_aa<Clip>::style(unsigned style_idx) const
     {
         return m_ast[style_idx + 1] + m_min_style - 1;
     }

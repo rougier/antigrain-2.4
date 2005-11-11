@@ -32,18 +32,19 @@
 namespace agg
 {
 
-    //==============================================================scanline_p
+    //=============================================================scanline_p8
     // 
     // This is a general purpose scaline container which supports the interface 
-    // used in the rasterizer::render(). See description of agg_scanline_u
+    // used in the rasterizer::render(). See description of scanline_u8
     // for details.
     // 
     //------------------------------------------------------------------------
-    template<class CoverT> class scanline_p
+    class scanline_p8
     {
     public:
-        typedef CoverT cover_type;
-        typedef int16  coord_type;
+        typedef scanline_p8 self_type;
+        typedef int8u       cover_type;
+        typedef int16       coord_type;
 
         //--------------------------------------------------------------------
         struct span
@@ -57,13 +58,13 @@ namespace agg
         typedef const span* const_iterator;
 
         //--------------------------------------------------------------------
-        ~scanline_p()
+        ~scanline_p8()
         {
             delete [] m_spans;
             delete [] m_covers;
         }
 
-        scanline_p() :
+        scanline_p8() :
             m_max_len(0),
             m_last_x(0x7FFFFFF0),
             m_covers(0),
@@ -81,7 +82,7 @@ namespace agg
             {
                 delete [] m_spans;
                 delete [] m_covers;
-                m_covers  = new CoverT [max_len];
+                m_covers  = new cover_type [max_len];
                 m_spans   = new span [max_len];
                 m_max_len = max_len;
             }
@@ -94,7 +95,7 @@ namespace agg
         //--------------------------------------------------------------------
         void add_cell(int x, unsigned cover)
         {
-            *m_cover_ptr = (CoverT)cover;
+            *m_cover_ptr = (cover_type)cover;
             if(x == m_last_x+1 && m_cur_span->len > 0)
             {
                 m_cur_span->len++;
@@ -111,9 +112,9 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void add_cells(int x, unsigned len, const CoverT* covers)
+        void add_cells(int x, unsigned len, const cover_type* covers)
         {
-            memcpy(m_cover_ptr, covers, len * sizeof(CoverT));
+            memcpy(m_cover_ptr, covers, len * sizeof(cover_type));
             if(x == m_last_x+1 && m_cur_span->len > 0)
             {
                 m_cur_span->len += (int16)len;
@@ -140,7 +141,7 @@ namespace agg
             }
             else
             {
-                *m_cover_ptr = (CoverT)cover;
+                *m_cover_ptr = (cover_type)cover;
                 m_cur_span++;
                 m_cur_span->covers = m_cover_ptr++;
                 m_cur_span->x      = (int16)x;
@@ -170,43 +171,32 @@ namespace agg
         const_iterator begin()     const { return m_spans + 1; }
 
     private:
-        scanline_p(const scanline_p<CoverT>&);
-        const scanline_p<CoverT>& operator = (const scanline_p<CoverT>&);
+        scanline_p8(const self_type&);
+        const self_type& operator = (const self_type&);
 
-        unsigned m_max_len;
-        int      m_last_x;
-        int      m_y;
-        CoverT*  m_covers;
-        CoverT*  m_cover_ptr;
-        span*    m_spans;
-        span*    m_cur_span;
+        unsigned    m_max_len;
+        int         m_last_x;
+        int         m_y;
+        cover_type* m_covers;
+        cover_type* m_cover_ptr;
+        span*       m_spans;
+        span*       m_cur_span;
     };
 
 
-    //=============================================================scanline_p8
-    typedef scanline_p<int8u> scanline_p8;
-
-    //============================================================scanline_p16
-    typedef scanline_p<int16u> scanline_p16;
-
-    //============================================================scanline_p32
-    typedef scanline_p<int32u> scanline_p32;
 
 
 
 
 
 
-
-
-
-    //===========================================================scanline32_p
-    template<class CoverT> class scanline32_p
+    //==========================================================scanline32_p8
+    class scanline32_p8
     {
     public:
-        typedef CoverT cover_type;
-        typedef int32  coord_type;
-        typedef scanline32_p<cover_type> scanline_type;
+        typedef scanline32_p8 self_type;
+        typedef int8u         cover_type;
+        typedef int32         coord_type;
 
         struct span
         {
@@ -241,12 +231,12 @@ namespace agg
         };
 
         //--------------------------------------------------------------------
-        ~scanline32_p()
+        ~scanline32_p8()
         {
             delete [] m_covers;
         }
 
-        scanline32_p() :
+        scanline32_p8() :
             m_max_len(0),
             m_last_x(0x7FFFFFF0),
             m_covers(0),
@@ -339,8 +329,8 @@ namespace agg
         const_iterator begin()     const { return const_iterator(m_spans); }
 
     private:
-        scanline32_p(const scanline_type&);
-        const scanline_type& operator = (const scanline_type&);
+        scanline32_p8(const self_type&);
+        const self_type& operator = (const self_type&);
 
         unsigned        m_max_len;
         int             m_last_x;
@@ -349,19 +339,6 @@ namespace agg
         cover_type*     m_cover_ptr;
         span_array_type m_spans;
     };
-
-
-
-    //===========================================================scanline32_p8
-    typedef scanline32_p<int8u> scanline32_p8;
-
-    //==========================================================scanline32_p16
-    typedef scanline32_p<int16u> scanline32_p16;
-
-    //==========================================================scanline32_p32
-    typedef scanline32_p<int32u> scanline32_p32;
-
-
 
 
 }

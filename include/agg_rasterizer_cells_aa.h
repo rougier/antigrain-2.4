@@ -56,6 +56,12 @@ namespace agg
         return int(c * poly_base_size);
     }
 
+    //----------------------------------------------------------poly_coord_inv
+    inline double poly_coord_inv(int c)
+    {
+        return double(c) / double(poly_base_size);
+    }
+
     //-----------------------------------------------------rasterizer_cells_aa
     // An internal class that implements the main rasterization algorithm.
     // Used in the rasterizer. Should not be used direcly.
