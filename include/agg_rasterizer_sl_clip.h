@@ -16,12 +16,49 @@
 #define AGG_RASTERIZER_SL_CLIP_INCLUDED
 
 #include "agg_clip_liang_barsky.h"
-#include "agg_rasterizer_cells_aa.h"
 
 namespace agg
 {
-
     //------------------------------------------------------------------------
+    // These constants determine the subpixel accuracy, to be more precise, 
+    // the number of bits of the fractional part of the coordinates. 
+    // The possible coordinate capacity in bits can be calculated by formula:
+    // sizeof(int) * 8 - poly_base_shift * 2, i.e, for 32-bit integers and
+    // 8-bits fractional part the capacity is 16 bits or [-32768...32767].
+    enum poly_base_scale_e
+    {
+        poly_base_shift = 8,                       //----poly_base_shift
+        poly_base_size  = 1 << poly_base_shift,    //----poly_base_size 
+        poly_base_mask  = poly_base_size - 1,      //----poly_base_mask 
+
+        poly_max_coord    =   2147483647,          //----poly_max_coord   
+        poly_min_coord    =  -2147483647,          //----poly_min_coord   
+        poly_max_coord_3x =   poly_max_coord / 3,  //----poly_max_coord_3x
+        poly_min_coord_3x = -(poly_max_coord / 3)  //----poly_min_coord_3x
+    };
+    
+    //--------------------------------------------------------------poly_coord
+    AGG_INLINE int poly_coord(double c)
+    {
+        return int(c * poly_base_size);
+    }
+
+    //----------------------------------------------------------poly_coord_sat
+    AGG_INLINE int poly_coord_sat(double c)
+    {
+        double v = c * poly_base_size;
+        if(v < (double)poly_min_coord) v = (double)poly_min_coord;
+        if(v > (double)poly_max_coord) v = (double)poly_max_coord;
+        return (int)v;
+    }
+
+    //----------------------------------------------------------poly_coord_inv
+    inline double poly_coord_inv(int c)
+    {
+        return double(c) / double(poly_base_size);
+    }
+
+    //------------------------------------------------------------ras_conv_int
     struct ras_conv_int
     {
         typedef int coord_type;
@@ -35,7 +72,24 @@ namespace agg
         static int downscale(int v)  { return v; }
     };
 
-    //------------------------------------------------------------------------
+    //--------------------------------------------------------ras_conv_int_sat
+    struct ras_conv_int_sat
+    {
+        typedef int coord_type;
+        static AGG_INLINE int mul_div(double a, double b, double c)
+        {
+            double v = (a * b / c);
+            if(v < (double)poly_min_coord) v = (double)poly_min_coord;
+            if(v > (double)poly_max_coord) v = (double)poly_max_coord;
+            return (int)v;
+        }
+        static int xi(int v) { return v; }
+        static int yi(int v) { return v; }
+        static int upscale(double v) { return poly_coord_sat(v); }
+        static int downscale(int v)  { return v; }
+    };
+
+    //---------------------------------------------------------ras_conv_int_3x
     struct ras_conv_int_3x
     {
         typedef int coord_type;
@@ -49,8 +103,7 @@ namespace agg
         static int downscale(int v)  { return v; }
     };
 
-
-    //------------------------------------------------------------------------
+    //-----------------------------------------------------------ras_conv_dbl
     struct ras_conv_dbl
     {
         typedef double coord_type;
@@ -64,7 +117,7 @@ namespace agg
         static double downscale(int v)  { return poly_coord_inv(v); }
     };
 
-    //------------------------------------------------------------------------
+    //--------------------------------------------------------ras_conv_dbl_3x
     struct ras_conv_dbl_3x
     {
         typedef double coord_type;
@@ -127,7 +180,7 @@ namespace agg
         AGG_INLINE void line_clip_y(Rasterizer& ras,
                                     coord_type x1, coord_type y1, 
                                     coord_type x2, coord_type y2, 
-                                    unsigned   f1, unsigned   f2)
+                                    unsigned   f1, unsigned   f2) const
         {
             f1 &= 10;
             f2 &= 10;
@@ -313,15 +366,17 @@ namespace agg
     };
 
 
-    //                                          -----rasterizer_sl_clip_int
-    //                                          -----rasterizer_sl_clip_int_3x
-    //                                          -----rasterizer_sl_clip_dbl
-    //                                          -----rasterizer_sl_clip_dbl_3x
+    //                                         -----rasterizer_sl_clip_int
+    //                                         -----rasterizer_sl_clip_int_sat
+    //                                         -----rasterizer_sl_clip_int_3x
+    //                                         -----rasterizer_sl_clip_dbl
+    //                                         -----rasterizer_sl_clip_dbl_3x
     //------------------------------------------------------------------------
-    typedef rasterizer_sl_clip<ras_conv_int>    rasterizer_sl_clip_int;
-    typedef rasterizer_sl_clip<ras_conv_int_3x> rasterizer_sl_clip_int_3x;
-    typedef rasterizer_sl_clip<ras_conv_dbl>    rasterizer_sl_clip_dbl;
-    typedef rasterizer_sl_clip<ras_conv_dbl_3x> rasterizer_sl_clip_dbl_3x;
+    typedef rasterizer_sl_clip<ras_conv_int>     rasterizer_sl_clip_int;
+    typedef rasterizer_sl_clip<ras_conv_int_sat> rasterizer_sl_clip_int_sat;
+    typedef rasterizer_sl_clip<ras_conv_int_3x>  rasterizer_sl_clip_int_3x;
+    typedef rasterizer_sl_clip<ras_conv_dbl>     rasterizer_sl_clip_dbl;
+    typedef rasterizer_sl_clip<ras_conv_dbl_3x>  rasterizer_sl_clip_dbl_3x;
 
 
 }
