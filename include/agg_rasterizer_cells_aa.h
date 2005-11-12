@@ -647,10 +647,14 @@ namespace agg
         if(m_sorted) return; //Perform sort only the first time.
 
         add_curr_cell();
+        m_curr_cell.x     = 0x7FFFFFFF;
+        m_curr_cell.y     = 0x7FFFFFFF;
+        m_curr_cell.cover = 0;
+        m_curr_cell.area  = 0;
 
         if(m_num_cells == 0) return;
 
-
+// DBG: Check to see if min/max works well.
 //for(unsigned nc = 0; nc < m_num_cells; nc++)
 //{
 //    cell_type* cell = m_cells[nc >> cell_block_shift] + (nc & cell_block_mask);
@@ -659,7 +663,7 @@ namespace agg
 //       cell->x > m_max_x || 
 //       cell->y > m_max_y)
 //    {
-//        cell = cell;
+//        cell = cell; // Breakpoint here
 //    }
 //}
 

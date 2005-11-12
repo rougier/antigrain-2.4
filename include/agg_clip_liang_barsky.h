@@ -220,7 +220,7 @@ namespace agg
     
 
 
-
+/*
     inline unsigned clip_segment(double x1, double y1, double x2, double y2,
                                  const rect_d& clip_box,
                                  double* x, double* y)
@@ -326,6 +326,7 @@ namespace agg
         }
         return np;
     }
+*/
 
 
 

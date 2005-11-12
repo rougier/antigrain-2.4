@@ -51,7 +51,7 @@ typedef agg::renderer_scanline_aa<base_renderer,
                                   gradient_span_alloc,
                                   gradient_span_gen> gradient_renderer;
 
-typedef agg::rasterizer_scanline_aa<>                scanline_rasterizer;
+typedef agg::rasterizer_scanline_aa<> scanline_rasterizer;
 typedef agg::rasterizer_outline<primitives_renderer> outline_rasterizer;
 
 
@@ -822,6 +822,7 @@ public:
     virtual void on_draw()
     {
         scanline_rasterizer ras;
+
         pixfmt pixf(rbuf_window());
         base_renderer rb(pixf);
         solid_renderer solid(rb);
@@ -852,6 +853,7 @@ public:
             update_window();
 
             scanline_rasterizer ras;
+
             pixfmt pixf(rbuf_window());
             base_renderer rb(pixf);
             solid_renderer solid(rb);

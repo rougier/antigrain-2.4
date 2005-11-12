@@ -70,36 +70,8 @@ namespace agg
     };
 
 
-
-    //                                        -----ras_compound_clipper_int
-    //                                        -----ras_compound_clipper_int_x3
-    //                                        -----ras_compound_clipper_dbl
-    //                                        -----ras_compound_clipper_dbl_x3
-    //                                        -----ras_compound_no_clip
-    //------------------------------------------------------------------------
-    typedef 
-        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_int>
-            ras_compound_clipper_int;
-
-    typedef 
-        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_int_x3>
-            ras_compound_clipper_int_x3;
-
-    typedef 
-        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_dbl>
-            ras_compound_clipper_dbl;
-
-    typedef 
-        rasterizer_sl_clip<rasterizer_cells_aa<cell_style_aa>, ras_conv_dbl_x3>
-            ras_compound_clipper_dbl_x3;
-
-
-    typedef 
-        rasterizer_sl_no_clip<rasterizer_cells_aa<cell_style_aa> > 
-            ras_compound_no_clip;
-
     //==================================================rasterizer_compound_aa
-    template<class Clip=ras_compound_clipper_int> class rasterizer_compound_aa
+    template<class Clip=rasterizer_sl_clip_int> class rasterizer_compound_aa
     {
         struct style_info 
         { 
@@ -127,7 +99,7 @@ namespace agg
         //--------------------------------------------------------------------
         rasterizer_compound_aa() : 
             m_outline(),
-            m_clipper(m_outline),
+            m_clipper(),
             m_styles(),  // Active Styles
             m_ast(),     // Active Style Table (unique values)
             m_asm(),     // Active Style Mask 
@@ -149,6 +121,9 @@ namespace agg
         void move_to_d(double x, double y);
         void line_to_d(double x, double y);
         void add_vertex(double x, double y, unsigned cmd);
+
+        void edge(int x1, int y1, int x2, int y2);
+        void edge_d(double x1, double y1, double x2, double y2);
 
         //-------------------------------------------------------------------
         template<class VertexSource>
@@ -200,7 +175,7 @@ namespace agg
 
             sl.reset_spans();
 
-            if(style_idx < 0) style_idx  = 0;
+            if(style_idx < 0) style_idx = 0;
             else              style_idx++;
 
             const style_info& st = m_styles[m_ast[style_idx]];
@@ -328,7 +303,9 @@ namespace agg
     template<class Clip> 
     void rasterizer_compound_aa<Clip>::line_to(int x, int y)
     {
-        m_clipper.line_to(conv_type::downscale(x), conv_type::downscale(y));
+        m_clipper.line_to(m_outline, 
+                          conv_type::downscale(x), 
+                          conv_type::downscale(y));
     }
 
     //------------------------------------------------------------------------
@@ -343,7 +320,9 @@ namespace agg
     template<class Clip> 
     void rasterizer_compound_aa<Clip>::line_to_d(double x, double y) 
     { 
-        m_clipper.line_to(conv_type::upscale(x), conv_type::upscale(y)); 
+        m_clipper.line_to(m_outline, 
+                          conv_type::upscale(x), 
+                          conv_type::upscale(y)); 
     }
 
     //------------------------------------------------------------------------
@@ -363,14 +342,37 @@ namespace agg
         }
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::edge(int x1, int y1, int x2, int y2)
+    {
+        if(m_outline.sorted()) reset();
+        m_clipper.move_to(conv_type::downscale(x1), conv_type::downscale(y1));
+        m_clipper.line_to(m_outline, 
+                          conv_type::downscale(x2), 
+                          conv_type::downscale(y2));
+    }
+    
+    //------------------------------------------------------------------------
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::edge_d(double x1, double y1, 
+                                              double x2, double y2)
+    {
+        if(m_outline.sorted()) reset();
+        m_clipper.move_to(conv_type::upscale(x1), conv_type::upscale(y1)); 
+        m_clipper.line_to(m_outline, 
+                          conv_type::upscale(x2), 
+                          conv_type::upscale(y2)); 
+    }
+
+    //------------------------------------------------------------------------
     template<class Clip> 
     AGG_INLINE void rasterizer_compound_aa<Clip>::sort()
     {
         m_outline.sort_cells();
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     template<class Clip> 
     AGG_INLINE bool rasterizer_compound_aa<Clip>::rewind_scanlines()
     {
@@ -388,7 +390,7 @@ namespace agg
         return true;
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     template<class Clip> 
     AGG_INLINE void rasterizer_compound_aa<Clip>::add_style(int style_id)
     {
@@ -410,7 +412,7 @@ namespace agg
         ++style->start_cell;
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     // Returns the number of styles
     template<class Clip> 
     unsigned rasterizer_compound_aa<Clip>::sweep_styles()
@@ -511,7 +513,7 @@ namespace agg
         return m_ast.size() - 1;
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     // Returns style ID depending of the existing style index
     template<class Clip> 
     AGG_INLINE 
