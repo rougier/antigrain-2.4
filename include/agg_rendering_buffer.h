@@ -153,11 +153,12 @@ namespace agg
         void clear(T value)
         {
             unsigned y;
+            unsigned stride = stride_abs();
             for(y = 0; y < height(); y++)
             {
                 T* p = row(y);
                 unsigned x;
-                for(x = 0; x < stride_abs(); x++)
+                for(x = 0; x < stride; x++)
                 {
                     *p++ = value;
                 }

@@ -133,6 +133,7 @@ namespace agg
             m_outline(),
             m_clipper(),
             m_filling_rule(fill_non_zero),
+            m_auto_close(true),
             m_start_x(0),
             m_start_y(0),
             m_status(status_initial)
@@ -147,6 +148,7 @@ namespace agg
             m_outline(),
             m_clipper(m_outline),
             m_filling_rule(fill_non_zero),
+            m_auto_close(true),
             m_start_x(0),
             m_start_y(0),
             m_status(status_initial)
@@ -159,6 +161,7 @@ namespace agg
         void reset_clipping();
         void clip_box(double x1, double y1, double x2, double y2);
         void filling_rule(filling_rule_e filling_rule);
+        void auto_close(bool flag) { m_auto_close = flag; }
 
         //--------------------------------------------------------------------
         template<class GammaF> void gamma(const GammaF& gamma_function)
@@ -306,6 +309,7 @@ namespace agg
         clip_type      m_clipper;
         int            m_gamma[aa_scale];
         filling_rule_e m_filling_rule;
+        bool           m_auto_close;
         coord_type     m_start_x;
         coord_type     m_start_y;
         unsigned       m_status;
@@ -360,7 +364,7 @@ namespace agg
     template<class Clip> 
     void rasterizer_scanline_aa<Clip>::close_polygon()
     {
-        if(m_status == status_line_to)
+        if(m_auto_close && m_status == status_line_to)
         {
             m_clipper.line_to(m_outline, m_start_x, m_start_y);
             m_status = status_closed;

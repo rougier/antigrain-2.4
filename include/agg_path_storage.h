@@ -410,6 +410,133 @@ namespace agg
 
 
 
+
+    //-------------------------------------------------poly_container_adaptor
+    template<class Container> class poly_container_adaptor
+    {
+    public:
+        typedef typename Container::value_type vertex_type;
+
+        poly_container_adaptor() : 
+            m_container(0), 
+            m_index(0),
+            m_closed(false),
+            m_stop(false)
+        {}
+
+        poly_container_adaptor(const Container& data, bool closed) :
+            m_container(&data), 
+            m_index(0),
+            m_closed(closed),
+            m_stop(false)
+        {}
+
+        void init(const Container& data, bool closed)
+        {
+            m_container = &data;
+            m_index = 0;
+            m_closed = closed;
+            m_stop = false;
+        }
+
+        void rewind(unsigned)
+        {
+            m_index = 0;
+            m_stop = false;
+        }
+
+        unsigned vertex(double* x, double* y)
+        {
+            if(m_index < m_container->size())
+            {
+                bool first = m_index == 0;
+                const vertex_type& v = (*m_container)[m_index++];
+                *x = v.x;
+                *y = v.y;
+                return first ? path_cmd_move_to : path_cmd_line_to;
+            }
+            *x = *y = 0.0;
+            if(m_closed && !m_stop)
+            {
+                m_stop = true;
+                return path_cmd_end_poly | path_flags_close;
+            }
+            return path_cmd_stop;
+        }
+
+    private:
+        const Container* m_container;
+        unsigned m_index;
+        bool     m_closed;
+        bool     m_stop;
+    };
+
+
+
+    //-----------------------------------------poly_container_reverse_adaptor
+    template<class Container> class poly_container_reverse_adaptor
+    {
+    public:
+        typedef typename Container::value_type vertex_type;
+
+        poly_container_reverse_adaptor() : 
+            m_container(0), 
+            m_index(-1),
+            m_closed(false),
+            m_stop(false)
+        {}
+
+        poly_container_reverse_adaptor(const Container& data, bool closed) :
+            m_container(&data), 
+            m_index(-1),
+            m_closed(closed),
+            m_stop(false)
+        {}
+
+        void init(const Container& data, bool closed)
+        {
+            m_container = &data;
+            m_index = m_container->size() - 1;
+            m_closed = closed;
+            m_stop = false;
+        }
+
+        void rewind(unsigned)
+        {
+            m_index = m_container->size() - 1;
+            m_stop = false;
+        }
+
+        unsigned vertex(double* x, double* y)
+        {
+            if(m_index >= 0)
+            {
+                bool first = m_index == int(m_container->size() - 1);
+                const vertex_type& v = (*m_container)[m_index--];
+                *x = v.x;
+                *y = v.y;
+                return first ? path_cmd_move_to : path_cmd_line_to;
+            }
+            *x = *y = 0.0;
+            if(m_closed && !m_stop)
+            {
+                m_stop = true;
+                return path_cmd_end_poly | path_flags_close;
+            }
+            return path_cmd_stop;
+        }
+
+    private:
+        const Container* m_container;
+        int  m_index;
+        bool m_closed;
+        bool m_stop;
+    };
+
+
+
+
+
     //--------------------------------------------------------line_adaptor
     class line_adaptor
     {
@@ -558,6 +685,10 @@ namespace agg
 
         unsigned vertex(unsigned idx, double* x, double* y) const;
         unsigned command(unsigned idx) const;
+
+        void modify_vertex(unsigned idx, double x, double y);
+        void modify_vertex(unsigned idx, double x, double y, unsigned cmd);
+        void modify_command(unsigned idx, unsigned cmd);
 
         // VertexSource interface
         //--------------------------------------------------------------------
@@ -996,6 +1127,27 @@ namespace agg
     inline unsigned path_base<VC>::command(unsigned idx) const
     {
         return m_vertices.command(idx);
+    }
+
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::modify_vertex(unsigned idx, double x, double y)
+    {
+        m_vertices.modify_vertex(idx, x, y);
+    }
+
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::modify_vertex(unsigned idx, double x, double y, unsigned cmd)
+    {
+        m_vertices.modify_vertex(idx, x, y, cmd);
+    }
+
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::modify_command(unsigned idx, unsigned cmd)
+    {
+        m_vertices.modify_command(idx, cmd);
     }
 
     //------------------------------------------------------------------------

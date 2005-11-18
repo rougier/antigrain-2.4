@@ -284,7 +284,7 @@ namespace agg
         } 
 
         dvc_x      = bmp_x;
-        dvc_x      = bmp_x;
+        dvc_y      = bmp_y;
         dvc_width  = bmp_width;
         dvc_height = bmp_height;
 

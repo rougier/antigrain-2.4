@@ -180,6 +180,7 @@ namespace agg
 
         void add(const T& v)         { m_array[m_size++] = v; }
         void push_back(const T& v)   { m_array[m_size++] = v; }
+        void insert_at(unsigned pos, const T& val);
         void inc_size(unsigned size) { m_size += size; }
         unsigned size()      const   { return m_size; }
         unsigned byte_size() const   { return m_size * sizeof(T); }
@@ -283,9 +284,21 @@ namespace agg
         if(byte_size) memcpy(m_array, data, byte_size * sizeof(T));
     }
 
-
-
-
+    //------------------------------------------------------------------------
+    template<class T> 
+    void pod_vector<T>::insert_at(unsigned pos, const T& val)
+    {
+        if(pos >= m_size) 
+        {
+            m_array[m_size] = val;
+        }
+        else
+        {
+            memmove(m_array + pos + 1, m_array + pos, (m_size - pos) * sizeof(T));
+            m_array[pos] = val;
+        }
+        ++m_size;
+    }
 
     //---------------------------------------------------------------pod_bvector
     // A simple class template to store Plain Old Data, similar to std::deque
@@ -999,7 +1012,33 @@ namespace agg
     }
 
 
+    //------------------------------------------------------binary_search_pos
+    template<class Array, class Value, class Less>
+    unsigned binary_search_pos(const Array& arr, const Value& val, Less less)
+    {
+        if(arr.size() == 0) return 0;
 
+        unsigned beg = 0;
+        unsigned end = arr.size() - 1;
+
+        if(less(val, arr[0])) return 0;
+        if(less(arr[end], val)) return end + 1;
+
+        while(end - beg > 1)
+        {
+            unsigned mid = (end + beg) >> 1;
+            if(less(val, arr[mid])) end = mid; 
+            else                    beg = mid;
+        }
+/*
+        if(beg <= 0 &&
+           less(val, arr[0])) return 0;
+
+        if(end >= arr.size() - 1 &&
+           less(arr[end], val)) ++end;
+*/
+        return end;
+    }
 
 }
 
