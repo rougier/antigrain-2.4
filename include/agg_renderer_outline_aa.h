@@ -1470,6 +1470,15 @@ namespace agg
         //-------------------------------------------------------------------------
         void line0(const line_parameters& lp)
         {
+            if(lp.len > line_max_length)
+            {
+                line_parameters lp1, lp2;
+                lp.divide(lp1, lp2);
+                line0(lp1);
+                line0(lp2);
+                return;
+            }
+
             line_interpolator_aa0<self_type> li(*this, lp);
             if(li.count())
             {
@@ -1487,6 +1496,15 @@ namespace agg
         //-------------------------------------------------------------------------
         void line1(const line_parameters& lp, int sx, int sy)
         {
+            if(lp.len > line_max_length)
+            {
+                line_parameters lp1, lp2;
+                lp.divide(lp1, lp2);
+                line1(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1);
+                line1(lp2, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
+                return;
+            }
+
             fix_degenerate_bisectrix_start(lp, &sx, &sy);
             line_interpolator_aa1<self_type> li(*this, lp, sx, sy);
             if(li.vertical())
@@ -1502,6 +1520,15 @@ namespace agg
         //-------------------------------------------------------------------------
         void line2(const line_parameters& lp, int ex, int ey)
         {
+            if(lp.len > line_max_length)
+            {
+                line_parameters lp1, lp2;
+                lp.divide(lp1, lp2);
+                line2(lp1, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
+                line2(lp2, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
+                return;
+            }
+
             fix_degenerate_bisectrix_end(lp, &ex, &ey);
             line_interpolator_aa2<self_type> li(*this, lp, ex, ey);
             if(li.vertical())
@@ -1518,6 +1545,17 @@ namespace agg
         void line3(const line_parameters& lp, 
                    int sx, int sy, int ex, int ey)
         {
+            if(lp.len > line_max_length)
+            {
+                line_parameters lp1, lp2;
+                lp.divide(lp1, lp2);
+                int mx = lp1.x2 + (lp1.y2 - lp1.y1);
+                int my = lp1.y2 - (lp1.x2 - lp1.x1);
+                line3(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1, mx, my);
+                line3(lp2, mx, my, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
+                return;
+            }
+
             fix_degenerate_bisectrix_start(lp, &sx, &sy);
             fix_degenerate_bisectrix_end(lp, &ex, &ey);
             line_interpolator_aa3<self_type> li(*this, lp, sx, sy, ex, ey);

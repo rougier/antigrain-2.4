@@ -58,7 +58,7 @@ namespace agg
 
 
     //=======================================================rasterizer_outline_aa
-    template<class Renderer> class rasterizer_outline_aa
+    template<class Renderer, class Coord=line_coord> class rasterizer_outline_aa
     {
     private:
         //------------------------------------------------------------------------
@@ -113,13 +113,13 @@ namespace agg
         //------------------------------------------------------------------------
         void move_to_d(double x, double y)
         {
-            move_to(line_coord(x), line_coord(y));
+            move_to(Coord::conv(x), Coord::conv(y));
         }
 
         //------------------------------------------------------------------------
         void line_to_d(double x, double y)
         {
-            line_to(line_coord(x), line_coord(y));
+            line_to(Coord::conv(x), Coord::conv(y));
         }
 
         //------------------------------------------------------------------------
@@ -194,9 +194,9 @@ namespace agg
         }
 
     private:
-        rasterizer_outline_aa(const rasterizer_outline_aa<Renderer>&);
-        const rasterizer_outline_aa<Renderer>& operator = 
-            (const rasterizer_outline_aa<Renderer>&);
+        rasterizer_outline_aa(const rasterizer_outline_aa<Renderer, Coord>&);
+        const rasterizer_outline_aa<Renderer, Coord>& operator = 
+            (const rasterizer_outline_aa<Renderer, Coord>&);
 
         Renderer& m_ren;
         vertex_storage_type m_src_vertices;
@@ -214,8 +214,10 @@ namespace agg
 
 
     //----------------------------------------------------------------------------
-    template<class Renderer> 
-    void rasterizer_outline_aa<Renderer>::draw(draw_vars& dv, unsigned start, unsigned end)
+    template<class Renderer, class Coord> 
+    void rasterizer_outline_aa<Renderer, Coord>::draw(draw_vars& dv, 
+                                                      unsigned start, 
+                                                      unsigned end)
     {
         unsigned i;
         const vertex_storage_type::value_type* v;
@@ -269,8 +271,8 @@ namespace agg
 
 
     //----------------------------------------------------------------------------
-    template<class Renderer> 
-    void rasterizer_outline_aa<Renderer>::render(bool close_polygon)
+    template<class Renderer, class Coord> 
+    void rasterizer_outline_aa<Renderer, Coord>::render(bool close_polygon)
     {
         m_src_vertices.close(close_polygon);
         draw_vars dv;

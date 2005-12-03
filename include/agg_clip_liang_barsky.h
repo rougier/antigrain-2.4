@@ -24,6 +24,15 @@
 namespace agg
 {
 
+    //------------------------------------------------------------------------
+    enum clipping_flags_e
+    {
+        clipping_flags_x1_clipped = 4,
+        clipping_flags_x2_clipped = 1,
+        clipping_flags_y1_clipped = 8,
+        clipping_flags_y2_clipped = 2
+    };
+
     //----------------------------------------------------------clipping_flags
     // Determine the clipping code of the vertex according to the 
     // Cyrus-Beck line clipping algorithm
@@ -217,117 +226,64 @@ namespace agg
         return np;
     }
 
+
+    static const double clip_line_epsilon = 1e-10;
     
-
-
-/*
-    inline unsigned clip_segment(double x1, double y1, double x2, double y2,
-                                 const rect_d& clip_box,
-                                 double* x, double* y)
+    //----------------------------------------------------------------------------
+    template<class T>
+    void clip_move_point(T x1, T y1, T x2, T y2, 
+                         const rect_base<T>& clip_box, 
+                         T* x, T* y, unsigned flags)
     {
-        unsigned f1 = clipping_flags(x1, y1, clip_box);
-        unsigned f2 = clipping_flags(x2, y2, clip_box);
-        unsigned np = 0;
+       T bound;
 
-        if((f1 & 10) == (f2 & 10) && (f1 & 10) != 0)
-        {
-            return 0;
-        }
-
-        switch(((f1 & 5) << 1) | (f2 & 5))
-        {
-        case 0: // Visible by X
-            x[0] = x1;
-            y[0] = y1;
-            x[1] = x2;
-            y[1] = y2;
-            np = 2;
-            break;
-
-        case 1: // x2 > clip.x2
-            x[0] = x1;
-            y[0] = y1;
-            x[1] = clip_box.x2;
-            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = clip_box.x2;
-            y[2] = y2;
-            np = 3;
-            break;
-
-        case 2: // x1 > clip.x2
-            x[0] = clip_box.x2;
-            y[0] = y1;
-            x[1] = clip_box.x2;
-            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = x2;
-            y[2] = y2;
-            np = 3;
-            break;
-
-        case 3: // x1 > clip.x2 && x2 > clip.x2
-            x[0] = clip_box.x2;
-            y[0] = y1;
-            x[1] = clip_box.x2;
-            y[1] = y2;
-            np = 2;
-            break;
-
-        case 4: // x2 < clip.x1
-            x[0] = x1;
-            y[0] = y1;
-            x[1] = clip_box.x1;
-            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = clip_box.x1;
-            y[2] = y2;
-            np = 3;
-            break;
-
-        case 6: // x1 > clip.x2 && x2 < clip.x1
-            x[0] = clip_box.x2;
-            y[0] = y1;
-            x[1] = clip_box.x2;
-            y[1] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = clip_box.x1;
-            y[2] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
-            x[3] = clip_box.x1;
-            y[3] = y2;
-            np = 4;
-            break;
-
-        case 8: // x1 < clip.x1
-            x[0] = clip_box.x1;
-            y[0] = y1;
-            x[1] = clip_box.x1;
-            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = x2;
-            y[2] = y2;
-            np = 3;
-            break;
-
-        case 9:  // x1 < clip.x1 && x2 > clip.x2
-            x[0] = clip_box.x1;
-            y[0] = y1;
-            x[1] = clip_box.x1;
-            y[1] = y1 + (clip_box.x1 - x1) * (y2 - y1) / (x2 - x1);
-            x[2] = clip_box.x2;
-            y[2] = y1 + (clip_box.x2 - x1) * (y2 - y1) / (x2 - x1);
-            x[3] = clip_box.x2;
-            y[3] = y2;
-            np = 4;
-            break;
-
-        case 12: // x1 < clip.x1 && x2 < clip.x1
-            x[0] = clip_box.x1;
-            y[0] = y1;
-            x[1] = clip_box.x1;
-            y[1] = y2;
-            np = 2;
-            break;
-        }
-        return np;
+       if(flags & (clipping_flags_x1_clipped | clipping_flags_x2_clipped)) 
+       {
+           bound = (flags & clipping_flags_x1_clipped) ? clip_box.x1 : clip_box.x2;
+           *y = (T)(double(bound - x1) * (y2 - y1) / (x2 - x1) + y1);
+           *x = bound;
+           flags = clipping_flags_y(*y, clip_box);
+       }
+       if(flags & (clipping_flags_y1_clipped | clipping_flags_y2_clipped)) 
+       {
+           bound = (flags & clipping_flags_y1_clipped) ? clip_box.y1 : clip_box.y2;
+           *x = (T)(double(bound - y1) * (x2 - x1) / (y2 - y1) + x1);
+           *y = bound;
+       }
     }
-*/
 
+    //-------------------------------------------------------clip_line_segment
+    // Returns: ret >= 4        - Fully clipped
+    //          (ret & 1) != 0  - First point has been moved
+    //          (ret & 2) != 0  - Second point has been moved
+    //
+    template<class T>
+    unsigned clip_line_segment(T* x1, T* y1, T* x2, T* y2,
+                               const rect_base<T>& clip_box)
+    {
+        unsigned f1 = clipping_flags(*x1, *y1, clip_box);
+        unsigned f2 = clipping_flags(*x2, *y2, clip_box);
+        unsigned ret = 0;
+
+        if(f2 == f1)
+        {
+            return f1 ? 4 : 0;
+        }
+
+        if(f1) 
+        {   
+            clip_move_point(*x1, *y1, *x2, *y2, clip_box, x1, y1, f1);
+            if(*x1 == *x2 && *y1 == *y2) return 4;
+            ret |= 1;
+        }
+        if(f2) 
+        {
+            clip_move_point(*x1, *y1, *x2, *y2, clip_box, x2, y2, f2);
+            if(*x1 == *x2 && *y1 == *y2) return 4;
+            ret |= 2;
+        }
+        return ret;
+    }
 
 
 }

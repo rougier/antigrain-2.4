@@ -22,8 +22,8 @@ namespace agg
     //----------------------------------------------------poly_min_max_coord_e
     enum poly_min_max_coord_e
     {
-        poly_max_coord    =   2147483647,          //----poly_max_coord   
-        poly_min_coord    =  -2147483647,          //----poly_min_coord   
+        poly_max_coord    =   (1 << 30) - 1,       //----poly_max_coord   
+        poly_min_coord    =  -poly_max_coord,      //----poly_min_coord   
         poly_max_coord_3x =   poly_max_coord / 3,  //----poly_max_coord_3x
         poly_min_coord_3x = -(poly_max_coord / 3)  //----poly_min_coord_3x
     };

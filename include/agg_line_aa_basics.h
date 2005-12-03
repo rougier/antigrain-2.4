@@ -26,9 +26,12 @@ namespace agg
     //-------------------------------------------------------------------------
     enum line_subpixel_scale_e
     {
-        line_subpixel_shift = 8,                        //----line_subpixel_shift
-        line_subpixel_size  = 1 << line_subpixel_shift, //----line_subpixel_size 
-        line_subpixel_mask  = line_subpixel_size - 1    //----line_subpixel_mask 
+        line_subpixel_shift = 8,                          //----line_subpixel_shift
+        line_subpixel_size  = 1 << line_subpixel_shift,   //----line_subpixel_size
+        line_subpixel_mask  = line_subpixel_size - 1,     //----line_subpixel_mask
+        line_max_coord      = (1 << 28) - 1,              //----line_max_coord
+        line_min_coord      = -line_max_coord,            //----line_min_coord
+        line_max_length = 1 << (line_subpixel_shift + 10) //----line_max_length
     };
 
     //-------------------------------------------------------------------------
@@ -58,10 +61,25 @@ namespace agg
     }
 
     //---------------------------------------------------------------line_coord
-    inline int line_coord(double x)
+    struct line_coord
     {
-        return int(x * line_subpixel_size);
-    }
+        static int conv(double x)
+        {
+            return int(x * line_subpixel_size);
+        }
+    };
+
+    //-----------------------------------------------------------line_coord_sat
+    struct line_coord_sat
+    {
+        static int conv(double x)
+        {
+            double v = x * line_subpixel_size;
+            if(v < (double)line_min_coord) v = (double)line_min_coord;
+            if(v > (double)line_max_coord) v = (double)line_max_coord;
+            return (int)v;
+        }
+    };
 
     //==========================================================line_parameters
     struct line_parameters
@@ -95,6 +113,29 @@ namespace agg
         bool same_diagonal_quadrant(const line_parameters& lp) const
         {
             return s_diagonal_quadrant[octant] == s_diagonal_quadrant[lp.octant];
+        }
+
+        //---------------------------------------------------------------------
+        void divide(line_parameters& lp1, line_parameters& lp2) const
+        {
+            int xmid = (x1 + x2) >> 1;
+            int ymid = (y1 + y2) >> 1;
+            int len2 = len >> 1;
+
+            lp1 = *this;
+            lp2 = *this;
+
+            lp1.x2  = xmid;
+            lp1.y2  = ymid;
+            lp1.len = len2;
+            lp1.dx  = abs(lp1.x2 - lp1.x1);
+            lp1.dy  = abs(lp1.y2 - lp1.y1);
+
+            lp2.x1  = xmid;
+            lp2.y1  = ymid;
+            lp2.len = len2;
+            lp2.dx  = abs(lp2.x2 - lp2.x1);
+            lp2.dy  = abs(lp2.y2 - lp2.y1);
         }
         
         //---------------------------------------------------------------------

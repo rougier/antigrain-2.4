@@ -170,6 +170,7 @@ namespace agg
         //--------------------------------------------------------------------
         int pattern_width() const { return m_width_hr; }
         int line_width()    const { return m_half_height_hr; }
+        double width()      const { return m_height; }
 
         //--------------------------------------------------------------------
         void pixel(color_type* p, int x, int y) const
@@ -504,7 +505,8 @@ namespace agg
             m_count((lp.vertical ? abs((lp.y2 >> line_subpixel_shift) - m_y) :
                                    abs((lp.x2 >> line_subpixel_shift) - m_x))),
             m_width(ren.subpixel_width()),
-            m_max_extent(m_width >> (line_subpixel_shift - 2)),
+            //m_max_extent(m_width >> (line_subpixel_shift - 1)),
+            m_max_extent((m_width + line_subpixel_mask) >> line_subpixel_shift),
             m_start(pattern_start + (m_max_extent + 2) * ren.pattern_width()),
             m_step(0)
         {
@@ -823,13 +825,26 @@ namespace agg
             m_ren(&ren),
             m_pattern(&patt),
             m_start(0),
-            m_scale_x(1.0)
+            m_scale_x(1.0),
+            m_clip_box(0,0,0,0),
+            m_clipping(false)
         {
         }
 
         //---------------------------------------------------------------------
         void pattern(const pattern_type& p) { m_pattern = &p; }
         const pattern_type& pattern() const { return *m_pattern; }
+
+        //---------------------------------------------------------------------
+        void reset_clipping() { m_clipping = false; }
+        void clip_box(double x1, double y1, double x2, double y2)
+        {
+            m_clip_box.x1 = line_coord_sat::conv(x1);
+            m_clip_box.y1 = line_coord_sat::conv(y1);
+            m_clip_box.x2 = line_coord_sat::conv(x2);
+            m_clip_box.y2 = line_coord_sat::conv(y2);
+            m_clipping = true;
+        }
 
         //---------------------------------------------------------------------
         void   scale_x(double s) { m_scale_x = s; }
@@ -842,6 +857,7 @@ namespace agg
         //---------------------------------------------------------------------
         int subpixel_width() const { return m_pattern->line_width(); }
         int pattern_width() const { return m_pattern->pattern_width(); }
+        double width() const { return double(subpixel_width()) / line_subpixel_size; }
 
         //-------------------------------------------------------------------------
         void pixel(color_type* p, int x, int y) const
@@ -886,9 +902,20 @@ namespace agg
         }
 
         //-------------------------------------------------------------------------
-        void line3(const line_parameters& lp, 
-                   int sx, int sy, int ex, int ey)
+        void line3_no_clip(const line_parameters& lp, 
+                           int sx, int sy, int ex, int ey)
         {
+            if(lp.len > line_max_length)
+            {
+                line_parameters lp1, lp2;
+                lp.divide(lp1, lp2);
+                int mx = lp1.x2 + (lp1.y2 - lp1.y1);
+                int my = lp1.y2 - (lp1.x2 - lp1.x1);
+                line3_no_clip(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1, mx, my);
+                line3_no_clip(lp2, mx, my, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
+                return;
+            }
+            
             fix_degenerate_bisectrix_start(lp, &sx, &sy);
             fix_degenerate_bisectrix_end(lp, &ex, &ey);
             line_interpolator_image<self_type> li(*this, lp, 
@@ -903,7 +930,67 @@ namespace agg
             {
                 while(li.step_hor());
             }
-            m_start = li.pattern_end();
+            m_start += (int)(lp.len / m_scale_x);
+        }
+
+        //-------------------------------------------------------------------------
+        void line3(const line_parameters& lp, 
+                   int sx, int sy, int ex, int ey)
+        {
+            if(m_clipping)
+            {
+                int x1 = lp.x1;
+                int y1 = lp.y1;
+                int x2 = lp.x2;
+                int y2 = lp.y2;
+                unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                if((flags & 4) == 0)
+                {
+                    if(flags)
+                    {
+                        int start = m_start;
+                        line_parameters lp2(x1, y1, x2, y2, 
+                                           (int)calc_distance(x1, y1, x2, y2));
+                        if(flags & 1)
+                        {
+                            m_start += (int)(calc_distance(lp.x1, lp.y1, x1, y1) / m_scale_x);
+                            sx = x1 + (y2 - y1); 
+                            sy = y1 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(sx - lp.x1) + abs(sy - lp.y1) > lp2.len)
+                            {
+                                sx = (lp.x1 + sx) >> 1;
+                                sy = (lp.y1 + sy) >> 1;
+                           }
+                        }
+                        if(flags & 2)
+                        {
+                            ex = x2 + (y2 - y1); 
+                            ey = y2 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(ex - lp.x2) + abs(ey - lp.y2) > lp2.len)
+                            {
+                                ex = (lp.x2 + ex) >> 1;
+                                ey = (lp.y2 + ey) >> 1;
+                            }
+                        }
+                        line3_no_clip(lp2, sx, sy, ex, ey);
+                        m_start = start + (int)(lp.len / m_scale_x);
+                    }
+                    else
+                    {
+                        line3_no_clip(lp, sx, sy, ex, ey);
+                    }
+                }
+            }
+            else
+            {
+                line3_no_clip(lp, sx, sy, ex, ey);
+            }
         }
 
     private:
@@ -911,6 +998,8 @@ namespace agg
         const pattern_type* m_pattern;
         int                 m_start;
         double              m_scale_x;
+        rect_i              m_clip_box;
+        bool                m_clipping;
     };
 
 
