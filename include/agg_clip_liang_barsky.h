@@ -30,7 +30,9 @@ namespace agg
         clipping_flags_x1_clipped = 4,
         clipping_flags_x2_clipped = 1,
         clipping_flags_y1_clipped = 8,
-        clipping_flags_y2_clipped = 2
+        clipping_flags_y2_clipped = 2,
+        clipping_flags_x_clipped = clipping_flags_x1_clipped | clipping_flags_x2_clipped,
+        clipping_flags_y_clipped = clipping_flags_y1_clipped | clipping_flags_y2_clipped
     };
 
     //----------------------------------------------------------clipping_flags
@@ -227,29 +229,37 @@ namespace agg
     }
 
 
-    static const double clip_line_epsilon = 1e-10;
-    
     //----------------------------------------------------------------------------
     template<class T>
-    void clip_move_point(T x1, T y1, T x2, T y2, 
+    bool clip_move_point(T x1, T y1, T x2, T y2, 
                          const rect_base<T>& clip_box, 
                          T* x, T* y, unsigned flags)
     {
        T bound;
 
-       if(flags & (clipping_flags_x1_clipped | clipping_flags_x2_clipped)) 
+       if(flags & clipping_flags_x_clipped)
        {
+           if(x1 == x2)
+           {
+               return false;
+           }
            bound = (flags & clipping_flags_x1_clipped) ? clip_box.x1 : clip_box.x2;
            *y = (T)(double(bound - x1) * (y2 - y1) / (x2 - x1) + y1);
            *x = bound;
-           flags = clipping_flags_y(*y, clip_box);
        }
-       if(flags & (clipping_flags_y1_clipped | clipping_flags_y2_clipped)) 
+
+       flags = clipping_flags_y(*y, clip_box);
+       if(flags & clipping_flags_y_clipped)
        {
+           if(y1 == y2)
+           {
+               return false;
+           }
            bound = (flags & clipping_flags_y1_clipped) ? clip_box.y1 : clip_box.y2;
            *x = (T)(double(bound - y1) * (x2 - x1) / (y2 - y1) + x1);
            *y = bound;
        }
+       return true;
     }
 
     //-------------------------------------------------------clip_line_segment
@@ -265,21 +275,52 @@ namespace agg
         unsigned f2 = clipping_flags(*x2, *y2, clip_box);
         unsigned ret = 0;
 
-        if(f2 == f1)
+        if((f2 | f1) == 0)
         {
-            return f1 ? 4 : 0;
+            // Fully visible
+            return 0;
         }
 
+        if((f1 & clipping_flags_x_clipped) != 0 && 
+           (f1 & clipping_flags_x_clipped) == (f2 & clipping_flags_x_clipped))
+        {
+            // Fully clipped
+            return 4;
+        }
+
+        if((f1 & clipping_flags_y_clipped) != 0 && 
+           (f1 & clipping_flags_y_clipped) == (f2 & clipping_flags_y_clipped))
+        {
+            // Fully clipped
+            return 4;
+        }
+
+        T tx1 = *x1;
+        T ty1 = *y1;
+        T tx2 = *x2;
+        T ty2 = *y2;
         if(f1) 
         {   
-            clip_move_point(*x1, *y1, *x2, *y2, clip_box, x1, y1, f1);
-            if(*x1 == *x2 && *y1 == *y2) return 4;
+            if(!clip_move_point(tx1, ty1, tx2, ty2, clip_box, x1, y1, f1)) 
+            {
+                return 4;
+            }
+            if(*x1 == *x2 && *y1 == *y2) 
+            {
+                return 4;
+            }
             ret |= 1;
         }
         if(f2) 
         {
-            clip_move_point(*x1, *y1, *x2, *y2, clip_box, x2, y2, f2);
-            if(*x1 == *x2 && *y1 == *y2) return 4;
+            if(!clip_move_point(tx1, ty1, tx2, ty2, clip_box, x2, y2, f2))
+            {
+                return 4;
+            }
+            if(*x1 == *x2 && *y1 == *y2) 
+            {
+                return 4;
+            }
             ret |= 2;
         }
         return ret;
