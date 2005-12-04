@@ -19,6 +19,7 @@
 #include "agg_line_aa_basics.h"
 #include "agg_dda_line.h"
 #include "agg_rendering_buffer.h"
+#include "agg_clip_liang_barsky.h"
 
 
 namespace agg
@@ -963,7 +964,7 @@ namespace agg
                             {
                                 sx = (lp.x1 + sx) >> 1;
                                 sy = (lp.y1 + sy) >> 1;
-                           }
+                            }
                         }
                         if(flags & 2)
                         {

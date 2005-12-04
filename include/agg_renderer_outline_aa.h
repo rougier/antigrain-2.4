@@ -22,6 +22,7 @@
 #include "agg_ellipse_bresenham.h"
 #include "agg_renderer_base.h"
 #include "agg_gamma_functions.h"
+#include "agg_clip_liang_barsky.h"
 
 namespace agg
 {
@@ -490,7 +491,8 @@ namespace agg
             m_count((lp.vertical ? abs((lp.y2 >> line_subpixel_shift) - m_y) :
                                    abs((lp.x2 >> line_subpixel_shift) - m_x))),
             m_width(ren.subpixel_width()),
-            m_max_extent(m_width >> (line_subpixel_shift - 2)),
+            //m_max_extent(m_width >> (line_subpixel_shift - 2)),
+            m_max_extent((m_width + line_subpixel_mask) >> line_subpixel_shift),
             m_step(0)
         {
             agg::dda2_line_interpolator li(0, lp.vertical ? 
@@ -1360,7 +1362,9 @@ namespace agg
         //---------------------------------------------------------------------
         renderer_outline_aa(base_ren_type& ren, const line_profile_aa& prof) :
             m_ren(&ren),
-            m_profile(&prof)
+            m_profile(&prof),
+            m_clip_box(0,0,0,0),
+            m_clipping(false)
         {
         }
 
@@ -1375,6 +1379,17 @@ namespace agg
 
         //---------------------------------------------------------------------
         int subpixel_width() const { return m_profile->subpixel_width(); }
+
+        //---------------------------------------------------------------------
+        void reset_clipping() { m_clipping = false; }
+        void clip_box(double x1, double y1, double x2, double y2)
+        {
+            m_clip_box.x1 = line_coord_sat::conv(x1);
+            m_clip_box.y1 = line_coord_sat::conv(y1);
+            m_clip_box.x2 = line_coord_sat::conv(x2);
+            m_clip_box.y2 = line_coord_sat::conv(y2);
+            m_clipping = true;
+        }
 
         //---------------------------------------------------------------------
         int cover(int d) const
@@ -1468,14 +1483,14 @@ namespace agg
         }
 
         //-------------------------------------------------------------------------
-        void line0(const line_parameters& lp)
+        void line0_no_clip(const line_parameters& lp)
         {
             if(lp.len > line_max_length)
             {
                 line_parameters lp1, lp2;
                 lp.divide(lp1, lp2);
-                line0(lp1);
-                line0(lp2);
+                line0_no_clip(lp1);
+                line0_no_clip(lp2);
                 return;
             }
 
@@ -1494,14 +1509,44 @@ namespace agg
         }
 
         //-------------------------------------------------------------------------
-        void line1(const line_parameters& lp, int sx, int sy)
+        void line0(const line_parameters& lp)
+        {
+            if(m_clipping)
+            {
+                int x1 = lp.x1;
+                int y1 = lp.y1;
+                int x2 = lp.x2;
+                int y2 = lp.y2;
+                unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                if((flags & 4) == 0)
+                {
+                    if(flags)
+                    {
+                        line_parameters lp2(x1, y1, x2, y2, 
+                                           (int)calc_distance(x1, y1, x2, y2));
+                        line0_no_clip(lp2);
+                    }
+                    else
+                    {
+                        line0_no_clip(lp);
+                    }
+                }
+            }
+            else
+            {
+                line0_no_clip(lp);
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void line1_no_clip(const line_parameters& lp, int sx, int sy)
         {
             if(lp.len > line_max_length)
             {
                 line_parameters lp1, lp2;
                 lp.divide(lp1, lp2);
-                line1(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1);
-                line1(lp2, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
+                line1_no_clip(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1);
+                line1_no_clip(lp2, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
                 return;
             }
 
@@ -1517,15 +1562,59 @@ namespace agg
             }
         }
 
+
         //-------------------------------------------------------------------------
-        void line2(const line_parameters& lp, int ex, int ey)
+        void line1(const line_parameters& lp, int sx, int sy)
+        {
+            if(m_clipping)
+            {
+                int x1 = lp.x1;
+                int y1 = lp.y1;
+                int x2 = lp.x2;
+                int y2 = lp.y2;
+                unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                if((flags & 4) == 0)
+                {
+                    if(flags)
+                    {
+                        line_parameters lp2(x1, y1, x2, y2, 
+                                           (int)calc_distance(x1, y1, x2, y2));
+                        if(flags & 1)
+                        {
+                            sx = x1 + (y2 - y1); 
+                            sy = y1 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(sx - lp.x1) + abs(sy - lp.y1) > lp2.len)
+                            {
+                                sx = (lp.x1 + sx) >> 1;
+                                sy = (lp.y1 + sy) >> 1;
+                            }
+                        }
+                        line1_no_clip(lp2, sx, sy);
+                    }
+                    else
+                    {
+                        line1_no_clip(lp, sx, sy);
+                    }
+                }
+            }
+            else
+            {
+                line1_no_clip(lp, sx, sy);
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void line2_no_clip(const line_parameters& lp, int ex, int ey)
         {
             if(lp.len > line_max_length)
             {
                 line_parameters lp1, lp2;
                 lp.divide(lp1, lp2);
-                line2(lp1, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
-                line2(lp2, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
+                line2_no_clip(lp1, lp1.x2 + (lp1.y2 - lp1.y1), lp1.y2 - (lp1.x2 - lp1.x1));
+                line2_no_clip(lp2, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
                 return;
             }
 
@@ -1542,8 +1631,51 @@ namespace agg
         }
 
         //-------------------------------------------------------------------------
-        void line3(const line_parameters& lp, 
-                   int sx, int sy, int ex, int ey)
+        void line2(const line_parameters& lp, int ex, int ey)
+        {
+            if(m_clipping)
+            {
+                int x1 = lp.x1;
+                int y1 = lp.y1;
+                int x2 = lp.x2;
+                int y2 = lp.y2;
+                unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                if((flags & 4) == 0)
+                {
+                    if(flags)
+                    {
+                        line_parameters lp2(x1, y1, x2, y2, 
+                                           (int)calc_distance(x1, y1, x2, y2));
+                        if(flags & 2)
+                        {
+                            ex = x2 + (y2 - y1); 
+                            ey = y2 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(ex - lp.x2) + abs(ey - lp.y2) > lp2.len)
+                            {
+                                ex = (lp.x2 + ex) >> 1;
+                                ey = (lp.y2 + ey) >> 1;
+                            }
+                        }
+                        line2_no_clip(lp2, ex, ey);
+                    }
+                    else
+                    {
+                        line2_no_clip(lp, ex, ey);
+                    }
+                }
+            }
+            else
+            {
+                line2_no_clip(lp, ex, ey);
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void line3_no_clip(const line_parameters& lp, 
+                           int sx, int sy, int ex, int ey)
         {
             if(lp.len > line_max_length)
             {
@@ -1551,8 +1683,8 @@ namespace agg
                 lp.divide(lp1, lp2);
                 int mx = lp1.x2 + (lp1.y2 - lp1.y1);
                 int my = lp1.y2 - (lp1.x2 - lp1.x1);
-                line3(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1, mx, my);
-                line3(lp2, mx, my, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
+                line3_no_clip(lp1, (lp.x1 + sx) >> 1, (lp.y1 + sy) >> 1, mx, my);
+                line3_no_clip(lp2, mx, my, (lp.x2 + ex) >> 1, (lp.y2 + ey) >> 1);
                 return;
             }
 
@@ -1569,10 +1701,70 @@ namespace agg
             }
         }
 
+        //-------------------------------------------------------------------------
+        void line3(const line_parameters& lp, 
+                   int sx, int sy, int ex, int ey)
+        {
+            if(m_clipping)
+            {
+                int x1 = lp.x1;
+                int y1 = lp.y1;
+                int x2 = lp.x2;
+                int y2 = lp.y2;
+                unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                if((flags & 4) == 0)
+                {
+                    if(flags)
+                    {
+                        line_parameters lp2(x1, y1, x2, y2, 
+                                           (int)calc_distance(x1, y1, x2, y2));
+                        if(flags & 1)
+                        {
+                            sx = x1 + (y2 - y1); 
+                            sy = y1 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(sx - lp.x1) + abs(sy - lp.y1) > lp2.len)
+                            {
+                                sx = (lp.x1 + sx) >> 1;
+                                sy = (lp.y1 + sy) >> 1;
+                            }
+                        }
+                        if(flags & 2)
+                        {
+                            ex = x2 + (y2 - y1); 
+                            ey = y2 - (x2 - x1);
+                        }
+                        else
+                        {
+                            while(abs(ex - lp.x2) + abs(ey - lp.y2) > lp2.len)
+                            {
+                                ex = (lp.x2 + ex) >> 1;
+                                ey = (lp.y2 + ey) >> 1;
+                            }
+                        }
+                        line3_no_clip(lp2, sx, sy, ex, ey);
+                    }
+                    else
+                    {
+                        line3_no_clip(lp, sx, sy, ex, ey);
+                    }
+                }
+            }
+            else
+            {
+                line3_no_clip(lp, sx, sy, ex, ey);
+            }
+        }
+
+
     private:
         base_ren_type*         m_ren;
         const line_profile_aa* m_profile; 
         color_type             m_color;
+        rect_i                 m_clip_box;
+        bool                   m_clipping;
     };
 
 
