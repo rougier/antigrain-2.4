@@ -119,8 +119,11 @@ namespace agg
         }
         void resize(unsigned size)
         {
-           delete [] m_array;
-           m_array = new T[m_size = size];
+            if(size != m_size)
+            {
+                delete [] m_array;
+                m_array = new T[m_size = size];
+            }
         }
         const self_type& operator = (const self_type& v)
         {

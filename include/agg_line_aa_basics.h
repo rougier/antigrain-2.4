@@ -166,7 +166,7 @@ namespace agg
     {
         int d = int((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
                      double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
-        if(d < line_subpixel_size)
+        if(d < line_subpixel_size/2)
         {
             *x = lp.x1 + (lp.y2 - lp.y1);
             *y = lp.y1 - (lp.x2 - lp.x1);
@@ -180,7 +180,7 @@ namespace agg
     {
         int d = int((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
                      double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
-        if(d < line_subpixel_size)
+        if(d < line_subpixel_size/2)
         {
             *x = lp.x2 + (lp.y2 - lp.y1);
             *y = lp.y2 - (lp.x2 - lp.x1);

@@ -45,46 +45,7 @@ namespace agg
 
         //---------------------------------------------------------------------
         void inc_x() { m_dist += m_dy; }
-        void dec_x() { m_dist -= m_dy; }
-        void inc_y() { m_dist -= m_dx; }
-        void dec_y() { m_dist += m_dx; }
-
-        //---------------------------------------------------------------------
-        void inc_x(int dy)
-        {
-            m_dist += m_dy; 
-            if(dy > 0) m_dist -= m_dx; 
-            if(dy < 0) m_dist += m_dx; 
-        }
-
-        //---------------------------------------------------------------------
-        void dec_x(int dy)
-        {
-            m_dist -= m_dy; 
-            if(dy > 0) m_dist -= m_dx; 
-            if(dy < 0) m_dist += m_dx; 
-        }
-
-        //---------------------------------------------------------------------
-        void inc_y(int dx)
-        {
-            m_dist -= m_dx; 
-            if(dx > 0) m_dist += m_dy; 
-            if(dx < 0) m_dist -= m_dy; 
-        }
-
-        void dec_y(int dx)
-        //---------------------------------------------------------------------
-        {
-            m_dist += m_dx; 
-            if(dx > 0) m_dist += m_dy; 
-            if(dx < 0) m_dist -= m_dy; 
-        }
-
-        //---------------------------------------------------------------------
-        int dist()     const { return m_dist; }
-        int dx()       const { return m_dx;   }
-        int dy()       const { return m_dy;   }
+        int  dist() const { return m_dist; }
 
     private:
         //---------------------------------------------------------------------
@@ -93,7 +54,44 @@ namespace agg
         int m_dist;
     };
 
+    //==================================================distance_interpolator00
+    class distance_interpolator00
+    {
+    public:
+        //---------------------------------------------------------------------
+        distance_interpolator00() {}
+        distance_interpolator00(int xc, int yc, 
+                                int x1, int y1, int x2, int y2, 
+                                int x,  int y) :
+            m_dx1(line_mr(x1) - line_mr(xc)),
+            m_dy1(line_mr(y1) - line_mr(yc)),
+            m_dx2(line_mr(x2) - line_mr(xc)),
+            m_dy2(line_mr(y2) - line_mr(yc)),
+            m_dist1((line_mr(x + line_subpixel_size/2) - line_mr(x1)) * m_dy1 - 
+                    (line_mr(y + line_subpixel_size/2) - line_mr(y1)) * m_dx1),
+            m_dist2((line_mr(x + line_subpixel_size/2) - line_mr(x2)) * m_dy2 - 
+                    (line_mr(y + line_subpixel_size/2) - line_mr(y2)) * m_dx2)
+        {
+            m_dx1 <<= line_mr_subpixel_shift;
+            m_dy1 <<= line_mr_subpixel_shift;
+            m_dx2 <<= line_mr_subpixel_shift;
+            m_dy2 <<= line_mr_subpixel_shift;
+        }
 
+        //---------------------------------------------------------------------
+        void inc_x() { m_dist1 += m_dy1; m_dist2 += m_dy2; }
+        int  dist1() const { return m_dist1; }
+        int  dist2() const { return m_dist2; }
+
+    private:
+        //---------------------------------------------------------------------
+        int m_dx1;
+        int m_dy1;
+        int m_dx2;
+        int m_dy2;
+        int m_dist1;
+        int m_dist2;
+    };
 
     //===================================================distance_interpolator1
     class distance_interpolator1
@@ -1454,6 +1452,8 @@ namespace agg
         template<class Cmp> 
         void semidot(Cmp cmp, int xc1, int yc1, int xc2, int yc2)
         {
+            if(m_clipping && clipping_flags(xc1, yc1, m_clip_box)) return;
+
             int r = ((subpixel_width() + line_subpixel_mask) >> line_subpixel_shift);
             if(r < 1) r = 1;
             ellipse_bresenham_interpolator ei(r, r);
@@ -1480,6 +1480,77 @@ namespace agg
             }
             while(dy < 0);
             semidot_hline(cmp, xc1, yc1, xc2, yc2, x-dx0, y+dy0, x+dx0);
+        }
+
+        //-------------------------------------------------------------------------
+        void pie_hline(int xc, int yc, int xp1, int yp1, int xp2, int yp2, 
+                       int xh1, int yh1, int xh2)
+        {
+            if(m_clipping && clipping_flags(xc, yc, m_clip_box)) return;
+           
+            cover_type covers[line_interpolator_aa_base<self_type>::max_half_width * 2 + 4];
+            cover_type* p0 = covers;
+            cover_type* p1 = covers;
+            int x = xh1 << line_subpixel_shift;
+            int y = yh1 << line_subpixel_shift;
+            int w = subpixel_width();
+
+            distance_interpolator00 di(xc, yc, xp1, yp1, xp2, yp2, x, y);
+            x += line_subpixel_size/2;
+            y += line_subpixel_size/2;
+
+            int xh0 = xh1;
+            int dx = x - xc;
+            int dy = y - yc;
+            do
+            {
+                int d = int(fast_sqrt(dx*dx + dy*dy));
+                *p1 = 0;
+                if(di.dist1() <= 0 && di.dist2() > 0 && d <= w)
+                {
+                    *p1 = (cover_type)cover(d);
+                }
+                ++p1;
+                dx += line_subpixel_size;
+                di.inc_x();
+            }
+            while(++xh1 <= xh2);
+            m_ren->blend_solid_hspan(xh0, yh1, 
+                                     unsigned(p1 - p0), 
+                                     color(), 
+                                     p0);
+        }
+
+
+        //-------------------------------------------------------------------------
+        void pie(int xc, int yc, int x1, int y1, int x2, int y2)
+        {
+            int r = ((subpixel_width() + line_subpixel_mask) >> line_subpixel_shift);
+            if(r < 1) r = 1;
+            ellipse_bresenham_interpolator ei(r, r);
+            int dx = 0;
+            int dy = -r;
+            int dy0 = dy;
+            int dx0 = dx;
+            int x = xc >> line_subpixel_shift;
+            int y = yc >> line_subpixel_shift;
+
+            do
+            {
+                dx += ei.dx();
+                dy += ei.dy();
+
+                if(dy != dy0)
+                {
+                    pie_hline(xc, yc, x1, y1, x2, y2, x-dx0, y+dy0, x+dx0);
+                    pie_hline(xc, yc, x1, y1, x2, y2, x-dx0, y-dy0, x+dx0);
+                }
+                dx0 = dx;
+                dy0 = dy;
+                ++ei;
+            }
+            while(dy < 0);
+            pie_hline(xc, yc, x1, y1, x2, y2, x-dx0, y+dy0, x+dx0);
         }
 
         //-------------------------------------------------------------------------

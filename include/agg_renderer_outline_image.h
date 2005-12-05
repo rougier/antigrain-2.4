@@ -506,8 +506,8 @@ namespace agg
             m_count((lp.vertical ? abs((lp.y2 >> line_subpixel_shift) - m_y) :
                                    abs((lp.x2 >> line_subpixel_shift) - m_x))),
             m_width(ren.subpixel_width()),
-            //m_max_extent(m_width >> (line_subpixel_shift - 1)),
-            m_max_extent((m_width + line_subpixel_mask) >> line_subpixel_shift),
+            //m_max_extent(m_width >> (line_subpixel_shift - 2)),
+            m_max_extent((m_width + line_subpixel_size) >> line_subpixel_shift),
             m_start(pattern_start + (m_max_extent + 2) * ren.pattern_width()),
             m_step(0)
         {
@@ -888,6 +888,11 @@ namespace agg
         }
 
         //-------------------------------------------------------------------------
+        void pie(int, int, int, int, int, int)
+        {
+        }
+
+        //-------------------------------------------------------------------------
         void line0(const line_parameters&)
         {
         }
@@ -919,6 +924,10 @@ namespace agg
             
             fix_degenerate_bisectrix_start(lp, &sx, &sy);
             fix_degenerate_bisectrix_end(lp, &ex, &ey);
+//sx = lp.x1 + (lp.y2 - lp.y1);
+//sy = lp.y1 - (lp.x2 - lp.x1);
+//ex = lp.x2 + (lp.y2 - lp.y1);
+//ey = lp.y2 - (lp.x2 - lp.x1);
             line_interpolator_image<self_type> li(*this, lp, 
                                                   sx, sy, 
                                                   ex, ey, 

@@ -278,7 +278,9 @@ public:
         prof.width(m_width.value());
         renderer_oaa ren_oaa(ren_base, prof);
         rasterizer_outline_aa ras_oaa(ren_oaa);
-        ras_oaa.accurate_join(m_accurate_joins.status());
+        ras_oaa.line_join(m_accurate_joins.status() ? 
+                              agg::outline_miter_accurate_join :
+                              agg::outline_round_join); 
         ras_oaa.round_cap(true);
 
         pattern_filter filter;
@@ -462,7 +464,9 @@ ras.render(false);     //false means "don't close
             prof.width(m_width.value());
             renderer_oaa ren_oaa(ren_base, prof);
             rasterizer_outline_aa ras_oaa(ren_oaa);
-            ras_oaa.accurate_join(m_accurate_joins.status());
+            ras_oaa.line_join(m_accurate_joins.status() ? 
+                                  agg::outline_miter_accurate_join :
+                                  agg::outline_round_join); 
             ras_oaa.round_cap(true);
 
             pattern_filter filter;
