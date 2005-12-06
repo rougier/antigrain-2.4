@@ -37,6 +37,7 @@ base:
 	make gamma_correction
 	make gamma_ctrl
 	make gouraud
+	make gouraud_mesh
 	make gradients
 	make graph_test
 	make idea
@@ -141,6 +142,9 @@ gamma_ctrl: ../gamma_ctrl.o $(PLATFORMSOURCES)
 
 gouraud: ../gouraud.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gouraud $(LIBS)
+
+gouraud_mesh: ../gouraud_mesh.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o gouraud_mesh $(LIBS)
 
 gradients: ../gradients.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gradients $(LIBS)
@@ -262,6 +266,7 @@ clean:
 	rm -rf gamma_correction
 	rm -rf gamma_ctrl
 	rm -rf gouraud
+	rm -rf gouraud_mesh
 	rm -rf gradients
 	rm -rf graph_test
 	rm -rf idea

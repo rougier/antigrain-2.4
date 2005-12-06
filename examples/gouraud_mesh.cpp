@@ -187,8 +187,8 @@ namespace agg
                 m_triangles.add(mesh_triangle(p3, p4, p1));
 
                 int curr_cell = i * (m_cols - 1) + j;
-                int left_cell = j ? curr_cell - 1 : -1;
-                int bott_cell = i ? curr_cell - (m_cols - 1) : -1;
+                int left_cell = j ? int(curr_cell - 1) : -1;
+                int bott_cell = i ? int(curr_cell - (m_cols - 1)) : -1;
 
                 int curr_t1 = curr_cell * 2;
                 int curr_t2 = curr_t1 + 1;

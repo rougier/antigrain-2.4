@@ -954,11 +954,11 @@ namespace agg
                 int x2 = lp.x2;
                 int y2 = lp.y2;
                 unsigned flags = clip_line_segment(&x1, &y1, &x2, &y2, m_clip_box);
+                int start = m_start;
                 if((flags & 4) == 0)
                 {
                     if(flags)
                     {
-                        int start = m_start;
                         line_parameters lp2(x1, y1, x2, y2, 
                                            uround(calc_distance(x1, y1, x2, y2)));
                         if(flags & 1)
@@ -989,13 +989,13 @@ namespace agg
                             }
                         }
                         line3_no_clip(lp2, sx, sy, ex, ey);
-                        m_start = start + uround(lp.len / m_scale_x);
                     }
                     else
                     {
                         line3_no_clip(lp, sx, sy, ex, ey);
                     }
                 }
+                m_start = start + uround(lp.len / m_scale_x);
             }
             else
             {
