@@ -33,6 +33,7 @@ base:
 	make conv_dash_marker
 	make conv_stroke
 	make flash_rasterizer
+	make flash_rasterizer2
 	make gamma_correction
 	make gamma_ctrl
 	make gouraud
@@ -128,6 +129,9 @@ distortions: ../distortions.o $(PLATFORMSOURCES) spheres.ppm
 
 flash_rasterizer: ../flash_rasterizer.o $(PLATFORMSOURCES) shapes.txt
 	$(CXX) $(CXXFLAGS) ../flash_rasterizer.o $(PLATFORMSOURCES) -o flash_rasterizer $(LIBS)
+
+flash_rasterizer2: ../flash_rasterizer2.o $(PLATFORMSOURCES) shapes.txt
+	$(CXX) $(CXXFLAGS) ../flash_rasterizer2.o $(PLATFORMSOURCES) -o flash_rasterizer2 $(LIBS)
 
 gamma_correction: ../gamma_correction.o $(PLATFORMSOURCES) 
 	$(CXX) $(CXXFLAGS) $^ -o gamma_correction $(LIBS)
@@ -254,6 +258,7 @@ clean:
 	rm -rf conv_dash_marker
 	rm -rf conv_stroke
 	rm -rf flash_rasterizer
+	rm -rf flash_rasterizer2
 	rm -rf gamma_correction
 	rm -rf gamma_ctrl
 	rm -rf gouraud
