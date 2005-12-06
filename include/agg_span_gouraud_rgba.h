@@ -43,18 +43,13 @@ namespace agg
         enum subpixel_scale_e
         { 
             subpixel_shift = 4, 
-            subpixel_size  = 1 << subpixel_shift
+            subpixel_scale = 1 << subpixel_shift
         };
 
     private:
         //--------------------------------------------------------------------
         struct rgba_calc
         {
-            static int round(double v)
-            {
-                return int(v + ((v < 0.0) ? -0.5 : 0.5));
-            }
-
             void init(const coord_type& c1, const coord_type& c2)
             {
                 m_x1  = c1.x - 0.5; 
@@ -77,11 +72,11 @@ namespace agg
                 double k = (y - m_y1) * m_1dy;
                 if(k < 0.0) k = 0.0;
                 if(k > 1.0) k = 1.0;
-                m_r = m_r1 + round(m_dr * k);
-                m_g = m_g1 + round(m_dg * k);
-                m_b = m_b1 + round(m_db * k);
-                m_a = m_a1 + round(m_da * k);
-                m_x = round((m_x1 + m_dx * k) * subpixel_size);
+                m_r = m_r1 + iround(m_dr * k);
+                m_g = m_g1 + iround(m_dg * k);
+                m_b = m_b1 + iround(m_db * k);
+                m_a = m_a1 + iround(m_da * k);
+                m_x = iround((m_x1 + m_dx * k) * subpixel_scale);
             }
 
             double m_x1;
@@ -211,12 +206,12 @@ namespace agg
                 span->g = (value_type)vg;
                 span->b = (value_type)vb;
                 span->a = (value_type)va;
-                r     += subpixel_size; 
-                g     += subpixel_size; 
-                b     += subpixel_size; 
-                a     += subpixel_size;
-                nlen  -= subpixel_size;
-                start -= subpixel_size;
+                r     += subpixel_scale; 
+                g     += subpixel_scale; 
+                b     += subpixel_scale; 
+                a     += subpixel_scale;
+                nlen  -= subpixel_scale;
+                start -= subpixel_scale;
                 ++span;
                 --len;
             }
@@ -232,11 +227,11 @@ namespace agg
                 span->g = (value_type)g.y();
                 span->b = (value_type)b.y();
                 span->a = (value_type)a.y();
-                r    += subpixel_size; 
-                g    += subpixel_size; 
-                b    += subpixel_size; 
-                a    += subpixel_size;
-                nlen -= subpixel_size;
+                r    += subpixel_scale; 
+                g    += subpixel_scale; 
+                b    += subpixel_scale; 
+                a    += subpixel_scale;
+                nlen -= subpixel_scale;
                 ++span;
                 --len;
             }
@@ -258,10 +253,10 @@ namespace agg
                 span->g = (value_type)vg;
                 span->b = (value_type)vb;
                 span->a = (value_type)va;
-                r += subpixel_size; 
-                g += subpixel_size; 
-                b += subpixel_size; 
-                a += subpixel_size;
+                r += subpixel_scale; 
+                g += subpixel_scale; 
+                b += subpixel_scale; 
+                a += subpixel_scale;
                 ++span;
                 --len;
             }

@@ -169,14 +169,14 @@ namespace agg
                 const value_type* ptr1 = (value_type*)base_type::source_image().row(y1);
                 const value_type* ptr2 = (value_type*)base_type::source_image().row(y2);
 
-                fg = image_subpixel_size * image_subpixel_size / 2;
+                fg = image_subpixel_scale * image_subpixel_scale / 2;
 
                 x_hr &= image_subpixel_mask;
                 y_hr &= image_subpixel_mask;
 
-                fg += ptr1[x1] * (image_subpixel_size - x_hr) * (image_subpixel_size - y_hr);
-                fg += ptr1[x2] * x_hr * (image_subpixel_size - y_hr);
-                fg += ptr2[x1] * (image_subpixel_size - x_hr) * y_hr;
+                fg += ptr1[x1] * (image_subpixel_scale - x_hr) * (image_subpixel_scale - y_hr);
+                fg += ptr1[x2] * x_hr * (image_subpixel_scale - y_hr);
+                fg += ptr2[x1] * (image_subpixel_scale - x_hr) * y_hr;
                 fg += ptr2[x2] * x_hr * y_hr;
 
                 span->v = (value_type)(fg >> image_subpixel_shift * 2);
@@ -272,26 +272,26 @@ namespace agg
                 const value_type* ptr1 = (value_type*)base_type::source_image().row(y1);
                 const value_type* ptr2 = (value_type*)base_type::source_image().row(y2);
 
-                fg = image_filter_size / 2;
+                fg = image_filter_scale / 2;
 
                 x_hr &= image_subpixel_mask;
                 y_hr &= image_subpixel_mask;
 
-                fg += ptr1[x1] * ((weight_array[x_hr + image_subpixel_size] * 
-                                   weight_array[y_hr + image_subpixel_size] + 
-                                   image_filter_size / 2) >> 
+                fg += ptr1[x1] * ((weight_array[x_hr + image_subpixel_scale] * 
+                                   weight_array[y_hr + image_subpixel_scale] + 
+                                   image_filter_scale / 2) >> 
                                    image_filter_shift);
                 fg += ptr1[x2] * ((weight_array[x_hr] * 
-                                   weight_array[y_hr + image_subpixel_size] + 
-                                   image_filter_size / 2) >> 
+                                   weight_array[y_hr + image_subpixel_scale] + 
+                                   image_filter_scale / 2) >> 
                                    image_filter_shift);
-                fg += ptr2[x1] * ((weight_array[x_hr + image_subpixel_size] * 
+                fg += ptr2[x1] * ((weight_array[x_hr + image_subpixel_scale] * 
                                    weight_array[y_hr] + 
-                                   image_filter_size / 2) >> 
+                                   image_filter_scale / 2) >> 
                                    image_filter_shift);
                 fg += ptr2[x2] * ((weight_array[x_hr] * 
                                    weight_array[y_hr] + 
-                                   image_filter_size / 2) >> 
+                                   image_filter_scale / 2) >> 
                                    image_filter_shift);
 
                 fg >>= image_filter_shift;
@@ -395,7 +395,7 @@ namespace agg
                 int x_lr;
 
                 y_hr = image_subpixel_mask - (y_hr & image_subpixel_mask);
-                fg = image_filter_size / 2;
+                fg = image_filter_scale / 2;
 
                 do
                 {
@@ -407,13 +407,13 @@ namespace agg
                     do
                     {
                         fg += row_ptr[x_lr] * ((weight_y * weight_array[x_hr] + 
-                                               image_filter_size / 2) >> 
+                                               image_filter_scale / 2) >> 
                                                image_filter_shift);
-                        x_hr += image_subpixel_size;
+                        x_hr += image_subpixel_scale;
                         x_lr = ++m_wrap_mode_x;
                     } while(--x_count);
 
-                    y_hr += image_subpixel_size;
+                    y_hr += image_subpixel_scale;
                     y_lr = ++m_wrap_mode_y;
                 } while(--y_count);
 

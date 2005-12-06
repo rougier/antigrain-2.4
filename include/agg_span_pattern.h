@@ -47,14 +47,14 @@ namespace agg
             m_src(&src),
             m_offset_x(offset_x),
             m_offset_y(offset_y),
-            m_alpha(value_type(alpha * double(base_mask)))
+            m_alpha((value_type)uround(alpha * double(base_mask)))
         {}
 
         //----------------------------------------------------------------
         void source_image(const rendering_buffer& src) { m_src = &src; }
         void offset_x(unsigned v) { m_offset_x = v; }
         void offset_y(unsigned v) { m_offset_y = v; }
-        void alpha(double v)  { m_alpha = value_type(v * double(base_mask)); }
+        void alpha(double v)  { m_alpha = (value_type)uround(v * double(base_mask)); }
 
         //----------------------------------------------------------------
         const rendering_buffer& source_image() const { return *m_src; }

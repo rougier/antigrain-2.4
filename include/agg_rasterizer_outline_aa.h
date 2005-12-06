@@ -49,8 +49,8 @@ namespace agg
         {
             double dx = val.x - x;
             double dy = val.y - y;
-            return (len = int(sqrt(dx * dx + dy * dy))) > 
-                   (line_subpixel_size + line_subpixel_size / 2);
+            return (len = uround(sqrt(dx * dx + dy * dy))) > 
+                   (line_subpixel_scale + line_subpixel_scale / 2);
         }
     };
 

@@ -16,6 +16,7 @@
 #ifndef AGG_BASICS_INCLUDED
 #define AGG_BASICS_INCLUDED
 
+#include <math.h>
 #include "agg_config.h"
 
 //-------------------------------------------------------- Default basic types
@@ -87,6 +88,67 @@ namespace agg
     typedef AGG_INT64  int64;        //----int64
     typedef AGG_INT64U int64u;       //----int64u
 
+    //-------------------------------------------------------------------iround
+    //-------------------------------------------------------------------uround
+#if defined(AGG_FISTP)
+#pragma warning(push)
+#pragma warning(disable : 4035) //Disable warning "no return value"
+    AGG_INLINE int iround(double v)
+    {
+        __asm fld   qword ptr [v]
+        __asm fistp dword ptr [ebp-8]
+        __asm mov eax, dword ptr [ebp-8]
+    }
+    AGG_INLINE unsigned uround(double v)
+    {
+        __asm fld   qword ptr [v]
+        __asm fistp dword ptr [ebp-8]
+        __asm mov eax, dword ptr [ebp-8]
+    }
+#pragma warning(pop)
+#elif defined(AGG_QIFIST)
+    AGG_INLINE int iround(double v)
+    {
+        return int(v);
+    }
+    AGG_INLINE int uround(double v)
+    {
+        return unsigned(v);
+    }
+#else
+    AGG_INLINE int iround(double v)
+    {
+        return int((v < 0.0) ? v - 0.5 : v + 0.5);
+    }
+    AGG_INLINE int uround(double v)
+    {
+        return unsigned(v + 0.5);
+    }
+#endif
+
+    //-------------------------------------------------------------------ufloor
+    AGG_INLINE unsigned ufloor(double v)
+    {
+        return unsigned(floor(v));
+    }
+
+    //--------------------------------------------------------------------uceil
+    AGG_INLINE unsigned uceil(double v)
+    {
+        return unsigned(ceil(v));
+    }
+
+    //---------------------------------------------------------------saturation
+    template<int Limit> struct saturation
+    {
+        AGG_INLINE static int iround(double v)
+        {
+            if(v < double(-Limit)) return -Limit;
+            if(v > double( Limit)) return  Limit;
+            return agg::iround(v);
+        }
+    };
+
     //-------------------------------------------------------------------------
     typedef unsigned char cover_type;    //----cover_type
     enum cover_scale_e
@@ -98,18 +160,17 @@ namespace agg
         cover_full  = cover_mask         //----cover_full 
     };
 
-
-    //--------------------------------------------------------poly_base_scale_e
+    //----------------------------------------------------poly_subpixel_scale_e
     // These constants determine the subpixel accuracy, to be more precise, 
     // the number of bits of the fractional part of the coordinates. 
     // The possible coordinate capacity in bits can be calculated by formula:
-    // sizeof(int) * 8 - poly_base_shift, i.e, for 32-bit integers and
+    // sizeof(int) * 8 - poly_subpixel_shift, i.e, for 32-bit integers and
     // 8-bits fractional part the capacity is 24 bits.
-    enum poly_base_scale_e
+    enum poly_subpixel_scale_e
     {
-        poly_base_shift = 8,                       //----poly_base_shift
-        poly_base_size  = 1 << poly_base_shift,    //----poly_base_size 
-        poly_base_mask  = poly_base_size - 1,      //----poly_base_mask 
+        poly_subpixel_shift = 8,                      //----poly_subpixel_shift
+        poly_subpixel_scale = 1<<poly_subpixel_shift, //----poly_subpixel_scale 
+        poly_subpixel_mask  = poly_subpixel_scale-1,  //----poly_subpixel_mask 
     };
 
     //-----------------------------------------------------------------------pi

@@ -664,8 +664,8 @@ namespace agg
             m_data(data),
             m_end(data + size),
             m_ptr(data),
-            m_dx(int(dx + 0.5)),
-            m_dy(int(dy + 0.5)),
+            m_dx(iround(dx)),
+            m_dy(iround(dy)),
             m_min_x(0x7FFFFFFF),
             m_min_y(0x7FFFFFFF),
             m_max_x(-0x7FFFFFFF),
@@ -678,8 +678,8 @@ namespace agg
             m_data  = data;
             m_end   = data + size;
             m_ptr   = data;
-            m_dx    = int(dx + 0.5);
-            m_dy    = int(dy + 0.5);
+            m_dx    = iround(dx);
+            m_dy    = iround(dy);
             m_min_x = 0x7FFFFFFF;
             m_min_y = 0x7FFFFFFF;
             m_max_x = -0x7FFFFFFF;

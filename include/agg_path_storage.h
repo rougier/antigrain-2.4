@@ -703,6 +703,7 @@ namespace agg
         unsigned arrange_polygon_orientation(unsigned start, path_flags_e orientation);
         unsigned arrange_orientations(unsigned path_id, path_flags_e orientation);
         void     arrange_orientations_all_paths(path_flags_e orientation);
+        void     invert_polygon(unsigned start);
 
         // Flip all vertices horizontally or vertically, 
         // between x1 and x2, or between y1 and y2 respectively
@@ -1212,6 +1213,29 @@ namespace agg
         }
     }
 
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::invert_polygon(unsigned start)
+    {
+        // Skip all non-vertices at the beginning
+        while(start < m_vertices.total_vertices() && 
+              !is_vertex(m_vertices.command(start))) ++start;
+
+        // Skip all insignificant move_to
+        while(start+1 < m_vertices.total_vertices() && 
+              is_move_to(m_vertices.command(start)) &&
+              is_move_to(m_vertices.command(start+1))) ++start;
+
+        // Find the last vertex
+        unsigned end = start + 1;
+        while(end < m_vertices.total_vertices() && 
+              !is_next_poly(m_vertices.command(end))) ++end;
+
+        if(end - start > 2)
+        {
+            invert_polygon(start, end);
+        }
+    }
 
     //------------------------------------------------------------------------
     template<class VC> 

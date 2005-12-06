@@ -43,18 +43,13 @@ namespace agg
         enum subpixel_scale_e
         { 
             subpixel_shift = 4, 
-            subpixel_size  = 1 << subpixel_shift
+            subpixel_scale = 1 << subpixel_shift
         };
 
     private:
         //--------------------------------------------------------------------
         struct gray_calc
         {
-            static int round(double v)
-            {
-                return int(v + ((v < 0.0) ? -0.5 : 0.5));
-            }
-
             void init(const coord_type& c1, const coord_type& c2)
             {
                 m_x1  = c1.x - 0.5;
@@ -73,9 +68,9 @@ namespace agg
                 double k = (y - m_y1) * m_1dy;
                 if(k < 0.0) k = 0.0;
                 if(k > 1.0) k = 1.0;
-                m_v = m_v1 + round(m_dv * k);
-                m_a = m_a1 + round(m_da * k);
-                m_x = round((m_x1 + m_dx * k) * subpixel_size);
+                m_v = m_v1 + iround(m_dv * k);
+                m_a = m_a1 + iround(m_da * k);
+                m_x = iround((m_x1 + m_dx * k) * subpixel_scale);
             }
 
             double m_x1;
@@ -189,10 +184,10 @@ namespace agg
                 if(va < 0) va = 0; if(va > lim) va = lim;
                 span->v = (value_type)vv;
                 span->a = (value_type)va;
-                v     += subpixel_size; 
-                a     += subpixel_size;
-                nlen  -= subpixel_size;
-                start -= subpixel_size;
+                v     += subpixel_scale; 
+                a     += subpixel_scale;
+                nlen  -= subpixel_scale;
+                start -= subpixel_scale;
                 ++span;
                 --len;
             }
@@ -206,9 +201,9 @@ namespace agg
             {
                 span->v = (value_type)v.y();
                 span->a = (value_type)a.y();
-                v    += subpixel_size; 
-                a    += subpixel_size;
-                nlen -= subpixel_size;
+                v    += subpixel_scale; 
+                a    += subpixel_scale;
+                nlen -= subpixel_scale;
                 ++span;
                 --len;
             }
@@ -224,8 +219,8 @@ namespace agg
                 if(va < 0) va = 0; if(va > lim) va = lim;
                 span->v = (value_type)vv;
                 span->a = (value_type)va;
-                v += subpixel_size; 
-                a += subpixel_size;
+                v += subpixel_scale; 
+                a += subpixel_scale;
                 ++span;
                 --len;
             }

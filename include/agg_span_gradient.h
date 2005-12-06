@@ -30,8 +30,8 @@ namespace agg
     enum gradient_subpixel_scale_e
     {
         gradient_subpixel_shift = 4,                              //-----gradient_subpixel_shift
-        gradient_subpixel_size  = 1 << gradient_subpixel_shift,   //-----gradient_subpixel_size
-        gradient_subpixel_mask  = gradient_subpixel_size - 1      //-----gradient_subpixel_mask
+        gradient_subpixel_scale = 1 << gradient_subpixel_shift,   //-----gradient_subpixel_scale
+        gradient_subpixel_mask  = gradient_subpixel_scale - 1     //-----gradient_subpixel_mask
     };
 
 
@@ -64,23 +64,23 @@ namespace agg
             m_interpolator(&inter),
             m_gradient_function(&gradient_function),
             m_color_function(&color_function),
-            m_d1(int(d1 * gradient_subpixel_size)),
-            m_d2(int(d2 * gradient_subpixel_size))
+            m_d1(iround(d1 * gradient_subpixel_scale)),
+            m_d2(iround(d2 * gradient_subpixel_scale))
         {}
 
         //--------------------------------------------------------------------
         interpolator_type& interpolator() { return *m_interpolator; }
         const GradientF& gradient_function() const { return *m_gradient_function; }
         const ColorF& color_function() const { return *m_color_function; }
-        double d1() const { return double(m_d1) / gradient_subpixel_size; }
-        double d2() const { return double(m_d2) / gradient_subpixel_size; }
+        double d1() const { return double(m_d1) / gradient_subpixel_scale; }
+        double d2() const { return double(m_d2) / gradient_subpixel_scale; }
 
         //--------------------------------------------------------------------
         void interpolator(interpolator_type& i) { m_interpolator = &i; }
         void gradient_function(const GradientF& gf) { m_gradient_function = &gf; }
         void color_function(const ColorF& cf) { m_color_function = &cf; }
-        void d1(double v) { m_d1 = int(v * gradient_subpixel_size); }
-        void d2(double v) { m_d2 = int(v * gradient_subpixel_size); }
+        void d1(double v) { m_d1 = iround(v * gradient_subpixel_scale); }
+        void d2(double v) { m_d2 = iround(v * gradient_subpixel_scale); }
 
         //--------------------------------------------------------------------
         void prepare() {}
@@ -175,7 +175,7 @@ namespace agg
     public:
         static AGG_INLINE int calculate(int x, int y, int)
         {
-            return int(sqrt(double(x)*double(x) + double(y)*double(y)));
+            return uround(sqrt(double(x)*double(x) + double(y)*double(y)));
         }
     };
 
@@ -186,7 +186,7 @@ namespace agg
     public:
         //---------------------------------------------------------------------
         gradient_radial_focus() : 
-            m_radius(100 * gradient_subpixel_size), 
+            m_radius(100 * gradient_subpixel_scale), 
             m_focus_x(0), 
             m_focus_y(0)
         {
@@ -195,9 +195,9 @@ namespace agg
 
         //---------------------------------------------------------------------
         gradient_radial_focus(double r, double fx, double fy) : 
-            m_radius (int(r  * gradient_subpixel_size)), 
-            m_focus_x(int(fx * gradient_subpixel_size)), 
-            m_focus_y(int(fy * gradient_subpixel_size))
+            m_radius (iround(r  * gradient_subpixel_scale)), 
+            m_focus_x(iround(fx * gradient_subpixel_scale)), 
+            m_focus_y(iround(fy * gradient_subpixel_scale))
         {
             update_values();
         }
@@ -205,16 +205,16 @@ namespace agg
         //---------------------------------------------------------------------
         void init(double r, double fx, double fy)
         {
-            m_radius  = int(r  * gradient_subpixel_size);
-            m_focus_x = int(fx * gradient_subpixel_size);
-            m_focus_y = int(fy * gradient_subpixel_size);
+            m_radius  = iround(r  * gradient_subpixel_scale);
+            m_focus_x = iround(fx * gradient_subpixel_scale);
+            m_focus_y = iround(fy * gradient_subpixel_scale);
             update_values();
         }
 
         //---------------------------------------------------------------------
-        double radius()  const { return double(m_radius)  / gradient_subpixel_size; }
-        double focus_x() const { return double(m_focus_x) / gradient_subpixel_size; }
-        double focus_y() const { return double(m_focus_y) / gradient_subpixel_size; }
+        double radius()  const { return double(m_radius)  / gradient_subpixel_scale; }
+        double focus_x() const { return double(m_focus_x) / gradient_subpixel_scale; }
+        double focus_y() const { return double(m_focus_y) / gradient_subpixel_scale; }
 
         //---------------------------------------------------------------------
         int calculate(int x, int y, int) const
@@ -224,7 +224,7 @@ namespace agg
 
             // Special case to avoid divide by zero or very near zero
             //---------------------------------
-            if(x == int(m_focus_x))
+            if(x == iround(m_focus_x))
             {		   
                 solution_x = m_focus_x;
                 solution_y = 0.0;
@@ -267,7 +267,7 @@ namespace agg
             double cur_to_focus = double(x - m_focus_x) * double(x - m_focus_x) +
                                   double(y - m_focus_y) * double(y - m_focus_y);
 
-            return int(sqrt(cur_to_focus / int_to_focus) * m_radius);
+            return iround(sqrt(cur_to_focus / int_to_focus) * m_radius);
         }
 
     private:
@@ -292,8 +292,8 @@ namespace agg
                 // x = r cos theta, y = r sin theta
                 //------------------------
                 double a = atan2(double(m_focus_y), double(m_focus_x));
-                m_focus_x = int(r * cos(a));
-                m_focus_y = int(r * sin(a));
+                m_focus_x = iround(r * cos(a));
+                m_focus_y = iround(r * sin(a));
             }
 
             // Calculate the solution to be used in the case where x == focus_x
@@ -367,7 +367,7 @@ namespace agg
     public:
         static AGG_INLINE int calculate(int x, int y, int d) 
         { 
-            return int(fabs(atan2(double(y), double(x))) * double(d) / pi);
+            return uround(fabs(atan2(double(y), double(x))) * double(d) / pi);
         }
     };
 

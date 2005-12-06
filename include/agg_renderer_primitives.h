@@ -47,7 +47,7 @@ namespace agg
         //--------------------------------------------------------------------
         static int coord(double c) 
         { 
-            return int(c * line_bresenham_interpolator::subpixel_size); 
+            return iround(c * line_bresenham_interpolator::subpixel_scale); 
         }
 
         //--------------------------------------------------------------------

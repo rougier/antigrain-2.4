@@ -43,8 +43,8 @@ namespace agg
         color_type pixel(int x, int y) const 
         { 
             double src_y = (y + 0.5) * m_scale - 0.5;
-            int h = int(m_source.height()) - 1;
-            int y1 = int(src_y);
+            int h  = m_source.height() - 1;
+            int y1 = iround(src_y);
             int y2 = y1 + 1;
             color_type pix1 = (y1 < 0) ? color_type::no_color() : m_source.pixel(x, y1);
             color_type pix2 = (y2 > h) ? color_type::no_color() : m_source.pixel(x, y2);
@@ -110,12 +110,12 @@ namespace agg
         //--------------------------------------------------------------------
         template<class Source> void create(const Source& src)
         {
-            m_height = unsigned(ceil((double)src.height()));
-            m_width  = unsigned(ceil((double)src.width()));
-            m_width_hr = int(src.width() * line_subpixel_size);
-            m_half_height_hr = int(src.height() * line_subpixel_size/2);
-            m_offset_y_hr = m_dilation_hr + m_half_height_hr - line_subpixel_size/2;
-            m_half_height_hr += line_subpixel_size/2;
+            m_height = uceil(src.height());
+            m_width  = uceil(src.width());
+            m_width_hr = uround(src.width() * line_subpixel_scale);
+            m_half_height_hr = uround(src.height() * line_subpixel_scale/2);
+            m_offset_y_hr = m_dilation_hr + m_half_height_hr - line_subpixel_scale/2;
+            m_half_height_hr += line_subpixel_scale/2;
 
             delete [] m_data;
             m_data = new color_type [(m_width + m_dilation * 2) * (m_height + m_dilation * 2)];
@@ -279,23 +279,23 @@ namespace agg
             m_dx_end(line_mr(ex) - line_mr(x2)),
             m_dy_end(line_mr(ey) - line_mr(y2)),
 
-            m_dist(int(double(x + line_subpixel_size/2 - x2) * double(m_dy) - 
-                       double(y + line_subpixel_size/2 - y2) * double(m_dx))),
+            m_dist(iround(double(x + line_subpixel_scale/2 - x2) * double(m_dy) - 
+                          double(y + line_subpixel_scale/2 - y2) * double(m_dx))),
 
-            m_dist_start((line_mr(x + line_subpixel_size/2) - line_mr(sx)) * m_dy_start - 
-                         (line_mr(y + line_subpixel_size/2) - line_mr(sy)) * m_dx_start),
+            m_dist_start((line_mr(x + line_subpixel_scale/2) - line_mr(sx)) * m_dy_start - 
+                         (line_mr(y + line_subpixel_scale/2) - line_mr(sy)) * m_dx_start),
 
-            m_dist_end((line_mr(x + line_subpixel_size/2) - line_mr(ex)) * m_dy_end - 
-                       (line_mr(y + line_subpixel_size/2) - line_mr(ey)) * m_dx_end),
-            m_len(int(len / scale))
+            m_dist_end((line_mr(x + line_subpixel_scale/2) - line_mr(ex)) * m_dy_end - 
+                       (line_mr(y + line_subpixel_scale/2) - line_mr(ey)) * m_dx_end),
+            m_len(uround(len / scale))
         {
             double d = len * scale;
-            int dx = int(((x2 - x1) << line_subpixel_shift) / d);
-            int dy = int(((y2 - y1) << line_subpixel_shift) / d);
+            int dx = iround(((x2 - x1) << line_subpixel_shift) / d);
+            int dy = iround(((y2 - y1) << line_subpixel_shift) / d);
             m_dx_pict   = -dy;
             m_dy_pict   =  dx;
-            m_dist_pict =  ((x + line_subpixel_size/2 - (x1 - dy)) * m_dy_pict - 
-                            (y + line_subpixel_size/2 - (y1 + dx)) * m_dx_pict) >> 
+            m_dist_pict =  ((x + line_subpixel_scale/2 - (x1 - dy)) * m_dy_pict - 
+                            (y + line_subpixel_scale/2 - (y1 + dx)) * m_dx_pict) >> 
                            line_subpixel_shift;
 
             m_dx       <<= line_subpixel_shift;
@@ -507,7 +507,7 @@ namespace agg
                                    abs((lp.x2 >> line_subpixel_shift) - m_x))),
             m_width(ren.subpixel_width()),
             //m_max_extent(m_width >> (line_subpixel_shift - 2)),
-            m_max_extent((m_width + line_subpixel_size) >> line_subpixel_shift),
+            m_max_extent((m_width + line_subpixel_scale) >> line_subpixel_shift),
             m_start(pattern_start + (m_max_extent + 2) * ren.pattern_width()),
             m_step(0)
         {
@@ -517,7 +517,7 @@ namespace agg
                                            lp.len);
 
             unsigned i;
-            int stop = m_width + line_subpixel_size * 2;
+            int stop = m_width + line_subpixel_scale * 2;
             for(i = 0; i < max_half_width; ++i)
             {
                 m_dist_pos[i] = li.y();
@@ -852,13 +852,13 @@ namespace agg
         double scale_x() const   { return m_scale_x; }
 
         //---------------------------------------------------------------------
-        void   start_x(double s) { m_start = int(s * line_subpixel_size); }
-        double start_x() const   { return double(m_start) / line_subpixel_size; }
+        void   start_x(double s) { m_start = iround(s * line_subpixel_scale); }
+        double start_x() const   { return double(m_start) / line_subpixel_scale; }
 
         //---------------------------------------------------------------------
         int subpixel_width() const { return m_pattern->line_width(); }
         int pattern_width() const { return m_pattern->pattern_width(); }
-        double width() const { return double(subpixel_width()) / line_subpixel_size; }
+        double width() const { return double(subpixel_width()) / line_subpixel_scale; }
 
         //-------------------------------------------------------------------------
         void pixel(color_type* p, int x, int y) const
@@ -940,7 +940,7 @@ namespace agg
             {
                 while(li.step_hor());
             }
-            m_start += (int)(lp.len / m_scale_x);
+            m_start += uround(lp.len / m_scale_x);
         }
 
         //-------------------------------------------------------------------------
@@ -960,10 +960,10 @@ namespace agg
                     {
                         int start = m_start;
                         line_parameters lp2(x1, y1, x2, y2, 
-                                           (int)calc_distance(x1, y1, x2, y2));
+                                           uround(calc_distance(x1, y1, x2, y2)));
                         if(flags & 1)
                         {
-                            m_start += (int)(calc_distance(lp.x1, lp.y1, x1, y1) / m_scale_x);
+                            m_start += uround(calc_distance(lp.x1, lp.y1, x1, y1) / m_scale_x);
                             sx = x1 + (y2 - y1); 
                             sy = y1 - (x2 - x1);
                         }
@@ -989,7 +989,7 @@ namespace agg
                             }
                         }
                         line3_no_clip(lp2, sx, sy, ex, ey);
-                        m_start = start + (int)(lp.len / m_scale_x);
+                        m_start = start + uround(lp.len / m_scale_x);
                     }
                     else
                     {

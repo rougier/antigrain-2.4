@@ -183,21 +183,21 @@ namespace agg
                     fg[0] = 
                     fg[1] = 
                     fg[2] = 
-                    fg[3] = image_subpixel_size * image_subpixel_size / 2;
+                    fg[3] = image_subpixel_scale * image_subpixel_scale / 2;
 
                     x_hr &= image_subpixel_mask;
                     y_hr &= image_subpixel_mask;
 
                     fg_ptr = (const value_type*)base_type::source_image().row(y_lr) + (x_lr << 2);
 
-                    weight = (image_subpixel_size - x_hr) * 
-                             (image_subpixel_size - y_hr);
+                    weight = (image_subpixel_scale - x_hr) * 
+                             (image_subpixel_scale - y_hr);
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
                     fg[2] += weight * *fg_ptr++;
                     fg[3] += weight * *fg_ptr++;
 
-                    weight = x_hr * (image_subpixel_size - y_hr);
+                    weight = x_hr * (image_subpixel_scale - y_hr);
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
                     fg[2] += weight * *fg_ptr++;
@@ -205,7 +205,7 @@ namespace agg
 
                     fg_ptr = (const value_type*)base_type::source_image().next_row(fg_ptr - 8);
 
-                    weight = (image_subpixel_size - x_hr) * y_hr;
+                    weight = (image_subpixel_scale - x_hr) * y_hr;
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
                     fg[2] += weight * *fg_ptr++;
@@ -237,13 +237,13 @@ namespace agg
                         fg[0] = 
                         fg[1] = 
                         fg[2] = 
-                        fg[3] = image_subpixel_size * image_subpixel_size / 2;
+                        fg[3] = image_subpixel_scale * image_subpixel_scale / 2;
 
                         x_hr &= image_subpixel_mask;
                         y_hr &= image_subpixel_mask;
 
-                        weight = (image_subpixel_size - x_hr) * 
-                                 (image_subpixel_size - y_hr);
+                        weight = (image_subpixel_scale - x_hr) * 
+                                 (image_subpixel_scale - y_hr);
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
                         {
@@ -263,7 +263,7 @@ namespace agg
 
                         x_lr++;
 
-                        weight = x_hr * (image_subpixel_size - y_hr);
+                        weight = x_hr * (image_subpixel_scale - y_hr);
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
                         {
@@ -284,7 +284,7 @@ namespace agg
                         x_lr--;
                         y_lr++;
 
-                        weight = (image_subpixel_size - x_hr) * y_hr;
+                        weight = (image_subpixel_scale - x_hr) * y_hr;
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
                         {
@@ -410,7 +410,7 @@ namespace agg
                 int y_lr = y_hr >> image_subpixel_shift;
 
                 unsigned weight;
-                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_size / 2;
+                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_scale / 2;
 
                 if(x_lr >= 0    && y_lr >= 0 &&
                    x_lr <  maxx && y_lr <  maxy) 
@@ -420,9 +420,9 @@ namespace agg
 
                     fg_ptr = (const value_type*)base_type::source_image().row(y_lr) + (x_lr << 2);
 
-                    weight = (weight_array[x_hr + image_subpixel_size] * 
-                              weight_array[y_hr + image_subpixel_size] + 
-                              image_filter_size / 2) >> 
+                    weight = (weight_array[x_hr + image_subpixel_scale] * 
+                              weight_array[y_hr + image_subpixel_scale] + 
+                              image_filter_scale / 2) >> 
                               image_filter_shift;
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
@@ -430,8 +430,8 @@ namespace agg
                     fg[3] += weight * *fg_ptr++;
 
                     weight = (weight_array[x_hr] * 
-                              weight_array[y_hr + image_subpixel_size] + 
-                              image_filter_size / 2) >> 
+                              weight_array[y_hr + image_subpixel_scale] + 
+                              image_filter_scale / 2) >> 
                               image_filter_shift;
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
@@ -440,9 +440,9 @@ namespace agg
 
                     fg_ptr = (const value_type*)base_type::source_image().next_row(fg_ptr - 8);
 
-                    weight = (weight_array[x_hr + image_subpixel_size] * 
+                    weight = (weight_array[x_hr + image_subpixel_scale] * 
                               weight_array[y_hr] + 
-                              image_filter_size / 2) >> 
+                              image_filter_scale / 2) >> 
                               image_filter_shift;
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
@@ -451,7 +451,7 @@ namespace agg
 
                     weight = (weight_array[x_hr] * 
                               weight_array[y_hr] + 
-                              image_filter_size / 2) >> 
+                              image_filter_scale / 2) >> 
                               image_filter_shift;
                     fg[0] += weight * *fg_ptr++;
                     fg[1] += weight * *fg_ptr++;
@@ -483,9 +483,9 @@ namespace agg
                         x_hr &= image_subpixel_mask;
                         y_hr &= image_subpixel_mask;
 
-                        weight = (weight_array[x_hr + image_subpixel_size] * 
-                                  weight_array[y_hr + image_subpixel_size] + 
-                                  image_filter_size / 2) >> 
+                        weight = (weight_array[x_hr + image_subpixel_scale] * 
+                                  weight_array[y_hr + image_subpixel_scale] + 
+                                  image_filter_scale / 2) >> 
                                   image_filter_shift;
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
@@ -507,8 +507,8 @@ namespace agg
                         x_lr++;
 
                         weight = (weight_array[x_hr] * 
-                                  weight_array[y_hr + image_subpixel_size] + 
-                                  image_filter_size / 2) >> 
+                                  weight_array[y_hr + image_subpixel_scale] + 
+                                  image_filter_scale / 2) >> 
                                   image_filter_shift;
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
@@ -530,9 +530,9 @@ namespace agg
                         x_lr--;
                         y_lr++;
 
-                        weight = (weight_array[x_hr + image_subpixel_size] * 
+                        weight = (weight_array[x_hr + image_subpixel_scale] * 
                                   weight_array[y_hr] + 
-                                  image_filter_size / 2) >> 
+                                  image_filter_scale / 2) >> 
                                   image_filter_shift;
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
@@ -555,7 +555,7 @@ namespace agg
 
                         weight = (weight_array[x_hr] * 
                                   weight_array[y_hr] + 
-                                  image_filter_size / 2) >> 
+                                  image_filter_scale / 2) >> 
                                   image_filter_shift;
                         if(x_lr >= 0    && y_lr >= 0 &&
                            x_lr <= maxx && y_lr <= maxy)
@@ -682,7 +682,7 @@ namespace agg
                 int x_lr = x_hr >> image_subpixel_shift;
                 int y_lr = y_hr >> image_subpixel_shift;
 
-                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_size / 2;
+                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_scale / 2;
 
                 int x_fract = x_hr & image_subpixel_mask;
                 unsigned y_count = diameter;
@@ -701,7 +701,7 @@ namespace agg
                         do
                         {
                             int weight = (weight_y * weight_array[x_hr] + 
-                                         image_filter_size / 2) >> 
+                                         image_filter_scale / 2) >> 
                                          image_filter_shift;
             
                             fg[0] += *fg_ptr++ * weight;
@@ -709,11 +709,11 @@ namespace agg
                             fg[2] += *fg_ptr++ * weight;
                             fg[3] += *fg_ptr++ * weight;
 
-                            x_hr += image_subpixel_size;
+                            x_hr += image_subpixel_scale;
 
                         } while(--x_count);
 
-                        y_hr += image_subpixel_size;
+                        y_hr += image_subpixel_scale;
                         fg_ptr = (const value_type*)base_type::source_image().next_row(fg_ptr - step_back);
 
                     } while(--y_count);
@@ -758,7 +758,7 @@ namespace agg
                             do
                             {
                                 int weight = (weight_y * weight_array[x_hr] + 
-                                             image_filter_size / 2) >> 
+                                             image_filter_scale / 2) >> 
                                              image_filter_shift;
 
                                 if(x_lr >= 0 && y_lr >= 0 && 
@@ -778,12 +778,12 @@ namespace agg
                                     fg[order_type::B] += back_b * weight;
                                     fg[order_type::A] += back_a * weight;
                                 }
-                                x_hr += image_subpixel_size;
+                                x_hr += image_subpixel_scale;
                                 x_lr++;
 
                             } while(--x_count);
 
-                            y_hr += image_subpixel_size;
+                            y_hr += image_subpixel_scale;
                             y_lr++;
 
                         } while(--y_count);

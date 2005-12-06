@@ -159,7 +159,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE unsigned calculate_alpha(int area) const
         {
-            int cover = area >> (poly_base_shift*2 + 1 - aa_shift);
+            int cover = area >> (poly_subpixel_shift*2 + 1 - aa_shift);
             if(cover < 0) cover = -cover;
             if(cover > aa_mask) cover = aa_mask;
             return cover;
@@ -196,14 +196,14 @@ namespace agg
 
                 if(area)
                 {
-                    alpha = calculate_alpha((cover << (poly_base_shift + 1)) - area);
+                    alpha = calculate_alpha((cover << (poly_subpixel_shift + 1)) - area);
                     sl.add_cell(x, alpha);
                     x++;
                 }
 
                 if(num_cells && cell->x > x)
                 {
-                    alpha = calculate_alpha(cover << (poly_base_shift + 1));
+                    alpha = calculate_alpha(cover << (poly_subpixel_shift + 1));
                     if(alpha)
                     {
                         sl.add_span(x, cell->x - x, alpha);

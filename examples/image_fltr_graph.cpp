@@ -270,11 +270,11 @@ public:
                 xs = (x_end + x_start)/2.0 - (normalized.diameter() * (x_end - x_start) / 32.0);
                 unsigned nn = normalized.diameter() * 256;
                 p.remove_all();
-                p.move_to(xs+0.5, ys + dy * weights[0] / agg::image_filter_size);
+                p.move_to(xs+0.5, ys + dy * weights[0] / agg::image_filter_scale);
                 for(j = 1; j < nn; j++)
                 {
                     p.line_to(xs + dx * j / n + 0.5,
-                              ys + dy * weights[j] / agg::image_filter_size);
+                              ys + dy * weights[j] / agg::image_filter_scale);
                 }
                 ras.add_path(tr);
                 rs.color(agg::rgba8(0, 0, 100, 255));

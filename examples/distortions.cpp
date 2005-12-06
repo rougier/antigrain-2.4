@@ -316,14 +316,14 @@ inline void calculate_wave(int* x, int* y,
                            double cx, double cy, 
                            double period, double amplitude, double phase)
 {
-    double xd = double(*x) / agg::image_subpixel_size - cx;
-    double yd = double(*y) / agg::image_subpixel_size - cy;
+    double xd = double(*x) / agg::image_subpixel_scale - cx;
+    double yd = double(*y) / agg::image_subpixel_scale - cy;
     double d = sqrt(xd*xd + yd*yd);
     if(d > 1)
     {
         double a = cos(d / (16.0 * period) - phase) * (1.0 / (amplitude * d)) + 1.0; 
-        *x = int((xd * a + cx) * agg::image_subpixel_size);
-        *y = int((yd * a + cy) * agg::image_subpixel_size);
+        *x = int((xd * a + cx) * agg::image_subpixel_scale);
+        *y = int((yd * a + cy) * agg::image_subpixel_scale);
     }
 }
 
@@ -333,13 +333,13 @@ inline void calculate_swirl(int* x, int* y,
                             double cx, double cy, 
                             double amplitude, double phase)
 {
-    double xd = double(*x) / agg::image_subpixel_size - cx;
-    double yd = double(*y) / agg::image_subpixel_size - cy;
+    double xd = double(*x) / agg::image_subpixel_scale - cx;
+    double yd = double(*y) / agg::image_subpixel_scale - cy;
     double a = double(100.0 - sqrt(xd * xd + yd * yd)) / 100.0 * (0.1 / -amplitude);
     double sa = sin(a - phase/25.0);
     double ca = cos(a - phase/25.0);
-    *x = int((xd * ca - yd * sa + cx) * agg::image_subpixel_size);
-    *y = int((xd * sa + yd * ca + cy) * agg::image_subpixel_size);
+    *x = int((xd * ca - yd * sa + cx) * agg::image_subpixel_scale);
+    *y = int((xd * sa + yd * ca + cy) * agg::image_subpixel_scale);
 }
 
 

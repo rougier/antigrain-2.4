@@ -88,7 +88,7 @@ namespace agg
     {
         double ra = (fabs(m_rx) + fabs(m_ry)) / 2;
         double da = acos(ra / (ra + 0.125 / m_scale)) * 2;
-        m_num = int(2*pi / da);
+        m_num = uround(2*pi / da);
     }
 
     //------------------------------------------------------------------------

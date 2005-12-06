@@ -41,7 +41,7 @@ namespace agg
     void image_filter_lut::realloc_lut(double radius)
     {
         m_radius = radius;
-        m_diameter = unsigned(ceil(radius)) * 2;
+        m_diameter = uceil(radius) * 2;
         m_start = -int(m_diameter / 2 - 1);
         unsigned size = m_diameter << image_subpixel_shift;
         if(size > m_max_size)
@@ -66,7 +66,7 @@ namespace agg
         unsigned i;
         int flip = 1;
 
-        for(i = 0; i < image_subpixel_size; i++)
+        for(i = 0; i < image_subpixel_scale; i++)
         {
             for(;;)
             {
@@ -74,30 +74,30 @@ namespace agg
                 unsigned j;
                 for(j = 0; j < m_diameter; j++)
                 {
-                    sum += m_weight_array[j * image_subpixel_size + i];
+                    sum += m_weight_array[j * image_subpixel_scale + i];
                 }
 
-                if(sum == image_filter_size) break;
+                if(sum == image_filter_scale) break;
 
-                double k = double(image_filter_size) / double(sum);
+                double k = double(image_filter_scale) / double(sum);
                 sum = 0;
                 for(j = 0; j < m_diameter; j++)
                 {
-                    sum += m_weight_array[j * image_subpixel_size + i] = 
-                        int(m_weight_array[j * image_subpixel_size + i] * k);
+                    sum +=     m_weight_array[j * image_subpixel_scale + i] = 
+                        iround(m_weight_array[j * image_subpixel_scale + i] * k);
                 }
 
-                sum -= image_filter_size;
+                sum -= image_filter_scale;
                 int inc = (sum > 0) ? -1 : 1;
 
                 for(j = 0; j < m_diameter && sum; j++)
                 {
                     flip ^= 1;
                     unsigned idx = flip ? m_diameter/2 + j/2 : m_diameter/2 - j/2;
-                    int v = m_weight_array[idx * image_subpixel_size + i];
-                    if(v < image_filter_size)
+                    int v = m_weight_array[idx * image_subpixel_scale + i];
+                    if(v < image_filter_scale)
                     {
-                        m_weight_array[idx * image_subpixel_size + i] += inc;
+                        m_weight_array[idx * image_subpixel_scale + i] += inc;
                         sum += inc;
                     }
                 }

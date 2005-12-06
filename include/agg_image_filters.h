@@ -30,15 +30,15 @@ namespace agg
     enum image_filter_scale_e
     {
         image_filter_shift = 14,                      //----image_filter_shift
-        image_filter_size  = 1 << image_filter_shift, //----image_filter_size 
-        image_filter_mask  = image_filter_size - 1    //----image_filter_mask 
+        image_filter_scale = 1 << image_filter_shift, //----image_filter_scale 
+        image_filter_mask  = image_filter_scale - 1   //----image_filter_mask 
     };
 
     enum image_subpixel_scale_e
     {
         image_subpixel_shift = 8,                         //----image_subpixel_shift
-        image_subpixel_size  = 1 << image_subpixel_shift, //----image_subpixel_size 
-        image_subpixel_mask  = image_subpixel_size - 1    //----image_subpixel_mask 
+        image_subpixel_scale = 1 << image_subpixel_shift, //----image_subpixel_scale 
+        image_subpixel_mask  = image_subpixel_scale - 1   //----image_subpixel_mask 
     };
 
 
@@ -58,10 +58,10 @@ namespace agg
             unsigned pivot = diameter() << (image_subpixel_shift - 1);
             for(i = 0; i < pivot; i++)
             {
-                double x = double(i) / double(image_subpixel_size);
+                double x = double(i) / double(image_subpixel_scale);
                 double y = filter.calc_weight(x);
                 m_weight_array[pivot + i] = 
-                m_weight_array[pivot - i] = int16(y * image_filter_size + 0.5);
+                m_weight_array[pivot - i] = (int16)iround(y * image_filter_scale);
             }
             unsigned end = (diameter() << image_subpixel_shift) - 1;
             m_weight_array[0] = m_weight_array[end];

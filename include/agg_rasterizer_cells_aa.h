@@ -216,10 +216,10 @@ namespace agg
                                                             int x1, int y1, 
                                                             int x2, int y2)
     {
-        int ex1 = x1 >> poly_base_shift;
-        int ex2 = x2 >> poly_base_shift;
-        int fx1 = x1 & poly_base_mask;
-        int fx2 = x2 & poly_base_mask;
+        int ex1 = x1 >> poly_subpixel_shift;
+        int ex2 = x2 >> poly_subpixel_shift;
+        int fx1 = x1 & poly_subpixel_mask;
+        int fx2 = x2 & poly_subpixel_mask;
 
         int delta, p, first, dx;
         int incr, lift, mod, rem;
@@ -242,8 +242,8 @@ namespace agg
 
         //ok, we'll have to render a run of adjacent cells on the same
         //hline...
-        p     = (poly_base_size - fx1) * (y2 - y1);
-        first = poly_base_size;
+        p     = (poly_subpixel_scale - fx1) * (y2 - y1);
+        first = poly_subpixel_scale;
         incr  = 1;
 
         dx = x2 - x1;
@@ -274,7 +274,7 @@ namespace agg
 
         if(ex1 != ex2)
         {
-            p     = poly_base_size * (y2 - y1 + delta);
+            p     = poly_subpixel_scale * (y2 - y1 + delta);
             lift  = p / dx;
             rem   = p % dx;
 
@@ -297,7 +297,7 @@ namespace agg
                 }
 
                 m_curr_cell.cover += delta;
-                m_curr_cell.area  += poly_base_size * delta;
+                m_curr_cell.area  += poly_subpixel_scale * delta;
                 y1  += delta;
                 ex1 += incr;
                 set_curr_cell(ex1, ey);
@@ -305,7 +305,7 @@ namespace agg
         }
         delta = y2 - y1;
         m_curr_cell.cover += delta;
-        m_curr_cell.area  += (fx2 + poly_base_size - first) * delta;
+        m_curr_cell.area  += (fx2 + poly_subpixel_scale - first) * delta;
     }
 
     //------------------------------------------------------------------------
@@ -319,7 +319,7 @@ namespace agg
     template<class Cell> 
     void rasterizer_cells_aa<Cell>::line(int x1, int y1, int x2, int y2)
     {
-        enum dx_limit_e { dx_limit = 16384 << poly_base_shift };
+        enum dx_limit_e { dx_limit = 16384 << poly_subpixel_shift };
 
         int dx = x2 - x1;
 
@@ -332,12 +332,12 @@ namespace agg
         }
 
         int dy = y2 - y1;
-        int ex1 = x1 >> poly_base_shift;
-        int ex2 = x2 >> poly_base_shift;
-        int ey1 = y1 >> poly_base_shift;
-        int ey2 = y2 >> poly_base_shift;
-        int fy1 = y1 & poly_base_mask;
-        int fy2 = y2 & poly_base_mask;
+        int ex1 = x1 >> poly_subpixel_shift;
+        int ex2 = x2 >> poly_subpixel_shift;
+        int ey1 = y1 >> poly_subpixel_shift;
+        int ey2 = y2 >> poly_subpixel_shift;
+        int fy1 = y1 & poly_subpixel_mask;
+        int fy2 = y2 & poly_subpixel_mask;
 
         int x_from, x_to;
         int p, rem, mod, lift, delta, first, incr;
@@ -367,11 +367,11 @@ namespace agg
         incr  = 1;
         if(dx == 0)
         {
-            int ex = x1 >> poly_base_shift;
-            int two_fx = (x1 - (ex << poly_base_shift)) << 1;
+            int ex = x1 >> poly_subpixel_shift;
+            int two_fx = (x1 - (ex << poly_subpixel_shift)) << 1;
             int area;
 
-            first = poly_base_size;
+            first = poly_subpixel_scale;
             if(dy < 0)
             {
                 first = 0;
@@ -388,26 +388,26 @@ namespace agg
             ey1 += incr;
             set_curr_cell(ex, ey1);
 
-            delta = first + first - poly_base_size;
+            delta = first + first - poly_subpixel_scale;
             area = two_fx * delta;
             while(ey1 != ey2)
             {
-                //render_hline(ey1, x_from, poly_base_size - first, x_from, first);
+                //render_hline(ey1, x_from, poly_subpixel_scale - first, x_from, first);
                 m_curr_cell.cover = delta;
                 m_curr_cell.area  = area;
                 ey1 += incr;
                 set_curr_cell(ex, ey1);
             }
-            //render_hline(ey1, x_from, poly_base_size - first, x_from, fy2);
-            delta = fy2 - poly_base_size + first;
+            //render_hline(ey1, x_from, poly_subpixel_scale - first, x_from, fy2);
+            delta = fy2 - poly_subpixel_scale + first;
             m_curr_cell.cover += delta;
             m_curr_cell.area  += two_fx * delta;
             return;
         }
 
         //ok, we have to render several hlines
-        p     = (poly_base_size - fy1) * dx;
-        first = poly_base_size;
+        p     = (poly_subpixel_scale - fy1) * dx;
+        first = poly_subpixel_scale;
 
         if(dy < 0)
         {
@@ -430,11 +430,11 @@ namespace agg
         render_hline(ey1, x1, fy1, x_from, first);
 
         ey1 += incr;
-        set_curr_cell(x_from >> poly_base_shift, ey1);
+        set_curr_cell(x_from >> poly_subpixel_shift, ey1);
 
         if(ey1 != ey2)
         {
-            p     = poly_base_size * dx;
+            p     = poly_subpixel_scale * dx;
             lift  = p / dy;
             rem   = p % dy;
 
@@ -456,14 +456,14 @@ namespace agg
                 }
 
                 x_to = x_from + delta;
-                render_hline(ey1, x_from, poly_base_size - first, x_to, first);
+                render_hline(ey1, x_from, poly_subpixel_scale - first, x_to, first);
                 x_from = x_to;
 
                 ey1 += incr;
-                set_curr_cell(x_from >> poly_base_shift, ey1);
+                set_curr_cell(x_from >> poly_subpixel_shift, ey1);
             }
         }
-        render_hline(ey1, x_from, poly_base_size - first, x2, fy2);
+        render_hline(ey1, x_from, poly_subpixel_scale - first, x2, fy2);
     }
 
     //------------------------------------------------------------------------

@@ -32,6 +32,7 @@ base:
 	make conv_contour
 	make conv_dash_marker
 	make conv_stroke
+	make flash_rasterizer
 	make gamma_correction
 	make gamma_ctrl
 	make gouraud
@@ -124,6 +125,9 @@ conv_stroke: ../conv_stroke.o $(PLATFORMSOURCES)
 
 distortions: ../distortions.o $(PLATFORMSOURCES) spheres.ppm
 	$(CXX) $(CXXFLAGS) ../distortions.o $(PLATFORMSOURCES) -o distortions $(LIBS)
+
+flash_rasterizer: ../flash_rasterizer.o $(PLATFORMSOURCES) shapes.txt
+	$(CXX) $(CXXFLAGS) ../flash_rasterizer.o $(PLATFORMSOURCES) -o flash_rasterizer $(LIBS)
 
 gamma_correction: ../gamma_correction.o $(PLATFORMSOURCES) 
 	$(CXX) $(CXXFLAGS) $^ -o gamma_correction $(LIBS)
@@ -249,6 +253,7 @@ clean:
 	rm -rf conv_contour
 	rm -rf conv_dash_marker
 	rm -rf conv_stroke
+	rm -rf flash_rasterizer
 	rm -rf gamma_correction
 	rm -rf gamma_ctrl
 	rm -rf gouraud
@@ -305,6 +310,12 @@ spheres.ppm:
 	@echo "Please download http://www.antigrain.com/spheres.ppm to /examples/X11/"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/spheres.ppm
+
+shapes.txt:
+	@echo "Required file missing!!"
+	@echo "Please download http://www.antigrain.com/shapes.txt to /examples/X11/"
+	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
+	wget http://www.antigrain.com/shapes.txt
 
 1.sdf:
 	@echo "Required file missing!!"

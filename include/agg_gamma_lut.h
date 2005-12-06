@@ -81,13 +81,15 @@ namespace agg
             unsigned i;
             for(i = 0; i < gamma_size; i++)
             {
-                m_dir_gamma[i] = (HiResT)(pow(double(i) / double(gamma_mask), m_gamma) * double(hi_res_mask) + 0.5);
+                m_dir_gamma[i] = (HiResT)
+                    uround(pow(i / double(gamma_mask), m_gamma) * double(hi_res_mask));
             }
 
             double inv_g = 1.0 / g;
             for(i = 0; i < hi_res_size; i++)
             {
-                m_inv_gamma[i] = (LoResT)(pow(double(i) / double(hi_res_mask), inv_g) * double(gamma_mask) + 0.5);
+                m_inv_gamma[i] = (LoResT)
+                    uround(pow(i / double(hi_res_mask), inv_g) * double(gamma_mask));
             }
         }
 

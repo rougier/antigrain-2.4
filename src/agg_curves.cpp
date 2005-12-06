@@ -57,7 +57,7 @@ namespace agg
 
         double len = sqrt(dx1 * dx1 + dy1 * dy1) + sqrt(dx2 * dx2 + dy2 * dy2); 
 
-        m_num_steps = int(len * 0.25 * m_scale);
+        m_num_steps = uround(len * 0.25 * m_scale);
 
         if(m_num_steps < 4)
         {
@@ -242,6 +242,9 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
+    static double MSC60_fix_ICE(double v) { return v; }
+
+    //------------------------------------------------------------------------
     void curve4_inc::init(double x1, double y1, 
                           double x2, double y2, 
                           double x3, double y3,
@@ -261,9 +264,13 @@ namespace agg
 
         double len = sqrt(dx1 * dx1 + dy1 * dy1) + 
                      sqrt(dx2 * dx2 + dy2 * dy2) + 
-                     sqrt(dx3 * dx3 + dy3 * dy3);
+                     sqrt(dx3 * dx3 + dy3 * dy3) * 0.25 * m_scale;
 
-        m_num_steps = int(len * 0.25 * m_scale);
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+        m_num_steps = uround(MSC60_fix_ICE(len));
+#else
+        m_num_steps = uround(len);
+#endif
 
         if(m_num_steps < 4)
         {
@@ -274,10 +281,10 @@ namespace agg
         double subdivide_step2 = subdivide_step * subdivide_step;
         double subdivide_step3 = subdivide_step * subdivide_step * subdivide_step;
 
-	    double pre1 = 3.0 * subdivide_step;
-	    double pre2 = 3.0 * subdivide_step2;
-	    double pre4 = 6.0 * subdivide_step2;
-	    double pre5 = 6.0 * subdivide_step3;
+        double pre1 = 3.0 * subdivide_step;
+        double pre2 = 3.0 * subdivide_step2;
+        double pre4 = 6.0 * subdivide_step2;
+        double pre5 = 6.0 * subdivide_step3;
 	
         double tmp1x = x1 - x2 * 2.0 + x3;
         double tmp1y = y1 - y2 * 2.0 + y3;

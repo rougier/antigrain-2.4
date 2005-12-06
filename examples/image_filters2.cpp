@@ -233,11 +233,11 @@ public:
                 double xs = (x_end + x_start)/2.0 - (filter.diameter() * (x_end - x_start) / 32.0);
                 unsigned nn = filter.diameter() * 256;
                 p.remove_all();
-                p.move_to(xs+0.5, ys + dy * weights[0] / agg::image_filter_size);
+                p.move_to(xs+0.5, ys + dy * weights[0] / agg::image_filter_scale);
                 for(i = 1; i < nn; i++)
                 {
                     p.line_to(xs + dx * i / n + 0.5,
-                              ys + dy * weights[i] / agg::image_filter_size);
+                              ys + dy * weights[i] / agg::image_filter_scale);
                 }
                 ras.add_path(stroke);
                 agg::render_scanlines_aa_solid(ras, sl, rb, agg::rgba8(100, 0, 0));

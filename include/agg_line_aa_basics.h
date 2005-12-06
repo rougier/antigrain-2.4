@@ -27,10 +27,9 @@ namespace agg
     enum line_subpixel_scale_e
     {
         line_subpixel_shift = 8,                          //----line_subpixel_shift
-        line_subpixel_size  = 1 << line_subpixel_shift,   //----line_subpixel_size
-        line_subpixel_mask  = line_subpixel_size - 1,     //----line_subpixel_mask
+        line_subpixel_scale  = 1 << line_subpixel_shift,  //----line_subpixel_scale
+        line_subpixel_mask  = line_subpixel_scale - 1,    //----line_subpixel_mask
         line_max_coord      = (1 << 28) - 1,              //----line_max_coord
-        line_min_coord      = -line_max_coord,            //----line_min_coord
         line_max_length = 1 << (line_subpixel_shift + 10) //----line_max_length
     };
 
@@ -38,24 +37,24 @@ namespace agg
     enum line_mr_subpixel_scale_e
     {
         line_mr_subpixel_shift = 4,                           //----line_mr_subpixel_shift
-        line_mr_subpixel_size  = 1 << line_mr_subpixel_shift, //----line_mr_subpixel_size 
-        line_mr_subpixel_mask  = line_mr_subpixel_size - 1    //----line_mr_subpixel_mask 
+        line_mr_subpixel_scale = 1 << line_mr_subpixel_shift, //----line_mr_subpixel_scale 
+        line_mr_subpixel_mask  = line_mr_subpixel_scale - 1   //----line_mr_subpixel_mask 
     };
 
     //------------------------------------------------------------------line_mr
-    inline int line_mr(int x) 
+    AGG_INLINE int line_mr(int x) 
     { 
         return x >> (line_subpixel_shift - line_mr_subpixel_shift); 
     }
 
     //-------------------------------------------------------------------line_hr
-    inline int line_hr(int x) 
+    AGG_INLINE int line_hr(int x) 
     { 
         return x << (line_subpixel_shift - line_mr_subpixel_shift); 
     }
 
     //---------------------------------------------------------------line_dbl_hr
-    inline int line_dbl_hr(int x) 
+    AGG_INLINE int line_dbl_hr(int x) 
     { 
         return x << line_subpixel_shift;
     }
@@ -63,21 +62,18 @@ namespace agg
     //---------------------------------------------------------------line_coord
     struct line_coord
     {
-        static int conv(double x)
+        AGG_INLINE static int conv(double x)
         {
-            return int(x * line_subpixel_size);
+            return iround(x * line_subpixel_scale);
         }
     };
 
     //-----------------------------------------------------------line_coord_sat
     struct line_coord_sat
     {
-        static int conv(double x)
+        AGG_INLINE static int conv(double x)
         {
-            double v = x * line_subpixel_size;
-            if(v < (double)line_min_coord) v = (double)line_min_coord;
-            if(v > (double)line_max_coord) v = (double)line_max_coord;
-            return (int)v;
+            return saturation<line_max_coord>::iround(x * line_subpixel_scale);
         }
     };
 
@@ -164,9 +160,9 @@ namespace agg
     void inline fix_degenerate_bisectrix_start(const line_parameters& lp, 
                                                int* x, int* y)
     {
-        int d = int((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
-                     double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
-        if(d < line_subpixel_size/2)
+        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
+                        double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
+        if(d < line_subpixel_scale/2)
         {
             *x = lp.x1 + (lp.y2 - lp.y1);
             *y = lp.y1 - (lp.x2 - lp.x1);
@@ -178,9 +174,9 @@ namespace agg
     void inline fix_degenerate_bisectrix_end(const line_parameters& lp, 
                                              int* x, int* y)
     {
-        int d = int((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
-                     double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
-        if(d < line_subpixel_size/2)
+        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
+                        double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
+        if(d < line_subpixel_scale/2)
         {
             *x = lp.x2 + (lp.y2 - lp.y1);
             *y = lp.y2 - (lp.x2 - lp.x1);

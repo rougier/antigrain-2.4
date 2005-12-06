@@ -1138,9 +1138,9 @@ namespace agg
             else if(8*db <= da) db = db*(sa + (1 - db/da)*(2*sb - sa)*(3 - 8*db/da)) + sb*(1 - da) + db*(1 - sa);
             else                db = (db*sa + (sqrt(db/da)*da - db)*(2*sb - sa)) + sb*(1 - da) + db*(1 - sa);
 
-            p[Order::R] = (value_type)(dr * base_mask);
-            p[Order::G] = (value_type)(dg * base_mask);
-            p[Order::B] = (value_type)(db * base_mask);
+            p[Order::R] = (value_type)uround(dr * base_mask);
+            p[Order::G] = (value_type)uround(dg * base_mask);
+            p[Order::B] = (value_type)uround(db * base_mask);
             p[Order::A] = (value_type)(a + p[Order::A] - ((a * p[Order::A] + base_mask) >> base_shift));
         }
     };
@@ -1567,7 +1567,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 
@@ -1644,7 +1644,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 
@@ -2163,7 +2163,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 
@@ -2451,7 +2451,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 
@@ -2879,7 +2879,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 

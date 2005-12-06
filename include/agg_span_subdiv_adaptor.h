@@ -31,7 +31,7 @@ namespace agg
         enum sublixel_scale_e
         {
             subpixel_shift = SubpixelShift,
-            subpixel_size  = 1 << subpixel_shift
+            subpixel_scale = 1 << subpixel_shift
         };
 
 
@@ -87,7 +87,7 @@ namespace agg
         void begin(double x, double y, unsigned len)
         {
             m_pos   = 1;
-            m_src_x = int(x * subpixel_size) + subpixel_size;
+            m_src_x = iround(x * subpixel_scale) + subpixel_scale;
             m_src_y = y;
             m_len   = len;
             if(len > m_subdiv_size) len = m_subdiv_size;
@@ -102,12 +102,12 @@ namespace agg
             {
                 unsigned len = m_len;
                 if(len > m_subdiv_size) len = m_subdiv_size;
-                m_interpolator->resynchronize(double(m_src_x) / double(subpixel_size) + len, 
+                m_interpolator->resynchronize(double(m_src_x) / double(subpixel_scale) + len, 
                                               m_src_y, 
                                               len);
                 m_pos = 0;
             }
-            m_src_x += subpixel_size;
+            m_src_x += subpixel_scale;
             ++m_pos;
             --m_len;
         }

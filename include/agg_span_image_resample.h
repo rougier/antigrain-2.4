@@ -36,8 +36,8 @@ namespace agg
         //--------------------------------------------------------------------
         span_image_resample() : 
             m_scale_limit(20),
-            m_blur_x(image_subpixel_size),
-            m_blur_y(image_subpixel_size)
+            m_blur_x(image_subpixel_scale),
+            m_blur_y(image_subpixel_scale)
         {}
 
         //--------------------------------------------------------------------
@@ -47,8 +47,8 @@ namespace agg
                             const image_filter_lut& filter) :
             base_type(src, back_color, inter, &filter),
             m_scale_limit(20),
-            m_blur_x(image_subpixel_size),
-            m_blur_y(image_subpixel_size)
+            m_blur_x(image_subpixel_scale),
+            m_blur_y(image_subpixel_scale)
         {}
 
 
@@ -57,12 +57,12 @@ namespace agg
         void scale_limit(int v)  { m_scale_limit = v; }
 
         //--------------------------------------------------------------------
-        double blur_x() const { return double(m_blur_x) / double(image_subpixel_size); }
-        double blur_y() const { return double(m_blur_y) / double(image_subpixel_size); }
-        void blur_x(double v) { m_blur_x = int(v * double(image_subpixel_size) + 0.5); }
-        void blur_y(double v) { m_blur_y = int(v * double(image_subpixel_size) + 0.5); }
+        double blur_x() const { return double(m_blur_x) / double(image_subpixel_scale); }
+        double blur_y() const { return double(m_blur_y) / double(image_subpixel_scale); }
+        void blur_x(double v) { m_blur_x = uround(v * double(image_subpixel_scale)); }
+        void blur_y(double v) { m_blur_y = uround(v * double(image_subpixel_scale)); }
         void blur(double v)   { m_blur_x = 
-                                m_blur_y = int(v * double(image_subpixel_size) + 0.5); }
+                                m_blur_y = uround(v * double(image_subpixel_scale)); }
 
     protected:
         int m_scale_limit;
@@ -107,7 +107,7 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        int  scale_limit() const { return int(m_scale_limit); }
+        int  scale_limit() const { return uround(m_scale_limit); }
         void scale_limit(int v)  { m_scale_limit = v; }
 
         //--------------------------------------------------------------------
@@ -126,10 +126,10 @@ namespace agg
 
             base_type::interpolator().transformer().scaling_abs(&scale_x, &scale_y);
 
-            m_rx     = image_subpixel_size;
-            m_ry     = image_subpixel_size;
-            m_rx_inv = image_subpixel_size;
-            m_ry_inv = image_subpixel_size;
+            m_rx     = image_subpixel_scale;
+            m_ry     = image_subpixel_scale;
+            m_rx_inv = image_subpixel_scale;
+            m_ry_inv = image_subpixel_scale;
 
             scale_x *= m_blur_x;
             scale_y *= m_blur_y;
@@ -143,15 +143,15 @@ namespace agg
             if(scale_x > 1.0001)
             {
                 if(scale_x > m_scale_limit) scale_x = m_scale_limit;
-                m_rx     = int(    scale_x * double(image_subpixel_size) + 0.5);
-                m_rx_inv = int(1.0/scale_x * double(image_subpixel_size) + 0.5);
+                m_rx     = uround(    scale_x * double(image_subpixel_scale));
+                m_rx_inv = uround(1.0/scale_x * double(image_subpixel_scale));
             }
 
             if(scale_y > 1.0001)
             {
                 if(scale_y > m_scale_limit) scale_y = m_scale_limit;
-                m_ry     = int(    scale_y * double(image_subpixel_size) + 0.5);
-                m_ry_inv = int(1.0/scale_y * double(image_subpixel_size) + 0.5);
+                m_ry     = uround(    scale_y * double(image_subpixel_scale));
+                m_ry_inv = uround(1.0/scale_y * double(image_subpixel_scale));
             }
         }
 

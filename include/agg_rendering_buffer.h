@@ -97,7 +97,7 @@ namespace agg
 
             if(stride < 0)
             {
-                row_ptr = m_buf - int(height - 1) * stride;
+                row_ptr = m_buf - (height - 1) * stride;
             }
 
             T** rows = m_rows;

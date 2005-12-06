@@ -104,6 +104,7 @@ public:
         {
             agg::conv_stroke<agg::path_storage> stroke(g_path);
             stroke.width(m_width_slider.value());
+            stroke.line_join(agg::round_join);
             agg::conv_transform<agg::conv_stroke<agg::path_storage> > trans(stroke, mtx);
             agg::render_all_paths(g_rasterizer, g_scanline, r, trans, g_colors, g_path_idx, g_npaths);
         }

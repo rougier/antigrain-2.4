@@ -34,7 +34,7 @@ namespace agg
         enum subpixel_scale_e
         {
             subpixel_shift = SubpixelShift,
-            subpixel_size  = 1 << subpixel_shift
+            subpixel_scale = 1 << subpixel_shift
         };
 
         //--------------------------------------------------------------------
@@ -57,8 +57,8 @@ namespace agg
             m_x = x;
             m_y = y;
             m_trans->transform(&x, &y);
-            m_ix = int(x * subpixel_size);
-            m_iy = int(y * subpixel_size);
+            m_ix = iround(x * subpixel_scale);
+            m_iy = iround(y * subpixel_scale);
         }
 
         //----------------------------------------------------------------
@@ -68,8 +68,8 @@ namespace agg
             double x = m_x;
             double y = m_y;
             m_trans->transform(&x, &y);
-            m_ix = int(x * subpixel_size);
-            m_iy = int(y * subpixel_size);
+            m_ix = iround(x * subpixel_scale);
+            m_iy = iround(y * subpixel_scale);
         }
 
         //----------------------------------------------------------------

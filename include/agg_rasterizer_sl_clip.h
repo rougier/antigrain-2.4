@@ -19,47 +19,23 @@
 
 namespace agg
 {
-    //----------------------------------------------------poly_min_max_coord_e
-    enum poly_min_max_coord_e
+    //--------------------------------------------------------poly_max_coord_e
+    enum poly_max_coord_e
     {
-        poly_max_coord    =   (1 << 30) - 1,       //----poly_max_coord   
-        poly_min_coord    =  -poly_max_coord,      //----poly_min_coord   
-        poly_max_coord_3x =   poly_max_coord / 3,  //----poly_max_coord_3x
-        poly_min_coord_3x = -(poly_max_coord / 3)  //----poly_min_coord_3x
+        poly_max_coord = (1 << 30) - 1 //----poly_max_coord
     };
     
-    //--------------------------------------------------------------poly_coord
-    AGG_INLINE int poly_coord(double c)
-    {
-        return int(c * poly_base_size);
-    }
-
-    //----------------------------------------------------------poly_coord_sat
-    AGG_INLINE int poly_coord_sat(double c)
-    {
-        double v = c * poly_base_size;
-        if(v < (double)poly_min_coord) v = (double)poly_min_coord;
-        if(v > (double)poly_max_coord) v = (double)poly_max_coord;
-        return (int)v;
-    }
-
-    //----------------------------------------------------------poly_coord_inv
-    inline double poly_coord_inv(int c)
-    {
-        return double(c) / double(poly_base_size);
-    }
-
     //------------------------------------------------------------ras_conv_int
     struct ras_conv_int
     {
         typedef int coord_type;
         static AGG_INLINE int mul_div(double a, double b, double c)
         {
-            return (int)(a * b / c);
+            return iround(a * b / c);
         }
         static int xi(int v) { return v; }
         static int yi(int v) { return v; }
-        static int upscale(double v) { return poly_coord(v); }
+        static int upscale(double v) { return iround(v * poly_subpixel_scale); }
         static int downscale(int v)  { return v; }
     };
 
@@ -69,15 +45,15 @@ namespace agg
         typedef int coord_type;
         static AGG_INLINE int mul_div(double a, double b, double c)
         {
-            double v = (a * b / c);
-            if(v < (double)poly_min_coord) v = (double)poly_min_coord;
-            if(v > (double)poly_max_coord) v = (double)poly_max_coord;
-            return (int)v;
+            return saturation<poly_max_coord>::iround(a * b / c);
         }
         static int xi(int v) { return v; }
         static int yi(int v) { return v; }
-        static int upscale(double v) { return poly_coord_sat(v); }
-        static int downscale(int v)  { return v; }
+        static int upscale(double v) 
+        { 
+            return saturation<poly_max_coord>::iround(v * poly_subpixel_scale); 
+        }
+        static int downscale(int v) { return v; }
     };
 
     //---------------------------------------------------------ras_conv_int_3x
@@ -86,11 +62,11 @@ namespace agg
         typedef int coord_type;
         static AGG_INLINE int mul_div(double a, double b, double c)
         {
-            return (int)(a * b / c);
+            return iround(a * b / c);
         }
         static int xi(int v) { return v * 3; }
         static int yi(int v) { return v; }
-        static int upscale(double v) { return poly_coord(v); }
+        static int upscale(double v) { return iround(v * poly_subpixel_scale); }
         static int downscale(int v)  { return v; }
     };
 
@@ -102,10 +78,10 @@ namespace agg
         {
             return a * b / c;
         }
-        static int xi(double v) { return poly_coord(v); }
-        static int yi(double v) { return poly_coord(v); }
+        static int xi(double v) { return iround(v * poly_subpixel_scale); }
+        static int yi(double v) { return iround(v * poly_subpixel_scale); }
         static double upscale(double v) { return v; }
-        static double downscale(int v)  { return poly_coord_inv(v); }
+        static double downscale(int v)  { return v / double(poly_subpixel_scale); }
     };
 
     //--------------------------------------------------------ras_conv_dbl_3x
@@ -116,10 +92,10 @@ namespace agg
         {
             return a * b / c;
         }
-        static int xi(double v) { return poly_coord(v * 3); }
-        static int yi(double v) { return poly_coord(v); }
+        static int xi(double v) { return iround(v * poly_subpixel_scale * 3); }
+        static int yi(double v) { return iround(v * poly_subpixel_scale); }
         static double upscale(double v) { return v; }
-        static double downscale(int v)  { return poly_coord_inv(v); }
+        static double downscale(int v)  { return v / double(poly_subpixel_scale); }
     };
 
 

@@ -801,7 +801,7 @@ namespace agg
         enum base_scale_e
         {
             base_shift = color_type::base_shift,
-            base_size  = color_type::base_size,
+            base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 

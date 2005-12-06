@@ -220,8 +220,8 @@ namespace agg
         enum subpixel_scale_e
         {
             subpixel_shift = 8,
-            subpixel_size  = 1 << subpixel_shift,
-            subpixel_mask  = subpixel_size - 1
+            subpixel_scale = 1 << subpixel_shift,
+            subpixel_mask  = subpixel_scale - 1
         };
 
         //--------------------------------------------------------------------

@@ -228,8 +228,8 @@ namespace agg
         enum base_scale_e
         {
             base_shift = 8,
-            base_size  = 1 << base_shift,
-            base_mask  = base_size - 1
+            base_scale = 1 << base_shift,
+            base_mask  = base_scale - 1
         };
         typedef rgba8 self_type;
 
@@ -251,10 +251,10 @@ namespace agg
 
         //--------------------------------------------------------------------
         rgba8(const rgba& c, double a_) :
-            r(value_type(c.r * double(base_mask) + 0.5)), 
-            g(value_type(c.g * double(base_mask) + 0.5)), 
-            b(value_type(c.b * double(base_mask) + 0.5)), 
-            a(value_type(a_  * double(base_mask) + 0.5)) {}
+            r((value_type)uround(c.r * double(base_mask))), 
+            g((value_type)uround(c.g * double(base_mask))), 
+            b((value_type)uround(c.b * double(base_mask))), 
+            a((value_type)uround(a_  * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         rgba8(const self_type& c, unsigned a_) :
@@ -262,10 +262,10 @@ namespace agg
 
         //--------------------------------------------------------------------
         rgba8(const rgba& c) :
-            r(value_type(c.r * double(base_mask) + 0.5)), 
-            g(value_type(c.g * double(base_mask) + 0.5)), 
-            b(value_type(c.b * double(base_mask) + 0.5)), 
-            a(value_type(c.a * double(base_mask) + 0.5)) {}
+            r((value_type)uround(c.r * double(base_mask))), 
+            g((value_type)uround(c.g * double(base_mask))), 
+            b((value_type)uround(c.b * double(base_mask))), 
+            a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         void clear()
@@ -285,7 +285,7 @@ namespace agg
         {
             if(a_ < 0.0) a_ = 0.0;
             if(a_ > 1.0) a_ = 1.0;
-            a = value_type(a_ * double(base_mask) + 0.5);
+            a = (value_type)uround(a_ * double(base_mask));
             return *this;
         }
 
@@ -351,7 +351,7 @@ namespace agg
         AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
-            calc_type ik = calc_type(k * base_size);
+            calc_type ik = uround(k * base_scale);
             ret.r = value_type(calc_type(r) + (((calc_type(c.r) - r) * ik) >> base_shift));
             ret.g = value_type(calc_type(g) + (((calc_type(c.g) - g) * ik) >> base_shift));
             ret.b = value_type(calc_type(b) + (((calc_type(c.b) - b) * ik) >> base_shift));
@@ -477,8 +477,8 @@ namespace agg
         enum base_scale_e
         {
             base_shift = 16,
-            base_size  = 1 << base_shift,
-            base_mask  = base_size - 1
+            base_scale = 1 << base_shift,
+            base_mask  = base_scale - 1
         };
         typedef rgba16 self_type;
 
@@ -503,17 +503,17 @@ namespace agg
 
         //--------------------------------------------------------------------
         rgba16(const rgba& c) :
-            r(value_type(c.r * double(base_mask) + 0.5)), 
-            g(value_type(c.g * double(base_mask) + 0.5)), 
-            b(value_type(c.b * double(base_mask) + 0.5)), 
-            a(value_type(c.a * double(base_mask) + 0.5)) {}
+            r((value_type)uround(c.r * double(base_mask))), 
+            g((value_type)uround(c.g * double(base_mask))), 
+            b((value_type)uround(c.b * double(base_mask))), 
+            a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         rgba16(const rgba& c, double a_) :
-            r(value_type(c.r * double(base_mask) + 0.5)), 
-            g(value_type(c.g * double(base_mask) + 0.5)), 
-            b(value_type(c.b * double(base_mask) + 0.5)), 
-            a(value_type(a_  * double(base_mask) + 0.5)) {}
+            r((value_type)uround(c.r * double(base_mask))), 
+            g((value_type)uround(c.g * double(base_mask))), 
+            b((value_type)uround(c.b * double(base_mask))), 
+            a((value_type)uround(a_  * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         rgba16(const rgba8& c) :
@@ -547,7 +547,7 @@ namespace agg
         {
             if(a_ < 0.0) a_ = 0.0;
             if(a_ > 1.0) a_ = 1.0;
-            a = value_type(a_ * double(base_mask) + 0.5);
+            a = (value_type)uround(a_ * double(base_mask));
             return *this;
         }
 
@@ -613,7 +613,7 @@ namespace agg
         AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
-            calc_type ik = calc_type(k * base_size);
+            calc_type ik = uround(k * base_scale);
             ret.r = value_type(calc_type(r) + (((calc_type(c.r) - r) * ik) >> base_shift));
             ret.g = value_type(calc_type(g) + (((calc_type(c.g) - g) * ik) >> base_shift));
             ret.b = value_type(calc_type(b) + (((calc_type(c.b) - b) * ik) >> base_shift));

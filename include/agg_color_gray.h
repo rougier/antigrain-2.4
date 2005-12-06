@@ -43,8 +43,8 @@ namespace agg
         enum base_scale_e
         {
             base_shift = 8,
-            base_size  = 1 << base_shift,
-            base_mask  = base_size - 1
+            base_scale = 1 << base_shift,
+            base_mask  = base_scale - 1
         };
         typedef gray8 self_type;
 
@@ -64,13 +64,13 @@ namespace agg
 
         //--------------------------------------------------------------------
         gray8(const rgba& c) :
-            v(value_type((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask) + 0.5)),
-            a(value_type(c.a * double(base_mask))) {}
+            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
+            a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         gray8(const rgba& c, double a_) :
-            v(value_type((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask) + 0.5)),
-            a(value_type(a_ * double(base_mask))) {}
+            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
+            a((value_type)uround(a_ * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         gray8(const rgba8& c) :
@@ -100,7 +100,7 @@ namespace agg
         {
             if(a_ < 0.0) a_ = 0.0;
             if(a_ > 1.0) a_ = 1.0;
-            a = value_type(a_ * double(base_mask));
+            a = (value_type)uround(a_ * double(base_mask));
         }
 
         //--------------------------------------------------------------------
@@ -156,7 +156,7 @@ namespace agg
         self_type gradient(self_type c, double k) const
         {
             self_type ret;
-            calc_type ik = calc_type(k * base_size);
+            calc_type ik = uround(k * base_scale);
             ret.v = value_type(calc_type(v) + (((calc_type(c.v) - v) * ik) >> base_shift));
             ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
             return ret;
@@ -205,8 +205,8 @@ namespace agg
         enum base_scale_e
         {
             base_shift = 16,
-            base_size  = 1 << base_shift,
-            base_mask  = base_size - 1
+            base_scale = 1 << base_shift,
+            base_mask  = base_scale - 1
         };
         typedef gray16 self_type;
 
@@ -226,13 +226,13 @@ namespace agg
 
         //--------------------------------------------------------------------
         gray16(const rgba& c) :
-            v(value_type((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask) + 0.5)),
-            a(value_type(c.a * double(base_mask))) {}
+            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
+            a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         gray16(const rgba& c, double a_) :
-            v(value_type((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask) + 0.5)),
-            a(value_type(a_ * double(base_mask))) {}
+            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
+            a((value_type)uround(a_ * double(base_mask))) {}
 
         //--------------------------------------------------------------------
         gray16(const rgba8& c) :
@@ -262,7 +262,7 @@ namespace agg
         {
             if(a_ < 0.0) a_ = 0.0;
             if(a_ > 1.0) a_ = 1.0;
-            a = value_type(a_ * double(base_mask));
+            a = (value_type)uround(a_ * double(base_mask));
         }
 
         //--------------------------------------------------------------------
@@ -318,7 +318,7 @@ namespace agg
         self_type gradient(self_type c, double k) const
         {
             self_type ret;
-            calc_type ik = calc_type(k * base_size);
+            calc_type ik = uround(k * base_scale);
             ret.v = value_type(calc_type(v) + (((calc_type(c.v) - v) * ik) >> base_shift));
             ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
             return ret;

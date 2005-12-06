@@ -204,7 +204,6 @@ public:
         agg::renderer_outline_aa<renderer_base> rp(rb, profile);
         agg::rasterizer_outline_aa<agg::renderer_outline_aa<renderer_base> > ras(rp);
         ras.round_cap(true);
-        ras.accurate_join(true);
 
         ras.render_all_paths(trans, g_colors, g_path_idx, g_npaths);
 

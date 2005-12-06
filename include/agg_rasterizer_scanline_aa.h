@@ -77,7 +77,7 @@ namespace agg
     // Polygon rasterizer that is used to render filled polygons with 
     // high-quality Anti-Aliasing. Internally, by default, the class uses 
     // integer coordinates in format 24.8, i.e. 24 bits for integer part 
-    // and 8 bits for fractional - see poly_base_shift. This class can be 
+    // and 8 bits for fractional - see poly_subpixel_shift. This class can be 
     // used in the following  way:
     //
     // 1. filling_rule(filling_rule_e ft) - optional.
@@ -169,7 +169,7 @@ namespace agg
             int i;
             for(i = 0; i < aa_scale; i++)
             {
-                m_gamma[i] = int(gamma_function(double(i) / aa_mask) * aa_mask + 0.5);
+                m_gamma[i] = uround(gamma_function(double(i) / aa_mask) * aa_mask);
             }
         }
 
@@ -220,7 +220,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE unsigned calculate_alpha(int area) const
         {
-            int cover = area >> (poly_base_shift*2 + 1 - aa_shift);
+            int cover = area >> (poly_subpixel_shift*2 + 1 - aa_shift);
 
             if(cover < 0) cover = -cover;
             if(m_filling_rule == fill_even_odd)
@@ -266,7 +266,7 @@ namespace agg
 
                     if(area)
                     {
-                        alpha = calculate_alpha((cover << (poly_base_shift + 1)) - area);
+                        alpha = calculate_alpha((cover << (poly_subpixel_shift + 1)) - area);
                         if(alpha)
                         {
                             sl.add_cell(x, alpha);
@@ -276,7 +276,7 @@ namespace agg
 
                     if(num_cells && cur_cell->x > x)
                     {
-                        alpha = calculate_alpha(cover << (poly_base_shift + 1));
+                        alpha = calculate_alpha(cover << (poly_subpixel_shift + 1));
                         if(alpha)
                         {
                             sl.add_span(x, cur_cell->x - x, alpha);

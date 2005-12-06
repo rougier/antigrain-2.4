@@ -69,14 +69,14 @@ namespace agg
         // Check if the bisectrix is too short
         double dx = tx - l2.x1;
         double dy = ty - l2.y1;
-        if((int)sqrt(dx * dx + dy * dy) < line_subpixel_size)
+        if((int)sqrt(dx * dx + dy * dy) < line_subpixel_scale)
         {
             *x = (l2.x1 + l2.x1 + (l2.y1 - l1.y1) + (l2.y2 - l2.y1)) >> 1;
             *y = (l2.y1 + l2.y1 - (l2.x1 - l1.x1) - (l2.x2 - l2.x1)) >> 1;
             return;
         }
-        *x = int(tx);
-        *y = int(ty);
+        *x = iround(tx);
+        *y = iround(ty);
     }
 
 }

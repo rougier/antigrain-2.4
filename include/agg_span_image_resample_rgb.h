@@ -64,7 +64,7 @@ namespace agg
             value_type back_a = base_type::background_color().a;
 
             int diameter = base_type::filter().diameter();
-            int filter_size = diameter << image_subpixel_shift;
+            int filter_scale = diameter << image_subpixel_shift;
             int radius_x = (diameter * base_type::m_rx) >> 1;
             int radius_y = (diameter * base_type::m_ry) >> 1;
             int maxx = base_type::source_image().width() - 1;
@@ -79,7 +79,7 @@ namespace agg
                 x += base_type::filter_dx_int() - radius_x;
                 y += base_type::filter_dy_int() - radius_y;
 
-                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_size / 2;
+                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_scale / 2;
 
                 int y_lr = y >> image_subpixel_shift;
                 int y_hr = ((image_subpixel_mask - (y & image_subpixel_mask)) * 
@@ -102,7 +102,7 @@ namespace agg
                         do
                         {
                             int weight = (weight_y * weight_array[x_hr] + 
-                                         image_filter_size / 2) >> 
+                                         image_filter_scale / 2) >> 
                                          downscale_shift;
 
                             if(x_lr >= 0 && x_lr <= maxx)
@@ -124,14 +124,14 @@ namespace agg
                             x_hr   += base_type::m_rx_inv;
                             ++x_lr;
                         }
-                        while(x_hr < filter_size);
+                        while(x_hr < filter_scale);
                     }
                     else
                     {
                         do
                         {
                             int weight = (weight_y * weight_array[x_hr] + 
-                                         image_filter_size / 2) >> 
+                                         image_filter_scale / 2) >> 
                                          downscale_shift;
 
                             total_weight      += weight;
@@ -141,12 +141,12 @@ namespace agg
                             fg[3]             += back_a * weight;
                             x_hr              += base_type::m_rx_inv;
                         }
-                        while(x_hr < filter_size);
+                        while(x_hr < filter_scale);
                     }
                     y_hr += base_type::m_ry_inv;
                     ++y_lr;
                 }
-                while(y_hr < filter_size);
+                while(y_hr < filter_scale);
 
                 fg[0] /= total_weight;
                 fg[1] /= total_weight;
@@ -222,7 +222,7 @@ namespace agg
             value_type back_a = base_type::background_color().a;
 
             int diameter = base_type::filter().diameter();
-            int filter_size = diameter << image_subpixel_shift;
+            int filter_scale = diameter << image_subpixel_shift;
 
             const int16* weight_array = base_type::filter().weight_array();
 
@@ -230,38 +230,38 @@ namespace agg
             {
                 int rx;
                 int ry;
-                int rx_inv = image_subpixel_size;
-                int ry_inv = image_subpixel_size;
+                int rx_inv = image_subpixel_scale;
+                int ry_inv = image_subpixel_scale;
                 base_type::interpolator().coordinates(&x,  &y);
                 base_type::interpolator().local_scale(&rx, &ry);
 
                 rx = (rx * base_type::m_blur_x) >> image_subpixel_shift;
                 ry = (ry * base_type::m_blur_y) >> image_subpixel_shift;
 
-                if(rx < image_subpixel_size)
+                if(rx < image_subpixel_scale)
                 {
-                    rx = image_subpixel_size;
+                    rx = image_subpixel_scale;
                 }
                 else
                 {
-                    if(rx > image_subpixel_size * base_type::m_scale_limit) 
+                    if(rx > image_subpixel_scale * base_type::m_scale_limit) 
                     {
-                        rx = image_subpixel_size * base_type::m_scale_limit;
+                        rx = image_subpixel_scale * base_type::m_scale_limit;
                     }
-                    rx_inv = image_subpixel_size * image_subpixel_size / rx;
+                    rx_inv = image_subpixel_scale * image_subpixel_scale / rx;
                 }
 
-                if(ry < image_subpixel_size)
+                if(ry < image_subpixel_scale)
                 {
-                    ry = image_subpixel_size;
+                    ry = image_subpixel_scale;
                 }
                 else
                 {
-                    if(ry > image_subpixel_size * base_type::m_scale_limit) 
+                    if(ry > image_subpixel_scale * base_type::m_scale_limit) 
                     {
-                        ry = image_subpixel_size * base_type::m_scale_limit;
+                        ry = image_subpixel_scale * base_type::m_scale_limit;
                     }
-                    ry_inv = image_subpixel_size * image_subpixel_size / ry;
+                    ry_inv = image_subpixel_scale * image_subpixel_scale / ry;
                 }
 
                 int radius_x = (diameter * rx) >> 1;
@@ -272,7 +272,7 @@ namespace agg
                 x += base_type::filter_dx_int() - radius_x;
                 y += base_type::filter_dy_int() - radius_y;
 
-                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_size / 2;
+                fg[0] = fg[1] = fg[2] = fg[3] = image_filter_scale / 2;
 
                 int y_lr = y >> image_subpixel_shift;
                 int y_hr = ((image_subpixel_mask - (y & image_subpixel_mask)) * 
@@ -296,7 +296,7 @@ namespace agg
                         do
                         {
                             int weight = (weight_y * weight_array[x_hr] + 
-                                         image_filter_size / 2) >> 
+                                         image_filter_scale / 2) >> 
                                          downscale_shift;
 
                             if(x_lr >= 0 && x_lr <= maxx)
@@ -318,14 +318,14 @@ namespace agg
                             x_hr   += rx_inv;
                             ++x_lr;
                         }
-                        while(x_hr < filter_size);
+                        while(x_hr < filter_scale);
                     }
                     else
                     {
                         do
                         {
                             int weight = (weight_y * weight_array[x_hr] + 
-                                         image_filter_size / 2) >> 
+                                         image_filter_scale / 2) >> 
                                          downscale_shift;
 
                             total_weight      += weight;
@@ -335,12 +335,12 @@ namespace agg
                             fg[3]             += back_a * weight;
                             x_hr              += rx_inv;
                         }
-                        while(x_hr < filter_size);
+                        while(x_hr < filter_scale);
                     }
                     y_hr += ry_inv;
                     ++y_lr;
                 }
-                while(y_hr < filter_size);
+                while(y_hr < filter_scale);
 
                 fg[0] /= total_weight;
                 fg[1] /= total_weight;
