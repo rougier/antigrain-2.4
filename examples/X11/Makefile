@@ -36,6 +36,7 @@ base:
 	make flash_rasterizer2
 	make gamma_correction
 	make gamma_ctrl
+	make gamma_tuner
 	make gouraud
 	make gouraud_mesh
 	make gradients
@@ -67,7 +68,9 @@ base:
 	make distortions
 	make pattern_perspective
 	make compositing
+	make compositing2
 	make line_patterns
+	make line_patterns_clip
 	make mol_view
 	
 freetype:
@@ -116,6 +119,9 @@ component_rendering: ../component_rendering.o $(PLATFORMSOURCES)
 compositing: ../compositing.o $(PLATFORMSOURCES) compositing.ppm
 	$(CXX) $(CXXFLAGS) ../compositing.o $(PLATFORMSOURCES) -o compositing $(LIBS)
 
+compositing2: ../compositing2.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o compositing2 $(LIBS)
+
 conv_contour: ../conv_contour.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o conv_contour $(LIBS)
 
@@ -139,6 +145,9 @@ gamma_correction: ../gamma_correction.o $(PLATFORMSOURCES)
 
 gamma_ctrl: ../gamma_ctrl.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gamma_ctrl $(LIBS)
+
+gamma_tuner: ../gamma_tuner.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o gamma_tuner $(LIBS)
 
 gouraud: ../gouraud.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gouraud $(LIBS)
@@ -181,6 +190,9 @@ image1: ../image1.o $(PLATFORMSOURCES) spheres.ppm
 
 line_patterns: ../line_patterns.o $(PLATFORMSOURCES) 1.ppm 2.ppm 3.ppm 4.ppm 5.ppm 6.ppm 7.ppm 8.ppm 9.ppm
 	$(CXX) $(CXXFLAGS) ../line_patterns.o $(PLATFORMSOURCES) -o line_patterns $(LIBS)
+
+line_patterns_clip: ../line_patterns_clip.o $(PLATFORMSOURCES) 1.ppm
+	$(CXX) $(CXXFLAGS) ../line_patterns_clip.o $(PLATFORMSOURCES) -o line_patterns_clip $(LIBS)
 
 lion: ../lion.o ../parse_lion.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o lion $(LIBS)
@@ -265,6 +277,7 @@ clean:
 	rm -rf flash_rasterizer2
 	rm -rf gamma_correction
 	rm -rf gamma_ctrl
+	rm -rf gamma_tuner
 	rm -rf gouraud
 	rm -rf gouraud_mesh
 	rm -rf gradients
@@ -297,6 +310,7 @@ clean:
 	rm -rf pattern_perspective
 	rm -rf compositing
 	rm -rf line_patterns
+	rm -rf line_patterns_clip
 	rm -rf mol_view
 	rm -rf freetype_test
 	rm -rf trans_curve1_ft
