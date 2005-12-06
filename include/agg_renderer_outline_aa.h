@@ -1269,8 +1269,8 @@ namespace agg
         enum aa_scale_e
         {
             aa_shift = 8,
-            aa_num   = 1 << aa_shift,
-            aa_mask  = aa_num - 1
+            aa_scale = 1 << aa_shift,
+            aa_mask  = aa_scale - 1
         };
         
         //---------------------------------------------------------------------
@@ -1285,7 +1285,7 @@ namespace agg
             m_smoother_width(1.0)
         {
             int i;
-            for(i = 0; i < aa_num; i++) m_gamma[i] = (value_type)i;
+            for(i = 0; i < aa_scale; i++) m_gamma[i] = (value_type)i;
         }
 
         //---------------------------------------------------------------------
@@ -1309,7 +1309,7 @@ namespace agg
         template<class GammaF> void gamma(const GammaF& gamma_function)
         { 
             int i;
-            for(i = 0; i < aa_num; i++)
+            for(i = 0; i < aa_scale; i++)
             {
                 m_gamma[i] = value_type(
                     uround(gamma_function(double(i) / aa_mask) * aa_mask));
@@ -1341,7 +1341,7 @@ namespace agg
         //---------------------------------------------------------------------
         unsigned    m_size;
         value_type* m_profile;
-        value_type  m_gamma[aa_num];
+        value_type  m_gamma[aa_scale];
         int         m_subpixel_width;
         double      m_min_width;
         double      m_smoother_width;
