@@ -15,7 +15,7 @@
 #ifndef AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
 #define AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
 
-#include <math.h>
+#include "agg_math.h"
 #include "agg_line_aa_basics.h"
 #include "agg_dda_line.h"
 #include "agg_rendering_buffer.h"

@@ -47,6 +47,7 @@ agginclude_HEADERS = agg_alpha_mask_u8.h \
 										agg_line_aa_basics.h \
 										agg_math.h \
 										agg_math_stroke.h \
+										agg_path_length.h \
 										agg_path_storage.h \
 										agg_path_storage_integer.h \
 										agg_pattern_filters_rgba.h \
