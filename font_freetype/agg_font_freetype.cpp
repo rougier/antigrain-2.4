@@ -828,9 +828,9 @@ namespace agg
                m_glyph_rendering == glyph_ren_agg_mono || 
                m_glyph_rendering == glyph_ren_agg_gray8)
             {
-                unsigned char gamma_table[rasterizer_scanline_aa<>::aa_num];
+                unsigned char gamma_table[rasterizer_scanline_aa<>::aa_scale];
                 unsigned i;
-                for(i = 0; i < rasterizer_scanline_aa<>::aa_num; ++i)
+                for(i = 0; i < rasterizer_scanline_aa<>::aa_scale; ++i)
                 {
                     gamma_table[i] = m_rasterizer.apply_gamma(i);
                 }
