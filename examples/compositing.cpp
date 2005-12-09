@@ -224,7 +224,7 @@ public:
     }
 
 
-    template<class PixFmt> void render_scene(agg::rendering_buffer& rbuf, PixFmt& pixf)
+    void render_scene(agg::rendering_buffer& rbuf, prim_pixfmt_type& pixf)
     {
         typedef agg::comp_op_adaptor_rgba<color, agg::order_bgra> blender_type;
         typedef agg::pixfmt_custom_blend_rgba<blender_type> pixfmt_type;
@@ -233,11 +233,12 @@ public:
         pixfmt_type ren_pixf(rbuf);
         renderer_type renderer(ren_pixf);
 
-        agg::renderer_base<PixFmt> rb(pixf);
+        agg::renderer_base<prim_pixfmt_type> rb(pixf);
 
         rb.blend_from(prim_pixfmt_type(rbuf_img(1)), 
                       0, 250, 180, 
                       unsigned(m_alpha_src.value() * 255));
+
         circle(rb, 
                agg::rgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_src.value() * 255)), 
                agg::rgba8(0xFE, 0x9F, 0x34, unsigned(m_alpha_src.value() * 255)),

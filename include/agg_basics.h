@@ -149,6 +149,16 @@ namespace agg
         }
     };
 
+    //------------------------------------------------------------------mul_one
+    template<unsigned Shift> struct mul_one
+    {
+        AGG_INLINE static unsigned mul(unsigned a, unsigned b)
+        {
+            register unsigned q = a * b + (1 << (Shift-1));
+            return (q + (q >> Shift)) >> Shift;
+        }
+    };
+
     //-------------------------------------------------------------------------
     typedef unsigned char cover_type;    //----cover_type
     enum cover_scale_e
