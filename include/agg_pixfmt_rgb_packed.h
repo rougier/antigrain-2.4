@@ -854,7 +854,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE static void make_pix(int8u* p, const color_type& c)
+        AGG_INLINE void make_pix(int8u* p, const color_type& c)
         {
             *(pixel_type*)p = m_blender.make_pix(c.r, c.g, c.b);
         }
