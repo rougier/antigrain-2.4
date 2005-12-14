@@ -99,7 +99,7 @@ namespace agg
                     int i = 3;
                     do
                     {
-                        const int8u* ptr = m_source_image->row(y - i + 2) + (x - 1) * 3;
+                        const int8u* ptr = m_source_image->row_ptr(y - i + 2) + (x - 1) * 3;
 
                         color[0] += *ptr++;
                         color[1] += *ptr++;

@@ -152,6 +152,7 @@ public:
         typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
        
         pixfmt pixf(rbuf_window());
+        pixfmt pixf_img(rbuf_img(0));
         renderer_base rb(pixf);
         renderer_solid rs(rb);
 
@@ -247,37 +248,12 @@ public:
         interpolator_type interpolator(image_mtx);
         agg::span_allocator<agg::rgba8> sa;
 
-
-/*
-        // nearest neighbor
-        //------------------------------------------
-        typedef agg::span_image_filter_rgba_nn<color_type, agg::order_bgra, interpolator_type> span_gen_type;
-        span_gen_type sg(rbuf_img(0), agg::rgba(1,1,1,0), interpolator);
-        //------------------------------------------
-*/
-
-
-
-
         // "hardcoded" bilinear filter
         //------------------------------------------
-        typedef agg::span_image_filter_rgba_bilinear<color_type, agg::order_bgra, interpolator_type> span_gen_type;
-        span_gen_type sg(rbuf_img(0), agg::rgba(1,1,1,0), interpolator);
+        typedef agg::span_image_filter_rgba_bilinear_clip<pixfmt, 
+                                                          interpolator_type> span_gen_type;
+        span_gen_type sg(pixf_img, agg::rgba(1,1,1), interpolator);
         //------------------------------------------
-
-
-
-
-/*
-        // arbitrary filter
-        //------------------------------------------
-        typedef agg::span_image_filter_rgba<color_type, agg::order_bgra, interpolator_type> span_gen_type;
-        agg::image_filter<agg::image_filter_spline36> filter;
-        span_gen_type sg(rbuf_img(0), agg::rgba(1,1,1,0), interpolator, filter);
-        //------------------------------------------
-*/
-
-
 
         agg::rasterizer_scanline_aa<> ras;
         agg::scanline_u8 sl;

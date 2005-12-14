@@ -1166,7 +1166,7 @@ namespace agg
             unsigned char* tmp_buf = new unsigned char [w * 3];
             for(y = 0; y < rbuf_img(idx).height(); y++)
             {
-                const unsigned char* src = rbuf_img(idx).row(m_flip_y ? h - 1 - y : y);
+                const unsigned char* src = rbuf_img(idx).row_ptr(m_flip_y ? h - 1 - y : y);
                 switch(m_format)
                 {
                     default: break;

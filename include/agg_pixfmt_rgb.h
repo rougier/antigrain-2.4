@@ -168,21 +168,23 @@ namespace agg
 
 
     
-    //==================================================pixel_formats_rgb
-    template<class Blender> class pixel_formats_rgb
+    //==================================================pixfmt_alpha_blend_rgb
+    template<class Blender, class RenBuf> class pixfmt_alpha_blend_rgb
     {
     public:
-        typedef rendering_buffer::row_data row_data;
-        typedef rendering_buffer::span_data span_data;
-        typedef typename Blender::color_type color_type;
-        typedef typename Blender::order_type order_type;
+        typedef RenBuf   rbuf_type;
+        typedef typename rbuf_type::row_data row_data;
+        typedef Blender  blender_type;
+        typedef typename blender_type::color_type color_type;
+        typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e 
         {
             base_shift = color_type::base_shift,
             base_scale = color_type::base_scale,
-            base_mask  = color_type::base_mask
+            base_mask  = color_type::base_mask,
+            pix_width  = sizeof(value_type) * 3
         };
 
     private:
@@ -229,7 +231,7 @@ namespace agg
 
     public:
         //--------------------------------------------------------------------
-        pixel_formats_rgb(rendering_buffer& rb) :
+        pixfmt_alpha_blend_rgb(rbuf_type& rb) :
             m_rbuf(&rb)
         {}
 
@@ -241,33 +243,44 @@ namespace agg
         AGG_INLINE unsigned height() const { return m_rbuf->height(); }
 
         //--------------------------------------------------------------------
+        const int8u* row_ptr(int y) const
+        {
+            return m_rbuf->row_ptr(y);
+        }
+
+        //--------------------------------------------------------------------
+        const int8u* pix_ptr(int x, int y) const
+        {
+            return m_rbuf->row_ptr(y) + x * pix_width;
+        }
+
+        //--------------------------------------------------------------------
+        row_data row(int x, int y) const
+        {
+            return m_rbuf->row(y);
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE static void make_pix(int8u* p, const color_type& c)
+        {
+            ((value_type*)p)[order_type::R] = c.r;
+            ((value_type*)p)[order_type::G] = c.g;
+            ((value_type*)p)[order_type::B] = c.b;
+        }
+
+        //--------------------------------------------------------------------
         AGG_INLINE color_type pixel(int x, int y) const
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p = (value_type*)m_rbuf->row_ptr(y) + x + x + x;
             return color_type(p[order_type::R], 
                               p[order_type::G], 
                               p[order_type::B]);
         }
 
         //--------------------------------------------------------------------
-        row_data row(int x, int y) const
-        {
-            return row_data(x, 
-                            width() - 1, 
-                            m_rbuf->row(y) + x * 3 * sizeof(value_type));
-        }
-
-        //--------------------------------------------------------------------
-        span_data span(int x, int y, unsigned len)
-        {
-            return span_data(x, len, 
-                             m_rbuf->row(y) + x * 3 * sizeof(value_type));
-        }
-
-        //--------------------------------------------------------------------
         AGG_INLINE void copy_pixel(int x, int y, const color_type& c)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p = (value_type*)m_rbuf->row_ptr(x, y, 1) + x + x + x;
             p[order_type::R] = c.r;
             p[order_type::G] = c.g;
             p[order_type::B] = c.b;
@@ -276,7 +289,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE void blend_pixel(int x, int y, const color_type& c, int8u cover)
         {
-            copy_or_blend_pix((value_type*)m_rbuf->row(y) + x + x + x, c, cover);
+            copy_or_blend_pix((value_type*)m_rbuf->row_ptr(x, y, 1) + x + x + x, c, cover);
         }
 
 
@@ -285,7 +298,7 @@ namespace agg
                                    unsigned len, 
                                    const color_type& c)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + x + x + x;
             do
             {
                 p[order_type::R] = c.r; 
@@ -302,13 +315,13 @@ namespace agg
                                    unsigned len, 
                                    const color_type& c)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
             do
             {
+                value_type* p = (value_type*)
+                    m_rbuf->row_ptr(x, y++, 1) + x + x + x;
                 p[order_type::R] = c.r; 
                 p[order_type::G] = c.g; 
                 p[order_type::B] = c.b;
-                p = (value_type*)m_rbuf->next_row(p);
             }
             while(--len);
         }
@@ -322,7 +335,9 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+                value_type* p = (value_type*)
+                    m_rbuf->row_ptr(x, y, len) + x + x + x;
+
                 calc_type alpha = (calc_type(c.a) * (calc_type(cover) + 1)) >> 8;
                 if(alpha == base_mask)
                 {
@@ -356,16 +371,18 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+                value_type* p;
                 calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
                 if(alpha == base_mask)
                 {
                     do
                     {
+                        p = (value_type*)
+                            m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                         p[order_type::R] = c.r; 
                         p[order_type::G] = c.g; 
                         p[order_type::B] = c.b;
-                        p = (value_type*)m_rbuf->next_row(p);
                     }
                     while(--len);
                 }
@@ -373,8 +390,10 @@ namespace agg
                 {
                     do
                     {
+                        p = (value_type*)
+                            m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                         m_blender.blend_pix(p, c.r, c.g, c.b, alpha, cover);
-                        p = (value_type*)m_rbuf->next_row(p);
                     }
                     while(--len);
                 }
@@ -390,7 +409,9 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+                value_type* p = (value_type*)
+                    m_rbuf->row_ptr(x, y, len) + x + x + x;
+
                 do 
                 {
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
@@ -420,9 +441,11 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
                 do 
                 {
+                    value_type* p = (value_type*)
+                        m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
                     if(alpha == base_mask)
                     {
@@ -434,7 +457,6 @@ namespace agg
                     {
                         m_blender.blend_pix(p, c.r, c.g, c.b, alpha, *covers);
                     }
-                    p = (value_type*)m_rbuf->next_row(p);
                     ++covers;
                 }
                 while(--len);
@@ -447,7 +469,9 @@ namespace agg
                               unsigned len, 
                               const color_type* colors)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p = (value_type*)
+                m_rbuf->row_ptr(x, y, len) + x + x + x;
+
             do 
             {
                 p[order_type::R] = colors->r;
@@ -467,7 +491,9 @@ namespace agg
                                const int8u* covers,
                                int8u cover)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p = (value_type*)
+                m_rbuf->row_ptr(x, y, len) + x + x + x;
+
             if(covers)
             {
                 do 
@@ -509,13 +535,15 @@ namespace agg
                                const int8u* covers,
                                int8u cover)
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x + x + x;
+            value_type* p;
             if(covers)
             {
                 do 
                 {
+                    p = (value_type*)
+                        m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                     copy_or_blend_pix(p, *colors++, *covers++);
-                    p = (value_type*)m_rbuf->next_row(p);
                 }
                 while(--len);
             }
@@ -525,8 +553,10 @@ namespace agg
                 {
                     do 
                     {
+                        p = (value_type*)
+                            m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                         copy_or_blend_pix(p, *colors++);
-                        p = (value_type*)m_rbuf->next_row(p);
                     }
                     while(--len);
                 }
@@ -534,14 +564,15 @@ namespace agg
                 {
                     do 
                     {
+                        p = (value_type*)
+                            m_rbuf->row_ptr(x, y++, 1) + x + x + x;
+
                         copy_or_blend_pix(p, *colors++, cover);
-                        p = (value_type*)m_rbuf->next_row(p);
                     }
                     while(--len);
                 }
             }
         }
-
 
         //--------------------------------------------------------------------
         template<class Function> void for_each_pixel(Function f)
@@ -549,14 +580,19 @@ namespace agg
             unsigned y;
             for(y = 0; y < height(); ++y)
             {
-                unsigned len = width();
-                value_type* p = (value_type*)m_rbuf->row(y);
-                do
+                row_data r = m_rbuf->row(y);
+                if(r.ptr)
                 {
-                    f(p);
-                    p += 3;
+                    unsigned len = r.x2 - r.x1 + 1;
+                    value_type* p = (value_type*)
+                        m_rbuf->row_ptr(r.x1, y, len) + r.x1 * 3;
+                    do
+                    {
+                        f(p);
+                        p += 3;
+                    }
+                    while(--len);
                 }
-                while(--len);
             }
         }
 
@@ -573,21 +609,25 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void copy_from(const rendering_buffer& from, 
+        template<class RenBuf2>
+        void copy_from(const RenBuf2& from, 
                        int xdst, int ydst,
                        int xsrc, int ysrc,
                        unsigned len)
         {
-            memmove((value_type*)m_rbuf->row(ydst) + xdst * 3, 
-                    (const value_type*)from.row(ysrc) + xsrc * 3, 
-                    sizeof(value_type) * 3 * len);
+            const int8u* p = from.row_ptr(ysrc);
+            if(p)
+            {
+                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
+                        p + xsrc * pix_width, 
+                        len * pix_width);
+            }
         }
 
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
         void blend_from(const SrcPixelFormatRenderer& from, 
-                        const int8u* psrc_,
                         int xdst, int ydst,
                         int xsrc, int ysrc,
                         unsigned len,
@@ -595,76 +635,80 @@ namespace agg
         {
             typedef typename SrcPixelFormatRenderer::order_type src_order;
 
-            const value_type* psrc = (const value_type*)psrc_;
-            value_type* pdst = (value_type*)m_rbuf->row(ydst) + xdst * 3;
-
-
-            if(cover == 255)
+            const value_type* psrc = (const value_type*)from.row_ptr(ysrc);
+            if(psrc)
             {
-                do 
+                psrc += xsrc * 4;
+                value_type* pdst = 
+                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * 3;   
+
+                if(cover == 255)
                 {
-                    value_type alpha = psrc[src_order::A];
-                    if(alpha)
+                    do 
                     {
-                        if(alpha == base_mask)
+                        value_type alpha = psrc[src_order::A];
+                        if(alpha)
                         {
-                            pdst[order_type::R] = psrc[src_order::R];
-                            pdst[order_type::G] = psrc[src_order::G];
-                            pdst[order_type::B] = psrc[src_order::B];
+                            if(alpha == base_mask)
+                            {
+                                pdst[order_type::R] = psrc[src_order::R];
+                                pdst[order_type::G] = psrc[src_order::G];
+                                pdst[order_type::B] = psrc[src_order::B];
+                            }
+                            else
+                            {
+                                m_blender.blend_pix(pdst, 
+                                                    psrc[src_order::R],
+                                                    psrc[src_order::G],
+                                                    psrc[src_order::B],
+                                                    alpha);
+                            }
                         }
-                        else
-                        {
-                            m_blender.blend_pix(pdst, 
-                                                psrc[src_order::R],
-                                                psrc[src_order::G],
-                                                psrc[src_order::B],
-                                                alpha);
-                        }
+                        psrc += 4;
+                        pdst += 3;
                     }
-                    psrc += 4;
-                    pdst += 3;
+                    while(--len);
                 }
-                while(--len);
-            }
-            else
-            {
-                color_type color;
-                do 
+                else
                 {
-                    color.r = psrc[src_order::R];
-                    color.g = psrc[src_order::G];
-                    color.b = psrc[src_order::B];
-                    color.a = psrc[src_order::A];
-                    copy_or_blend_pix(pdst, color, cover);
-                    psrc += 4;
-                    pdst += 3;
+                    color_type color;
+                    do 
+                    {
+                        color.r = psrc[src_order::R];
+                        color.g = psrc[src_order::G];
+                        color.b = psrc[src_order::B];
+                        color.a = psrc[src_order::A];
+                        copy_or_blend_pix(pdst, color, cover);
+                        psrc += 4;
+                        pdst += 3;
+                    }
+                    while(--len);
                 }
-                while(--len);
             }
         }
 
     private:
-        rendering_buffer* m_rbuf;
-        Blender           m_blender;
+        rbuf_type* m_rbuf;
+        Blender    m_blender;
     };
 
-    typedef pixel_formats_rgb<blender_rgb<rgba8,  order_rgb> > pixfmt_rgb24;    //----pixfmt_rgb24
-    typedef pixel_formats_rgb<blender_rgb<rgba8,  order_bgr> > pixfmt_bgr24;    //----pixfmt_bgr24
-    typedef pixel_formats_rgb<blender_rgb<rgba16, order_rgb> > pixfmt_rgb48;    //----pixfmt_rgb48
-    typedef pixel_formats_rgb<blender_rgb<rgba16, order_bgr> > pixfmt_bgr48;    //----pixfmt_bgr48
+    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_rgb>, rendering_buffer> pixfmt_rgb24;    //----pixfmt_rgb24
+    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_bgr>, rendering_buffer> pixfmt_bgr24;    //----pixfmt_bgr24
+    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_rgb>, rendering_buffer> pixfmt_rgb48;    //----pixfmt_rgb48
+    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_bgr>, rendering_buffer> pixfmt_bgr48;    //----pixfmt_bgr48
 
-    typedef pixel_formats_rgb<blender_rgb_pre<rgba8,  order_rgb> > pixfmt_rgb24_pre; //----pixfmt_rgb24_pre
-    typedef pixel_formats_rgb<blender_rgb_pre<rgba8,  order_bgr> > pixfmt_bgr24_pre; //----pixfmt_bgr24_pre
-    typedef pixel_formats_rgb<blender_rgb_pre<rgba16, order_rgb> > pixfmt_rgb48_pre; //----pixfmt_rgb48_pre
-    typedef pixel_formats_rgb<blender_rgb_pre<rgba16, order_bgr> > pixfmt_bgr48_pre; //----pixfmt_bgr48_pre
+    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_rgb>, rendering_buffer> pixfmt_rgb24_pre; //----pixfmt_rgb24_pre
+    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_bgr>, rendering_buffer> pixfmt_bgr24_pre; //----pixfmt_bgr24_pre
+    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_rgb>, rendering_buffer> pixfmt_rgb48_pre; //----pixfmt_rgb48_pre
+    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_bgr>, rendering_buffer> pixfmt_bgr48_pre; //----pixfmt_bgr48_pre
 
     //-----------------------------------------------------pixfmt_rgb24_gamma
     template<class Gamma> class pixfmt_rgb24_gamma : 
-    public pixel_formats_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma> >
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer>
     {
     public:
         pixfmt_rgb24_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixel_formats_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma> >(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -672,11 +716,11 @@ namespace agg
         
     //-----------------------------------------------------pixfmt_bgr24_gamma
     template<class Gamma> class pixfmt_bgr24_gamma : 
-    public pixel_formats_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma> >
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer>
     {
     public:
         pixfmt_bgr24_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixel_formats_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma> >(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -684,11 +728,11 @@ namespace agg
 
     //-----------------------------------------------------pixfmt_rgb48_gamma
     template<class Gamma> class pixfmt_rgb48_gamma : 
-    public pixel_formats_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma> >
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer>
     {
     public:
         pixfmt_rgb48_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixel_formats_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma> >(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -696,11 +740,11 @@ namespace agg
         
     //-----------------------------------------------------pixfmt_bgr48_gamma
     template<class Gamma> class pixfmt_bgr48_gamma : 
-    public pixel_formats_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma> >
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer>
     {
     public:
         pixfmt_bgr48_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixel_formats_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma> >(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer>(rb) 
         {
             this->blender().gamma(g);
         }

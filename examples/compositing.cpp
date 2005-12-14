@@ -17,13 +17,12 @@
 enum flip_y_e { flip_y = true };
 
 typedef agg::rgba8 color;
-typedef agg::pixel32_type pixel_type;
+typedef agg::int32u pixel_type;
+typedef agg::rendering_buffer rbuf_type;
 #define pix_format agg::pix_format_bgra32
 
-
-
 typedef agg::blender_rgba<color, agg::order_bgra> prim_blender_type; 
-typedef agg::pixel_formats_rgba<prim_blender_type, pixel_type> prim_pixfmt_type;
+typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, rbuf_type> prim_pixfmt_type;
 typedef agg::renderer_base<prim_pixfmt_type> prim_ren_base_type;
 
 namespace agg
@@ -224,10 +223,10 @@ public:
     }
 
 
-    void render_scene(agg::rendering_buffer& rbuf, prim_pixfmt_type& pixf)
+    void render_scene(rbuf_type& rbuf, prim_pixfmt_type& pixf)
     {
         typedef agg::comp_op_adaptor_rgba<color, agg::order_bgra> blender_type;
-        typedef agg::pixfmt_custom_blend_rgba<blender_type> pixfmt_type;
+        typedef agg::pixfmt_custom_blend_rgba<blender_type, rbuf_type> pixfmt_type;
         typedef agg::renderer_base<pixfmt_type> renderer_type;
 
         pixfmt_type ren_pixf(rbuf);
@@ -288,7 +287,7 @@ public:
         rb2.clear(agg::rgba8(0,0,0,0));
 
         typedef agg::blender_rgba_pre<color, agg::order_bgra> blender_type_pre; 
-        typedef agg::pixel_formats_rgba<blender_type_pre, pixel_type> pixfmt_pre;
+        typedef agg::pixfmt_alpha_blend_rgba<blender_type_pre, rbuf_type, pixel_type> pixfmt_pre;
         typedef agg::renderer_base<pixfmt_pre> ren_base_pre;
 
         pixfmt_pre pixf_pre(rbuf_window());

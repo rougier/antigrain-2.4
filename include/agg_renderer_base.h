@@ -33,7 +33,7 @@ namespace agg
         typedef PixelFormat pixfmt_type;
         typedef typename pixfmt_type::color_type color_type;
         typedef typename pixfmt_type::row_data row_data;
-        typedef typename pixfmt_type::span_data span_data;
+//        typedef typename pixfmt_type::span_data span_data;
 
         //--------------------------------------------------------------------
         renderer_base() : m_ren(0), m_clip_box(1, 1, 0, 0) {}
@@ -260,22 +260,22 @@ namespace agg
         }
 
 
-        //--------------------------------------------------------------------
-        span_data span(int x, int y, unsigned len)
-        {
-            int x1 = x;
-            int x2 = x + int(len) - 1;
-            
-            if(y  >= ymin() && y  <= ymax() &&
-               x1 <= xmax() && x2 >= xmin())
-            {
-                if(x1 < xmin()) x1 = xmin();
-                if(x2 > xmax()) x2 = xmax();
-                return m_ren->span(x1, y, x2 - x1 + 1);
-            }
-            return span_data(0);
-
-        }
+//        //--------------------------------------------------------------------
+//        span_data span(int x, int y, unsigned len)
+//        {
+//            int x1 = x;
+//            int x2 = x + int(len) - 1;
+//            
+//            if(y  >= ymin() && y  <= ymax() &&
+//               x1 <= xmax() && x2 >= xmin())
+//            {
+//                if(x1 < xmin()) x1 = xmin();
+//                if(x2 > xmax()) x2 = xmax();
+//                return m_ren->span(x1, y, x2 - x1 + 1);
+//            }
+//            return span_data(0);
+//
+//        }
 
 
         //--------------------------------------------------------------------
@@ -445,7 +445,8 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        void copy_from(const rendering_buffer& src, 
+        template<class RenBuf>
+        void copy_from(const RenBuf& src, 
                        const rect_i* rect_src_ptr = 0, 
                        int dx = 0, 
                        int dy = 0)
@@ -513,7 +514,6 @@ namespace agg
 
             // Version with dx, dy (relative positioning)
             rect_i rdst(rsrc.x1 + dx, rsrc.y1 + dy, rsrc.x2 + dx, rsrc.y2 + dy);
-
             rect_i rc = clip_rect_area(rdst, rsrc, src.width(), src.height());
 
             if(rc.x2 > 0)
@@ -527,7 +527,7 @@ namespace agg
                 }
                 while(rc.y2 > 0)
                 {
-                    typename SrcPixelFormatRenderer::row_data rw = src.row(rsrc.x1, rsrc.y1);
+                    typename SrcPixelFormatRenderer::row_data rw = src.row(rsrc.y1);
                     if(rw.ptr)
                     {
                         int x1src = rsrc.x1;
@@ -547,7 +547,7 @@ namespace agg
                             }
                             if(len > 0)
                             {
-                                m_ren->blend_from(src, rw.ptr,
+                                m_ren->blend_from(src,
                                                   x1dst, rdst.y1,
                                                   x1src, rsrc.y1,
                                                   len,
@@ -561,8 +561,6 @@ namespace agg
                 }
             }
         }
-
-
 
     private:
         pixfmt_type* m_ren;

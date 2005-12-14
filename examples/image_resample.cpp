@@ -13,6 +13,7 @@
 #include "agg_span_interpolator_trans.h"
 #include "agg_span_interpolator_persp.h"
 #include "agg_span_subdiv_adaptor.h"
+#include "agg_image_accessors.h"
 #include "agg_gamma_lut.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "ctrl/agg_slider_ctrl.h"
@@ -32,21 +33,15 @@ double            g_y1 = 0;
 double            g_x2 = 0;
 double            g_y2 = 0;
 
-#include "agg_pixfmt_rgba.h"
-#include "agg_span_image_filter_rgba.h"
-#include "agg_span_image_resample_rgba.h"
-#define pix_format agg::pix_format_bgra32
-typedef agg::pixfmt_bgra32     pixfmt;
-typedef agg::pixfmt_bgra32_pre pixfmt_pre;
-#define span_image_filter_2x2      agg::span_image_filter_rgba_2x2
-#define span_image_resample_affine agg::span_image_resample_rgba_affine
-#define span_image_resample        agg::span_image_resample_rgba
-#define AGG_COMPONENT_ORDER
+#include "agg_pixfmt_rgb.h"
+#include "agg_span_image_filter_rgb.h"
+#define pix_format agg::pix_format_bgr24
+typedef agg::pixfmt_bgr24     pixfmt;
+typedef agg::pixfmt_bgr24_pre pixfmt_pre;
+#define image_filter_2x2_type      agg::span_image_filter_rgb_2x2
+#define image_resample_affine_type agg::span_image_resample_rgb_affine
+#define image_resample_type        agg::span_image_resample_rgb
 
-
-#ifdef AGG_COMPONENT_ORDER
-typedef pixfmt::order_type                             order_type;
-#endif
 typedef pixfmt::color_type                             color_type;
 typedef color_type::value_type                         value_type;
 typedef agg::renderer_base<pixfmt>                     renderer_base;
@@ -171,6 +166,10 @@ public:
         agg::image_filter_bilinear filter_kernel;
         agg::image_filter_lut filter(filter_kernel, true);
 
+        pixfmt pixf_img(rbuf_img(0));
+        typedef agg::image_accessor_clone<pixfmt> source_type;
+        source_type source(pixf_img);
+
         start_timer();
         switch(m_trans_type.cur_item())
         {
@@ -181,15 +180,9 @@ public:
                 typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_type;
                 interpolator_type interpolator(tr);
 
-                typedef span_image_filter_2x2<color_type, 
-#ifdef AGG_COMPONENT_ORDER
-                                              order_type, 
-#endif
+                typedef image_filter_2x2_type<source_type, 
                                               interpolator_type> span_gen_type;
-                span_gen_type sg(rbuf_img(0), 
-                                 agg::rgba_pre(0, 0, 0, 0),
-                                 interpolator,
-                                 filter);
+                span_gen_type sg(source, interpolator, filter);
                 agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 break;
             }
@@ -199,18 +192,10 @@ public:
                 agg::trans_affine tr(m_quad.polygon(), g_x1, g_y1, g_x2, g_y2);
 
                 typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_type;
-#ifdef AGG_COMPONENT_ORDER
-                typedef span_image_resample_affine<color_type, 
-                                                   order_type> span_gen_type;
-#else
-                typedef span_image_resample_affine<color_type> span_gen_type;
-#endif
+                typedef image_resample_affine_type<source_type> span_gen_type;
 
                 interpolator_type interpolator(tr);
-                span_gen_type sg(rbuf_img(0), 
-                                 agg::rgba_pre(0,0,0,0),
-                                 interpolator,
-                                 filter);
+                span_gen_type sg(source, interpolator, filter);
                 sg.blur(m_blur.value());
                 agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 break;
@@ -224,15 +209,9 @@ public:
                     typedef agg::span_interpolator_linear_subdiv<agg::trans_perspective> interpolator_type;
                     interpolator_type interpolator(tr);
 
-                    typedef span_image_filter_2x2<color_type,
-#ifdef AGG_COMPONENT_ORDER
-                                                  order_type, 
-#endif
+                    typedef image_filter_2x2_type<source_type,
                                                   interpolator_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0, 0, 0, 0),
-                                     interpolator,
-                                     filter);
+                    span_gen_type sg(source, interpolator, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
@@ -246,15 +225,9 @@ public:
                     typedef agg::span_interpolator_trans<agg::trans_perspective> interpolator_type;
                     interpolator_type interpolator(tr);
 
-                    typedef span_image_filter_2x2<color_type,
-#ifdef AGG_COMPONENT_ORDER
-                                                  order_type, 
-#endif
+                    typedef image_filter_2x2_type<source_type, 
                                                   interpolator_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0, 0, 0, 0),
-                                     interpolator,
-                                     filter);
+                    span_gen_type sg(source, interpolator, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
@@ -270,16 +243,9 @@ public:
 
                 if(interpolator.is_valid())
                 {
-                    typedef span_image_resample<color_type, 
-#ifdef AGG_COMPONENT_ORDER
-                                                order_type, 
-#endif
+                    typedef image_resample_type<source_type, 
                                                 subdiv_adaptor_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0,0,0,0),
-                                     subdiv_adaptor,
-                                     filter);
-
+                    span_gen_type sg(source, subdiv_adaptor, filter);
                     sg.blur(m_blur.value());
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
@@ -296,16 +262,9 @@ public:
 
                 if(interpolator.is_valid())
                 {
-                    typedef span_image_resample<color_type, 
-#ifdef AGG_COMPONENT_ORDER
-                                                order_type, 
-#endif
+                    typedef image_resample_type<source_type, 
                                                 subdiv_adaptor_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0,0,0,0),
-                                     subdiv_adaptor,
-                                     filter);
-
+                    span_gen_type sg(source, subdiv_adaptor, filter);
                     sg.blur(m_blur.value());
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }

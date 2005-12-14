@@ -9,6 +9,7 @@
 #include "agg_pixfmt_rgb.h"
 #include "agg_span_allocator.h"
 #include "agg_span_image_filter_rgb.h"
+#include "agg_image_accessors.h"
 #include "agg_span_interpolator_linear.h"
 #include "agg_span_converter.h"
 #include "agg_scanline_u.h"
@@ -141,9 +142,10 @@ public:
         agg::span_conv_brightness_alpha_rgb8 color_alpha(brightness_alpha_array);
 
 
+
+        typedef agg::image_accessor_clip<pixfmt> img_source_type;
         typedef agg::span_interpolator_linear<> interpolator_type; 
-        typedef agg::span_image_filter_rgb_bilinear<agg::rgba8,
-                                                    agg::order_bgr,
+        typedef agg::span_image_filter_rgb_bilinear<img_source_type,
                                                     interpolator_type> span_gen;
         typedef agg::span_converter<span_gen,
                                     agg::span_conv_brightness_alpha_rgb8> span_conv;
@@ -151,9 +153,10 @@ public:
 
         span_alloc sa;
         interpolator_type interpolator(img_mtx);
-        span_gen sg(rbuf_img(0), agg::rgba(1,1,1,0), interpolator);
+        pixfmt img_pixf(rbuf_img(0));
+        img_source_type img_src(img_pixf, agg::rgba(0,0,0,0));
+        span_gen sg(img_src, interpolator);
         span_conv sc(sg, color_alpha);
-
         agg::ellipse ell;
         agg::rasterizer_scanline_aa<> ras;
         agg::scanline_u8 sl;

@@ -73,7 +73,7 @@ namespace agg
                y <= (int)m_rbuf->height())
             {
                 return (cover_type)m_mask_function.calculate(
-                                        m_rbuf->row(y) + x * Step + Offset);
+                                        m_rbuf->row_ptr(y) + x * Step + Offset);
             }
             return 0;
         }
@@ -87,7 +87,7 @@ namespace agg
             {
                 return (cover_type)((cover_full + val * 
                                      m_mask_function.calculate(
-                                        m_rbuf->row(y) + x * Step + Offset)) >> 
+                                        m_rbuf->row_ptr(y) + x * Step + Offset)) >> 
                                      cover_shift);
             }
             return 0;
@@ -134,7 +134,7 @@ namespace agg
                 memset(covers + count, 0, rest * sizeof(cover_type));
             }
 
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *covers++ = (cover_type)m_mask_function.calculate(mask);
@@ -184,7 +184,7 @@ namespace agg
                 memset(covers + count, 0, rest * sizeof(cover_type));
             }
 
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *covers = (cover_type)((cover_full + (*covers) * 
@@ -236,7 +236,7 @@ namespace agg
                 memset(covers + count, 0, rest * sizeof(cover_type));
             }
 
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *covers++ = (cover_type)m_mask_function.calculate(mask);
@@ -285,7 +285,7 @@ namespace agg
                 memset(covers + count, 0, rest * sizeof(cover_type));
             }
 
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *covers = (cover_type)((cover_full + (*covers) * 
@@ -373,7 +373,7 @@ namespace agg
         cover_type pixel(int x, int y) const
         {
             return (cover_type)m_mask_function.calculate(
-                                   m_rbuf->row(y) + x * Step + Offset);
+                                   m_rbuf->row_ptr(y) + x * Step + Offset);
         }
 
         
@@ -382,7 +382,7 @@ namespace agg
         {
             return (cover_type)((cover_full + val * 
                                  m_mask_function.calculate(
-                                    m_rbuf->row(y) + x * Step + Offset)) >> 
+                                    m_rbuf->row_ptr(y) + x * Step + Offset)) >> 
                                  cover_shift);
         }
 
@@ -390,7 +390,7 @@ namespace agg
         //--------------------------------------------------------------------
         void fill_hspan(int x, int y, cover_type* dst, int num_pix) const
         {
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *dst++ = (cover_type)m_mask_function.calculate(mask);
@@ -404,7 +404,7 @@ namespace agg
         //--------------------------------------------------------------------
         void combine_hspan(int x, int y, cover_type* dst, int num_pix) const
         {
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *dst = (cover_type)((cover_full + (*dst) * 
@@ -420,7 +420,7 @@ namespace agg
         //--------------------------------------------------------------------
         void fill_vspan(int x, int y, cover_type* dst, int num_pix) const
         {
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *dst++ = (cover_type)m_mask_function.calculate(mask);
@@ -433,7 +433,7 @@ namespace agg
         //--------------------------------------------------------------------
         void combine_vspan(int x, int y, cover_type* dst, int num_pix) const
         {
-            const int8u* mask = m_rbuf->row(y) + x * Step + Offset;
+            const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
                 *dst = (cover_type)((cover_full + (*dst) * 

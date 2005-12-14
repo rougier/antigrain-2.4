@@ -88,24 +88,30 @@ namespace agg
     typedef AGG_INT64  int64;        //----int64
     typedef AGG_INT64U int64u;       //----int64u
 
-    //-------------------------------------------------------------------iround
-    //-------------------------------------------------------------------uround
 #if defined(AGG_FISTP)
 #pragma warning(push)
 #pragma warning(disable : 4035) //Disable warning "no return value"
-    AGG_INLINE int iround(double v)
+    AGG_INLINE int iround(double v)              //-------iround
     {
         __asm fld   qword ptr [v]
         __asm fistp dword ptr [ebp-8]
         __asm mov eax, dword ptr [ebp-8]
     }
-    AGG_INLINE unsigned uround(double v)
+    AGG_INLINE unsigned uround(double v)         //-------uround
     {
         __asm fld   qword ptr [v]
         __asm fistp dword ptr [ebp-8]
         __asm mov eax, dword ptr [ebp-8]
     }
 #pragma warning(pop)
+    AGG_INLINE unsigned ufloor(double v)         //-------ufloor
+    {
+        return unsigned(floor(v));
+    }
+    AGG_INLINE unsigned uceil(double v)          //--------uceil
+    {
+        return unsigned(ceil(v));
+    }
 #elif defined(AGG_QIFIST)
     AGG_INLINE int iround(double v)
     {
@@ -114,6 +120,14 @@ namespace agg
     AGG_INLINE int uround(double v)
     {
         return unsigned(v);
+    }
+    AGG_INLINE unsigned ufloor(double v)
+    {
+        return unsigned(floor(v));
+    }
+    AGG_INLINE unsigned uceil(double v)
+    {
+        return unsigned(ceil(v));
     }
 #else
     AGG_INLINE int iround(double v)
@@ -124,19 +138,15 @@ namespace agg
     {
         return unsigned(v + 0.5);
     }
-#endif
-
-    //-------------------------------------------------------------------ufloor
     AGG_INLINE unsigned ufloor(double v)
     {
-        return unsigned(floor(v));
+        return unsigned(v);
     }
-
-    //--------------------------------------------------------------------uceil
     AGG_INLINE unsigned uceil(double v)
     {
         return unsigned(ceil(v));
     }
+#endif
 
     //---------------------------------------------------------------saturation
     template<int Limit> struct saturation

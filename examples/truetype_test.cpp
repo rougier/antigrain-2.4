@@ -387,11 +387,9 @@ public:
             m_gamma_lut.gamma(m_gamma.value());
         }
 
-
         draw_text(ras, sl, ren_solid, ren_bin);
 
         ras.gamma(agg::gamma_power(1.0));
-
 
         agg::render_ctrl(ras, sl, ren_base, m_ren_type);
         agg::render_ctrl(ras, sl, ren_base, m_height);

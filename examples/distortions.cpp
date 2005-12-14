@@ -14,6 +14,7 @@
 #include "agg_span_interpolator_linear.h"
 #include "agg_span_interpolator_adaptor.h"
 #include "agg_span_gradient.h"
+#include "agg_image_accessors.h"
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "platform/agg_platform_support.h"
@@ -471,6 +472,8 @@ public:
         typedef agg::renderer_base<pixfmt> renderer_base;
 
         pixfmt pixf(rbuf_window());
+        pixfmt img_pixf(rbuf_img(0));
+
         renderer_base rb(pixf);
 
         rb.clear(agg::rgba(1.0, 1.0, 1.0));
@@ -521,61 +524,44 @@ public:
 
         interpolator_type interpolator(img_mtx, *dist);
 
+        typedef agg::image_accessor_clip<pixfmt> img_source_type;
+        img_source_type img_src(img_pixf, agg::rgba(1,1,1));
+
 /*
         // Version without filtering (nearest neighbor)
         //------------------------------------------
-        typedef agg::span_image_filter_rgb_nn<agg::rgba8,
-                                              agg::order_bgr, 
+        typedef agg::span_image_filter_rgb_nn<img_source_type,
                                               interpolator_type> span_gen_type;
-        span_gen_type sg(rbuf_img(0), 
-                         agg::rgba(1,1,1,0),
-                         interpolator);
+        span_gen_type sg(img_src, interpolator);
         //------------------------------------------
 */
 
-
-
-        // Version with "hardcoded" bilinear filter
+        // Version with "hardcoded" bilinear filter and without 
+        // image_accessor (direct filter, the old variant)
         //------------------------------------------
-        typedef agg::span_image_filter_rgb_bilinear<agg::rgba8,
-                                                    agg::order_bgr, 
-                                                    interpolator_type> span_gen_type;
-        span_gen_type sg(rbuf_img(0), 
-                         agg::rgba(1,1,1,0),
-                         interpolator);
+        typedef agg::span_image_filter_rgb_bilinear_clip<pixfmt,
+                                                         interpolator_type> span_gen_type;
+        span_gen_type sg(img_pixf, agg::rgba(1,1,1), interpolator);
         //------------------------------------------
-
 
 /*
         // Version with arbitrary 2x2 filter
         //------------------------------------------
-        typedef agg::span_image_filter_rgb_2x2<agg::rgba8,
-                                               agg::order_bgr, 
+        typedef agg::span_image_filter_rgb_2x2<img_source_type,
                                                interpolator_type> span_gen_type;
         agg::image_filter<agg::image_filter_kaiser> filter;
-
-        span_gen_type sg(rbuf_img(0), 
-                         agg::rgba(1,1,1,0),
-                         interpolator, 
-                         filter);
+        span_gen_type sg(img_src, interpolator, filter);
         //------------------------------------------
 */
-
 /*
         // Version with arbitrary filter
         //------------------------------------------
-        typedef agg::span_image_filter_rgb<agg::rgba8,
-                                           agg::order_bgr, 
+        typedef agg::span_image_filter_rgb<img_source_type,
                                            interpolator_type> span_gen_type;
         agg::image_filter<agg::image_filter_spline36> filter;
-
-        span_gen_type sg(rbuf_img(0), 
-                         agg::rgba(1,1,1,0),
-                         interpolator, 
-                         filter);
+        span_gen_type sg(img_src, interpolator, filter);
         //------------------------------------------
 */
-
 
 
         agg::rasterizer_scanline_aa<> ras;

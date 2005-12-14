@@ -10,8 +10,10 @@
 #include "agg_scanline_p.h"
 #include "agg_renderer_scanline.h"
 #include "agg_span_allocator.h"
+#include "agg_span_pattern_gray.h"
 #include "agg_span_pattern_rgb.h"
 #include "agg_span_pattern_rgba.h"
+#include "agg_image_accessors.h"
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
@@ -163,11 +165,11 @@ public:
         m_pattern = new agg::int8u[size * size * 4];
         m_pattern_rbuf.attach(m_pattern, size, size, size*4);
 
-        agg::pixfmt_rgba32 pixf(m_pattern_rbuf);
-        agg::renderer_base<agg::pixfmt_rgba32> rb(pixf);
-        agg::renderer_scanline_aa_solid<agg::renderer_base<agg::pixfmt_rgba32> > rs(rb);
+        pixfmt pixf(m_pattern_rbuf);
+        agg::renderer_base<pixfmt> rb(pixf);
+        agg::renderer_scanline_aa_solid<agg::renderer_base<pixfmt> > rs(rb);
 
-        rb.clear(agg::rgba(0.4, 0.0, 0.1, m_pattern_alpha.value())); // Pattern background color
+        rb.clear(agg::rgba_pre(0.4, 0.0, 0.1, m_pattern_alpha.value())); // Pattern background color
 
         m_ras.add_path(smooth);
         rs.color(agg::rgba8(110,130,50));
@@ -194,12 +196,14 @@ public:
         double width = rbuf_window().width();
         double height = rbuf_window().height();
     
-        typedef agg::renderer_base<pixfmt> renderer_base;
-        typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+        typedef agg::renderer_base<pixfmt>     renderer_base;
+        typedef agg::renderer_base<pixfmt_pre> renderer_base_pre;
        
-        pixfmt pixf(rbuf_window());
-        renderer_base rb(pixf);
-        renderer_solid rs(rb);
+        pixfmt     pixf(rbuf_window());
+        pixfmt_pre pixf_pre(rbuf_window());
+
+        renderer_base     rb(pixf);
+        renderer_base_pre rb_pre(pixf_pre);
 
         rb.clear(agg::rgba(1.0, 1.0, 1.0));
 
@@ -217,10 +221,11 @@ public:
 
         typedef agg::wrap_mode_reflect_auto_pow2 wrap_x_type;
         typedef agg::wrap_mode_reflect_auto_pow2 wrap_y_type;
-        typedef agg::span_pattern_rgba<agg::rgba8, 
-                                       agg::order_rgba,
-                                       wrap_x_type,
-                                       wrap_y_type> span_gen_type;
+        typedef agg::image_accessor_wrap<pixfmt, 
+                                         wrap_x_type,
+                                         wrap_y_type> img_source_type;
+        typedef agg::span_pattern_rgba<img_source_type> span_gen_type;
+
         unsigned offset_x = 0;
         unsigned offset_y = 0;
 
@@ -230,21 +235,16 @@ public:
             offset_y = unsigned(height-m_polygon_cy);
         }
 
-        agg::span_allocator<agg::rgba8> sa;
-        span_gen_type sg(m_pattern_rbuf, offset_x, offset_y);
+        agg::span_allocator<color_type> sa;
+        pixfmt          img_pixf(m_pattern_rbuf);
+        img_source_type img_src(img_pixf);
+        span_gen_type sg(img_src, offset_x, offset_y);
 
-        sg.alpha(span_gen_type::value_type(m_pattern_alpha.value() * 255.0)); // Alpha is meaningful
-                                                        // for RGB only because
-                                                        // RGBA has its own
-//m_ras.clip_box(-1, 0, width, height);
-//m_ras.move_to_d(-1,  100);
-//m_ras.line_to_d(100, 100);
-//m_ras.line_to_d(100, 200);
-//m_ras.line_to_d(-1,  200);
-//m_ras.close_polygon();
+        // Alpha is meaningful for RGB only because RGBA has its own
+        sg.alpha(span_gen_type::value_type(m_pattern_alpha.value() * 255.0)); 
 
         m_ras.add_path(tr);
-        agg::render_scanlines_aa(m_ras, m_sl, rb, sa, sg);
+        agg::render_scanlines_aa(m_ras, m_sl, rb_pre, sa, sg);
 
         agg::render_ctrl(m_ras, m_sl, rb, m_polygon_angle);
         agg::render_ctrl(m_ras, m_sl, rb, m_polygon_scale);

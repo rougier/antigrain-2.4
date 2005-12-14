@@ -29,20 +29,20 @@ public:
 
     virtual void on_draw()
     {
-        agg::pixfmt_bgr24        pf(rbuf_window());
-        agg::pixfmt_gray8_bgr24r pfr(rbuf_window());
-        agg::pixfmt_gray8_bgr24g pfg(rbuf_window());
-        agg::pixfmt_gray8_bgr24b pfb(rbuf_window());
+        agg::pixfmt_bgr24 pf(rbuf_window());
 
-        typedef agg::renderer_base<agg::pixfmt_bgr24>        rb_type;
-        typedef agg::renderer_base<agg::pixfmt_gray8_bgr24r> rbr_type;
-        typedef agg::renderer_base<agg::pixfmt_gray8_bgr24g> rbg_type;
-        typedef agg::renderer_base<agg::pixfmt_gray8_bgr24b> rbb_type;
+        typedef agg::pixfmt_alpha_blend_gray<agg::blender_gray8, agg::rendering_buffer, 3, 2> pixfmt_gray8_bgr24r;
+        typedef agg::pixfmt_alpha_blend_gray<agg::blender_gray8, agg::rendering_buffer, 3, 1> pixfmt_gray8_bgr24g;
+        typedef agg::pixfmt_alpha_blend_gray<agg::blender_gray8, agg::rendering_buffer, 3, 0> pixfmt_gray8_bgr24b;
 
-        rb_type      rbase(pf);
-        rbr_type     rbr(pfr);
-        rbg_type     rbg(pfg);
-        rbb_type     rbb(pfb);
+        pixfmt_gray8_bgr24r pfr(rbuf_window());
+        pixfmt_gray8_bgr24g pfg(rbuf_window());
+        pixfmt_gray8_bgr24b pfb(rbuf_window());
+
+        agg::renderer_base<agg::pixfmt_bgr24>   rbase(pf);
+        agg::renderer_base<pixfmt_gray8_bgr24r> rbr(pfr);
+        agg::renderer_base<pixfmt_gray8_bgr24g> rbg(pfg);
+        agg::renderer_base<pixfmt_gray8_bgr24b> rbb(pfb);
 
         agg::rasterizer_scanline_aa<> ras;
         agg::scanline_p8 sl;

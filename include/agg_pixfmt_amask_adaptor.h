@@ -30,7 +30,6 @@ namespace agg
         typedef PixFmt pixfmt_type;
         typedef typename pixfmt_type::color_type color_type;
         typedef typename pixfmt_type::row_data row_data;
-        typedef typename pixfmt_type::span_data span_data;
         typedef AlphaMask amask_type;
         typedef typename amask_type::cover_type cover_type;
 

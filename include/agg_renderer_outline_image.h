@@ -44,7 +44,7 @@ namespace agg
         { 
             double src_y = (y + 0.5) * m_scale - 0.5;
             int h  = m_source.height() - 1;
-            int y1 = iround(src_y);
+            int y1 = ufloor(src_y);
             int y2 = y1 + 1;
             color_type pix1 = (y1 < 0) ? color_type::no_color() : m_source.pixel(x, y1);
             color_type pix2 = (y2 > h) ? color_type::no_color() : m_source.pixel(x, y2);
@@ -128,7 +128,7 @@ namespace agg
             color_type* d2;
             for(y = 0; y < m_height; y++)
             {
-                d1 = m_buf.row(y + m_dilation) + m_dilation;
+                d1 = m_buf.row_ptr(y + m_dilation) + m_dilation;
                 for(x = 0; x < m_width; x++)
                 {
                     *d1++ = src.pixel(x, y);
@@ -139,10 +139,10 @@ namespace agg
             const color_type* s2;
             for(y = 0; y < m_dilation; y++)
             {
-                //s1 = m_buf.row(m_height + m_dilation - 1) + m_dilation;
-                //s2 = m_buf.row(m_dilation) + m_dilation;
-                d1 = m_buf.row(m_dilation + m_height + y) + m_dilation;
-                d2 = m_buf.row(m_dilation - y - 1) + m_dilation;
+                //s1 = m_buf.row_ptr(m_height + m_dilation - 1) + m_dilation;
+                //s2 = m_buf.row_ptr(m_dilation) + m_dilation;
+                d1 = m_buf.row_ptr(m_dilation + m_height + y) + m_dilation;
+                d2 = m_buf.row_ptr(m_dilation - y - 1) + m_dilation;
                 for(x = 0; x < m_width; x++)
                 {
                     //*d1++ = color_type(*s1++, 0);
@@ -155,10 +155,10 @@ namespace agg
             unsigned h = m_height + m_dilation * 2;
             for(y = 0; y < h; y++)
             {
-                s1 = m_buf.row(y) + m_dilation;
-                s2 = m_buf.row(y) + m_dilation + m_width;
-                d1 = m_buf.row(y) + m_dilation + m_width;
-                d2 = m_buf.row(y) + m_dilation;
+                s1 = m_buf.row_ptr(y) + m_dilation;
+                s2 = m_buf.row_ptr(y) + m_dilation + m_width;
+                d1 = m_buf.row_ptr(y) + m_dilation + m_width;
+                d2 = m_buf.row_ptr(y) + m_dilation;
 
                 for(x = 0; x < m_dilation; x++)
                 {

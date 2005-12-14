@@ -39,18 +39,6 @@ namespace agg
                 x1(x1_), x2(x2_), ptr(ptr_) {}
         };
 
-        //--------------------------------------------------------------------
-        struct span_data
-        {
-            int x;
-            unsigned len;
-            int8u* ptr;
-            span_data() {}
-            span_data(int) : x(0), len(0), ptr(0) {}
-            span_data(int x_, unsigned len_, int8u* ptr_) : 
-                x(x_), len(len_), ptr(ptr_) {}
-        };
-
         //-------------------------------------------------------------------
         ~row_ptr_cache()
         {
@@ -110,42 +98,42 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        T* buf() { return m_buf; }
+              T* buf()          { return m_buf;    }
         const T* buf()    const { return m_buf;    }
         unsigned width()  const { return m_width;  }
         unsigned height() const { return m_height; }
         int      stride() const { return m_stride; }
         unsigned stride_abs() const 
         {
-            return (m_stride < 0) ? 
-                unsigned(-m_stride) : 
-                unsigned(m_stride); 
+            return (m_stride < 0) ? unsigned(-m_stride) : unsigned(m_stride); 
         }
 
         //--------------------------------------------------------------------
-        T* row(unsigned y) { return m_rows[y]; }
-        const T* row(unsigned y) const { return m_rows[y]; }
+              T* row_ptr(int, int y, unsigned) { return m_rows[y]; }
+              T* row_ptr(int y)                { return m_rows[y]; }
+        const T* row_ptr(int y) const          { return m_rows[y]; }
+        row_data row    (int y) const { return row_data(0, m_width-1, m_rows[y]); }
 
-        T* next_row(void* p) { return (T*)p + m_stride; }
-        const T* next_row(const void* p) const { return (T*)p + m_stride; }
-
+        //--------------------------------------------------------------------
         T const* const* rows() const { return m_rows; }
 
         //--------------------------------------------------------------------
-        void copy_from(const row_ptr_cache<T>& mtx)
+        template<class RenBuf>
+        void copy_from(const RenBuf& src)
         {
             unsigned h = height();
-            if(mtx.height() < h) h = mtx.height();
+            if(src.height() < h) h = src.height();
         
             unsigned l = stride_abs();
-            if(mtx.stride_abs() < l) l = mtx.stride_abs();
+            if(src.stride_abs() < l) l = src.stride_abs();
         
             l *= sizeof(T);
 
             unsigned y;
+            unsigned w = width();
             for (y = 0; y < h; y++)
             {
-                memcpy(row(y), mtx.row(y), l);
+                memcpy(row_ptr(0, y, w), src.row_ptr(y), l);
             }
         }
 
@@ -153,10 +141,11 @@ namespace agg
         void clear(T value)
         {
             unsigned y;
+            unsigned w = width();
             unsigned stride = stride_abs();
             for(y = 0; y < height(); y++)
             {
-                T* p = row(y);
+                T* p = row_ptr(0, y, w);
                 unsigned x;
                 for(x = 0; x < stride; x++)
                 {

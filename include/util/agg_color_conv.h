@@ -31,10 +31,8 @@ namespace agg
 {
 
     //--------------------------------------------------------------color_conv
-    template<class CopyRow> 
-    void color_conv(rendering_buffer* dst, 
-                    const rendering_buffer* src,
-                    CopyRow copy_row_functor)
+    template<class RenBuf, class CopyRow> 
+    void color_conv(RenBuf* dst, const RenBuf* src, CopyRow copy_row_functor)
     {
         unsigned width = src->width();
         unsigned height = src->height();
@@ -47,7 +45,9 @@ namespace agg
             unsigned y;
             for(y = 0; y < height; y++)
             {
-                copy_row_functor(dst->row(y), src->row(y), width);
+                copy_row_functor(dst->row_ptr(0, y, width), 
+                                 src->row_ptr(y), 
+                                 width);
             }
         }
     }

@@ -21,7 +21,6 @@
 
 namespace agg
 {
-
     //---------------------------------------------------------vertex_integer
     template<class T, unsigned CoordShift=6> struct vertex_integer
     {
@@ -111,12 +110,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         unsigned size() const { return m_storage.size(); }
-        unsigned vertex(unsigned idx, T* x, T* y) const
+        unsigned vertex(unsigned idx, double* x, double* y) const
         {
-            const vertex_integer_type& v = m_storage[idx];
-            *x = v.x >> 1;
-            *y = v.y >> 1;
-            return ((v.y & 1) << 1) | (v.x & 1);
+            return m_storage[idx].vertex(x, y);
         }
 
         //--------------------------------------------------------------------
@@ -130,7 +126,6 @@ namespace agg
                 ptr += sizeof(vertex_integer_type);
             }
         }
-
 
         //--------------------------------------------------------------------
         void rewind(unsigned) 
@@ -191,7 +186,6 @@ namespace agg
             }
             return bounds;
         }
-
 
     private:
         pod_bvector<vertex_integer_type, 6> m_storage;

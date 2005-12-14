@@ -34,9 +34,7 @@ namespace agg
         typedef PixelFormat pixfmt_type;
         typedef typename pixfmt_type::color_type color_type;
         typedef typename pixfmt_type::row_data row_data;
-        typedef typename pixfmt_type::span_data span_data;
         typedef renderer_base<pixfmt_type> base_ren_type;
-
 
         //--------------------------------------------------------------------
         renderer_mclip(pixfmt_type& ren) :
@@ -236,12 +234,6 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        span_data span(int x, int y, unsigned len)
-        {
-            return m_ren.span(x, y, len);
-        }
-
-        //--------------------------------------------------------------------
         void blend_solid_hspan(int x, int y, int len, 
                                const color_type& c, const cover_type* covers)
         {
@@ -318,7 +310,6 @@ namespace agg
             }
             while(next_clip_box());
         }
-
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>

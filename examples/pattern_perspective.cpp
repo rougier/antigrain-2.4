@@ -14,23 +14,20 @@
 #include "agg_span_interpolator_linear.h"
 #include "agg_span_interpolator_trans.h"
 #include "agg_span_allocator.h"
+#include "agg_image_accessors.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 #include "interactive_polygon.h"
 
 
 #include "agg_pixfmt_rgb.h"
-#include "agg_span_pattern_filter_rgb.h"
-#define span_pattern_filter_2x2 agg::span_pattern_filter_rgb_2x2
-#define span_pattern_filter_nn  agg::span_pattern_filter_rgb_nn
+#include "agg_span_image_filter_rgb.h"
+#define span_image_filter_2x2 agg::span_image_filter_rgb_2x2
+#define span_image_filter_nn  agg::span_image_filter_rgb_nn
 #define pix_format agg::pix_format_bgr24
 typedef agg::pixfmt_bgr24 pixfmt;
 typedef agg::pixfmt_bgr24_pre pixfmt_pre;
-typedef agg::rgba8 color_type;
-typedef agg::order_bgr component_order;
-#define AGG_COMPONENT_ORDER
-
-
+typedef pixfmt::color_type color_type;
 
 enum flip_y_e { flip_y = true };
 
@@ -40,11 +37,6 @@ double            g_x1 = 0;
 double            g_y1 = 0;
 double            g_x2 = 0;
 double            g_y2 = 0;
-
-
-
-
-
 
 
 class the_application : public agg::platform_support
@@ -72,7 +64,6 @@ public:
         m_trans_type.cur_item(2);
         add_ctrl(m_trans_type);
     }
-
 
     virtual void on_init()
     {
@@ -144,6 +135,12 @@ public:
         agg::image_filter<agg::image_filter_hanning> filter;
     
         typedef agg::wrap_mode_reflect_auto_pow2 remainder_type;
+        typedef agg::image_accessor_wrap<pixfmt, 
+                                         remainder_type, 
+                                         remainder_type> img_source_type;
+
+        pixfmt img_pixf(rbuf_img(0));
+        img_source_type img_src(img_pixf);
 
         enum subdiv_shift_e { subdiv_shift = 2 };
          
@@ -164,16 +161,9 @@ public:
                 typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_type;
                 interpolator_type interpolator(tr);
 
-                typedef span_pattern_filter_2x2<color_type,
-#ifdef AGG_COMPONENT_ORDER
-                                                component_order, 
-#endif
-                                                interpolator_type,
-                                                remainder_type,
-                                                remainder_type> span_gen_type;
-                span_gen_type sg(rbuf_img(0), 
-                                 interpolator,
-                                 filter);
+                typedef span_image_filter_2x2<img_source_type,
+                                              interpolator_type> span_gen_type;
+                span_gen_type sg(img_src, interpolator, filter);
                 agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 break;
             }
@@ -186,16 +176,9 @@ public:
                     typedef agg::span_interpolator_linear<agg::trans_bilinear> interpolator_type;
                     interpolator_type interpolator(tr);
 
-                    typedef span_pattern_filter_2x2<color_type,
-#ifdef AGG_COMPONENT_ORDER
-                                                    component_order, 
-#endif
-                                                    interpolator_type,
-                                                    remainder_type,
-                                                    remainder_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     interpolator,
-                                     filter);
+                    typedef span_image_filter_2x2<img_source_type,
+                                                  interpolator_type> span_gen_type;
+                    span_gen_type sg(img_src, interpolator, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
@@ -209,22 +192,14 @@ public:
                     typedef agg::span_interpolator_linear_subdiv<agg::trans_perspective, 8> interpolator_type;
                     interpolator_type interpolator(tr);
 
-                    typedef span_pattern_filter_2x2<color_type,
-#ifdef AGG_COMPONENT_ORDER
-                                                    component_order, 
-#endif
-                                                    interpolator_type,
-                                                    remainder_type,
-                                                    remainder_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     interpolator,
-                                     filter);
+                    typedef span_image_filter_2x2<img_source_type,
+                                                  interpolator_type> span_gen_type;
+                    span_gen_type sg(img_src, interpolator, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
             }
         }
-
     }
 
 

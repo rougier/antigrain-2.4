@@ -23,6 +23,7 @@
 //#define AGG_ABGR32
 //#define AGG_RGB565
 //#define AGG_RGB555
+//#define AGG_RGB_AAA
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };

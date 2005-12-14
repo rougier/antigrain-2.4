@@ -16,6 +16,7 @@
 #include "agg_span_interpolator_trans.h"
 #include "agg_span_subdiv_adaptor.h"
 #include "agg_pixfmt_rgba.h"
+#include "agg_image_accessors.h"
 #include "agg_span_image_filter_rgba.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "platform/agg_platform_support.h"
@@ -62,26 +63,20 @@ public:
 
     virtual void on_init()
     {
-        g_x1 = 0.0;
-        g_y1 = 0.0;
-        g_x2 = rbuf_img(0).width();
-        g_y2 = rbuf_img(0).height();
+        double d = 0.0;
+        g_x1 = d;
+        g_y1 = d;
+        g_x2 = rbuf_img(0).width() - d;
+        g_y2 = rbuf_img(0).height() - d;
 
-        double x1 = g_x1;// * 100.0;
-        double y1 = g_y1;// * 100.0;
-        double x2 = g_x2;// * 100.0;
-        double y2 = g_y2;// * 100.0;
-
-        double dx = width()  / 2.0 - (x2 - x1) / 2.0;
-        double dy = height() / 2.0 - (y2 - y1) / 2.0;
-        m_quad.xn(0) = floor(x1 + dx);
-        m_quad.yn(0) = floor(y1 + dy);
-        m_quad.xn(1) = floor(x2 + dx);
-        m_quad.yn(1) = floor(y1 + dy);
-        m_quad.xn(2) = floor(x2 + dx);
-        m_quad.yn(2) = floor(y2 + dy);
-        m_quad.xn(3) = floor(x1 + dx);
-        m_quad.yn(3) = floor(y2 + dy);
+        m_quad.xn(0) = 100;
+        m_quad.yn(0) = 100;
+        m_quad.xn(1) = width()  - 100;
+        m_quad.yn(1) = 100;
+        m_quad.xn(2) = width()  - 100;
+        m_quad.yn(2) = height() - 100;
+        m_quad.xn(3) = 100;
+        m_quad.yn(3) = height() - 100;
     }
 
     virtual void on_draw()
@@ -119,17 +114,28 @@ public:
         g_rasterizer.line_to_d(m_quad.xn(2), m_quad.yn(2));
         g_rasterizer.line_to_d(m_quad.xn(3), m_quad.yn(3));
 
-
-        agg::span_allocator<agg::rgba8> sa;
-        agg::image_filter_hermite filter_kernel;
+        agg::span_allocator<color_type> sa;
+        agg::image_filter_bilinear filter_kernel;
         agg::image_filter_lut filter(filter_kernel, false);
+
+        pixfmt pixf_img(rbuf_img(0));
+
+        //typedef agg::image_accessor_wrap<pixfmt, 
+        //                                 agg::wrap_mode_reflect,
+        //                                 agg::wrap_mode_reflect> img_accessor_type;
+        //img_accessor_type ia(pixf_img);
+
+        //typedef agg::image_accessor_clip<pixfmt> img_accessor_type;
+        //img_accessor_type ia(pixf_img, agg::rgba(1,1,1));
+
+        typedef agg::image_accessor_clone<pixfmt> img_accessor_type;
+        img_accessor_type ia(pixf_img);
 
         start_timer();
         switch(m_trans_type.cur_item())
         {
             case 0:
             {
-
                 // Note that we consruct an affine matrix that transforms
                 // a parallelogram to a rectangle, i.e., it's inverted.
                 // It's actually the same as:
@@ -143,12 +149,9 @@ public:
                 typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_type;
                 interpolator_type interpolator(tr);
 
-                typedef agg::span_image_filter_rgba_nn<color_type, 
-                                                       agg::order_bgra, 
+                typedef agg::span_image_filter_rgba_nn<img_accessor_type,
                                                        interpolator_type> span_gen_type;
-                span_gen_type sg(rbuf_img(0), 
-                                 agg::rgba_pre(0, 0, 0, 0),
-                                 interpolator);
+                span_gen_type sg(ia, interpolator);
                 agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 break;
             }
@@ -161,13 +164,9 @@ public:
                     typedef agg::span_interpolator_linear<agg::trans_bilinear> interpolator_type;
                     interpolator_type interpolator(tr);
 
-                    typedef agg::span_image_filter_rgba_2x2<color_type,
-                                                            agg::order_bgra, 
+                    typedef agg::span_image_filter_rgba_2x2<img_accessor_type,
                                                             interpolator_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0, 0, 0, 0),
-                                     interpolator,
-                                     filter);
+                    span_gen_type sg(ia, interpolator, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
@@ -183,13 +182,9 @@ public:
                     interpolator_type interpolator(tr);
                     subdiv_adaptor_type subdiv_adaptor(interpolator);
 
-                    typedef agg::span_image_filter_rgba_2x2<color_type,
-                                                            agg::order_bgra, 
+                    typedef agg::span_image_filter_rgba_2x2<img_accessor_type,
                                                             subdiv_adaptor_type> span_gen_type;
-                    span_gen_type sg(rbuf_img(0), 
-                                     agg::rgba_pre(0, 0, 0, 0),
-                                     subdiv_adaptor,
-                                     filter);
+                    span_gen_type sg(ia, subdiv_adaptor, filter);
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
@@ -197,7 +192,7 @@ public:
         }
         double tm = elapsed_time();
 
-        char buf[64]; 
+        char buf[128]; 
         agg::gsv_text t;
         t.size(10.0);
 

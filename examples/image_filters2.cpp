@@ -10,11 +10,12 @@
 #include "agg_scanline_u.h"
 #include "agg_scanline_p.h"
 #include "agg_renderer_scanline.h"
-#include "agg_pixfmt_rgb.h"
+#include "agg_pixfmt_rgba.h"
 #include "agg_gamma_lut.h"
 #include "agg_span_allocator.h"
-#include "agg_span_image_filter_rgb.h"
+#include "agg_span_image_filter_rgba.h"
 #include "agg_span_interpolator_linear.h"
+#include "agg_image_accessors.h"
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
@@ -22,18 +23,19 @@
 
 enum flip_y_e { flip_y = true };
 
+enum { l = 255 };
 static agg::int8u g_image[] = 
 {
-   0,255,0,     0,0,255,     255,255,255,   255,0,0,
-   255,0,0,     0,0,0,       255,255,255,   255,255,255,
-   255,255,255, 255,255,255, 0,0,255,       255,0,0,
-   0,0,255,     255,255,255, 0,0,0,         0,255,0
+   0,l,0,l,  0,0,l,l,  l,l,l,l,  l,0,0,l,
+   l,0,0,l,  0,0,0,l,  l,l,l,l,  l,l,l,l,
+   l,l,l,l,  l,l,l,l,  0,0,l,l,  l,0,0,l,
+   0,0,l,l,  l,l,l,l,  0,0,0,l,  0,l,0,l
 };
 
 class the_application : public agg::platform_support
 {
-    typedef agg::pixfmt_bgr24 pixfmt;
-    typedef agg::pixfmt_bgr24_pre pixfmt_pre;
+    typedef agg::pixfmt_bgra32 pixfmt;
+    typedef agg::pixfmt_bgra32_pre pixfmt_pre;
     typedef agg::renderer_base<pixfmt> renderer_base;
     typedef agg::renderer_base<pixfmt_pre> renderer_base_pre;
 
@@ -118,7 +120,7 @@ public:
         agg::rasterizer_scanline_aa<> ras;
         agg::scanline_u8 sl;
 
-        agg::rendering_buffer img_rbuf(g_image, 4, 4, 4*3);
+        agg::rendering_buffer img_rbuf(g_image, 4, 4, 4*4);
 
         double para[] = { 200, 40, 200+300, 40, 200+300, 40+300, 200, 40+300 };
         agg::trans_affine img_mtx(para, 0,0,4,4);
@@ -126,6 +128,10 @@ public:
         typedef agg::span_interpolator_linear<> interpolator_type;
         interpolator_type interpolator(img_mtx); 
         agg::span_allocator<agg::rgba8> sa;
+
+        pixfmt img_pixf(img_rbuf);
+        typedef agg::image_accessor_clone<pixfmt> img_source_type;
+        img_source_type source(img_pixf);
 
         ras.reset();
         ras.move_to_d(para[0], para[1]);
@@ -137,11 +143,10 @@ public:
         {
         case 0:
             {
-                typedef agg::span_image_filter_rgb_nn<agg::rgba8,
-                                                      agg::order_bgr,
-                                                      interpolator_type> span_gen_type;
+                typedef agg::span_image_filter_rgba_nn<img_source_type,
+                                                       interpolator_type> span_gen_type;
 
-                span_gen_type sg(img_rbuf, agg::rgba(1,1,1), interpolator);
+                span_gen_type sg(source, interpolator);
                 agg::render_scanlines_aa(ras, sl, rb, sa, sg);
             }
             break;
@@ -185,11 +190,10 @@ public:
                 case 16: filter.calculate(agg::image_filter_blackman(m_radius.value()), norm); break; 
                 }
 
-                typedef agg::span_image_filter_rgb<agg::rgba8,
-                                                   agg::order_bgr,
-                                                   interpolator_type> span_gen_type;
+                typedef agg::span_image_filter_rgba<img_source_type,
+                                                    interpolator_type> span_gen_type;
 
-                span_gen_type sg(img_rbuf, agg::rgba(1,1,1), interpolator, filter);
+                span_gen_type sg(source, interpolator, filter);
                 agg::render_scanlines_aa(ras, sl, rb, sa, sg);
 
                 agg::gamma_lut<agg::int8u, agg::int8u, 8, 8> gamma(m_gamma.value());
@@ -262,7 +266,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(agg::pix_format_bgra32, flip_y);
     app.caption("Image transformation filters comparison");
 
     if(app.init(500, 340, 0))

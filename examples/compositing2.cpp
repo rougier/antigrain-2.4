@@ -22,7 +22,7 @@ typedef agg::pixel32_type pixel_type;
 
 
 typedef agg::blender_rgba<color, agg::order_bgra> prim_blender_type; 
-typedef agg::pixel_formats_rgba<prim_blender_type, pixel_type> prim_pixfmt_type;
+typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, agg::rendering_buffer, pixel_type> prim_pixfmt_type;
 typedef agg::renderer_base<prim_pixfmt_type> prim_ren_base_type;
 
 
@@ -148,7 +148,7 @@ public:
     template<class RenBase> void render_scene(RenBase& rb)
     {
         typedef agg::comp_op_adaptor_rgba<color, agg::order_bgra> blender_type;
-        typedef agg::pixfmt_custom_blend_rgba<blender_type> pixfmt_type;
+        typedef agg::pixfmt_custom_blend_rgba<blender_type, agg::rendering_buffer> pixfmt_type;
         typedef agg::renderer_base<pixfmt_type> renderer_type;
 
         pixfmt_type pixf(rbuf_window());
