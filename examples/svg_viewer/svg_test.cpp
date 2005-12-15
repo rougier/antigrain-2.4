@@ -229,7 +229,8 @@ int agg_main(int argc, char* argv[])
         FILE* fd = fopen(fname, "r");
         if(fd == 0)
         {
-            app.message("Usage: svg_test <svg_file>");
+            app.message("Usage: svg_test <svg_file>\n"
+                        "Download http://antigrain.com/svg/tiger.svg");
             return 1;
         }
         fclose(fd);
