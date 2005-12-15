@@ -234,10 +234,10 @@ public:
         agg::render_scanlines(ras, sl, r);
 
 
-        agg::render_ctrl(ras, sl, r, m_fixed_len);
-        agg::render_ctrl(ras, sl, r, m_preserve_x_scale);
-        agg::render_ctrl(ras, sl, r, m_animate);
-        agg::render_ctrl(ras, sl, r, m_num_points);
+        agg::render_ctrl(ras, sl, rb, m_fixed_len);
+        agg::render_ctrl(ras, sl, rb, m_preserve_x_scale);
+        agg::render_ctrl(ras, sl, rb, m_animate);
+        agg::render_ctrl(ras, sl, rb, m_num_points);
         //--------------------------
 
     }
