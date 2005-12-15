@@ -80,11 +80,12 @@ freetype:
 
 gpc:
 	make gpc_test
-	
+
 all:
 	make base
 	make freetype
 	make gpc
+	make svg_test
 
 aa_demo: ../aa_demo.o $(PLATFORMSOURCES) 
 	$(CXX) $(CXXFLAGS) $^ -o aa_demo $(LIBS)
@@ -257,110 +258,56 @@ trans_curve2_ft: ../trans_curve2_ft.o ../../font_freetype/agg_font_freetype.o  .
 gpc_test: ../gpc_test.o ../make_arrows.o ../make_gb_poly.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gpc_test $(LIBS)
 
+svg_test: ../svg_viewer/agg_svg_parser.o ../svg_viewer/agg_svg_path_renderer.o ../svg_viewer/agg_svg_path_tokenizer.o ../svg_viewer/svg_test.o $(PLATFORMSOURCES) tiger.svg
+	$(CXX) $(CXXFLAGS) ../svg_viewer/agg_svg_parser.o ../svg_viewer/agg_svg_path_renderer.o ../svg_viewer/agg_svg_path_tokenizer.o ../svg_viewer/svg_test.o $(PLATFORMSOURCES) -o svg_test $(LIBS) -lfreetype -lexpat
+
 clean:
 	rm -f ../*.o
+	rm -f ../svg_viewer/*.o
 	rm -f ../../src/platform/$(PLATFORM)/agg_platform_support.o
-	rm -rf aa_demo
-	rm -rf aa_test
-	rm -rf alpha_gradient
-	rm -rf alpha_mask
-	rm -rf alpha_mask2
-	rm -rf alpha_mask3
-	rm -rf bezier_div
-	rm -rf bspline
-	rm -rf circles
-	rm -rf component_rendering
-	rm -rf conv_contour
-	rm -rf conv_dash_marker
-	rm -rf conv_stroke
-	rm -rf flash_rasterizer
-	rm -rf flash_rasterizer2
-	rm -rf gamma_correction
-	rm -rf gamma_ctrl
-	rm -rf gamma_tuner
-	rm -rf gouraud
-	rm -rf gouraud_mesh
-	rm -rf gradients
-	rm -rf graph_test
-	rm -rf idea
-	rm -rf lion
-	rm -rf lion_lens
-	rm -rf lion_outline
-	rm -rf multi_clip
-	rm -rf pattern_fill
-	rm -rf perspective
-	rm -rf polymorphic_renderer
-	rm -rf raster_text
-	rm -rf rasterizers
-	rm -rf rasterizers2
-	rm -rf rounded_rect
-	rm -rf scanline_boolean
-	rm -rf scanline_boolean2
-	rm -rf simple_blur
-	rm -rf trans_polar
-	rm -rf image_alpha
-	rm -rf image_filters
-	rm -rf image_filters2
-	rm -rf image_fltr_graph
-	rm -rf image_perspective
-	rm -rf image_resample
-	rm -rf image_transforms
-	rm -rf image1
-	rm -rf distortions
-	rm -rf pattern_perspective
-	rm -rf compositing
-	rm -rf line_patterns
-	rm -rf line_patterns_clip
-	rm -rf mol_view
-	rm -rf freetype_test
-	rm -rf trans_curve1_ft
-	rm -rf trans_curve2_ft
-	rm -rf gpc_test
 
 agg.ppm:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/agg.ppm to /examples/X11/"
+	@echo "Please download http://www.antigrain.com/agg.ppm"
 	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/agg.ppm
 
 compositing.ppm:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/compositing.ppm to /examples/X11/"
+	@echo "Please download http://www.antigrain.com/compositing.ppm"
 	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/compositing.ppm
 
 spheres.ppm:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/spheres.ppm to /examples/X11/"
+	@echo "Please download http://www.antigrain.com/spheres.ppm"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/spheres.ppm
 
 shapes.txt:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/shapes.txt to /examples/X11/"
+	@echo "Please download http://www.antigrain.com/shapes.txt"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/shapes.txt
 
 1.sdf:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/1.sdf to /examples/macosx_carbon/"
+	@echo "Please download http://www.antigrain.com/1.sdf"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/1.sdf
 
 1.ppm:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/line_patterns.tar.gz to /examples/X11/ and decompress it"
+	@echo "Please download http://www.antigrain.com/line_patterns.tar.gz and decompress it"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/line_patterns.tar.gz
 	gunzip line_patterns.tar.gz
 	tar -xvf line_patterns.tar
 	
 timesi.ttf:
-	@echo "Required file missing!!"
-	@echo "Please download http://www.antigrain.com/timesi.zip to /examples/X11/ and decompress it"
+	@echo "Please download http://www.antigrain.com/timesi.zip and decompress it"
 	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
 	wget http://www.antigrain.com/timesi.zip
 	unzip -o timesi.zip
+
+tiger.svg:
+	@echo "Please download http://www.antigrain.com/svg/tiger.svg"
+	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
+	wget http://www.antigrain.com/svg/tiger.svg
 	
 ../freetype_test.o:	../freetype_test.cpp
 	@echo \< $*.cpp \>
