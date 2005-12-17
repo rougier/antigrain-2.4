@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "agg_rendering_buffer.h"
+#include "agg_renderer_base.h"
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_scanline_u.h"
 #include "agg_renderer_scanline.h"
@@ -17,13 +18,47 @@
 enum flip_y_e { flip_y = true };
 
 typedef agg::rgba8 color;
+typedef agg::order_bgra order;
 typedef agg::int32u pixel_type;
 typedef agg::rendering_buffer rbuf_type;
 #define pix_format agg::pix_format_bgra32
 
-typedef agg::blender_rgba<color, agg::order_bgra> prim_blender_type; 
+typedef agg::blender_rgba<color, order> prim_blender_type; 
 typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, rbuf_type> prim_pixfmt_type;
 typedef agg::renderer_base<prim_pixfmt_type> prim_ren_base_type;
+
+void force_comp_op_link()
+{
+    // For unknown reason Digital Mars C++ doesn't want to link these 
+    // functions if they are not specified explicitly. 
+    agg::int8u p[4] = {0};
+    agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_darken     <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_lighten    <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_color_dodge<color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_color_burn <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_hard_light <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_soft_light <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_difference <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_exclusion  <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_src_atop   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_dst_atop   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_xor        <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_plus       <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_minus      <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_multiply   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_screen     <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_overlay    <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_src        <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_dst        <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_src_over   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_dst_over   <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_src_in     <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_dst_in     <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_src_out    <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_dst_out    <color, order>::blend_pix(p,0,0,0,0,0);
+    agg::comp_op_rgba_clear      <color, order>::blend_pix(p,0,0,0,0,0);
+}
 
 namespace agg
 {
@@ -225,7 +260,7 @@ public:
 
     void render_scene(rbuf_type& rbuf, prim_pixfmt_type& pixf)
     {
-        typedef agg::comp_op_adaptor_rgba<color, agg::order_bgra> blender_type;
+        typedef agg::comp_op_adaptor_rgba<color, order> blender_type;
         typedef agg::pixfmt_custom_blend_rgba<blender_type, rbuf_type> pixfmt_type;
         typedef agg::renderer_base<pixfmt_type> renderer_type;
 
@@ -286,7 +321,7 @@ public:
         prim_ren_base_type rb2(pixf2);
         rb2.clear(agg::rgba8(0,0,0,0));
 
-        typedef agg::blender_rgba_pre<color, agg::order_bgra> blender_type_pre; 
+        typedef agg::blender_rgba_pre<color, order> blender_type_pre; 
         typedef agg::pixfmt_alpha_blend_rgba<blender_type_pre, rbuf_type, pixel_type> pixfmt_pre;
         typedef agg::renderer_base<pixfmt_pre> ren_base_pre;
 
@@ -341,6 +376,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
+    force_comp_op_link();
     the_application app(pix_format, flip_y);
     app.caption("AGG Example. Compositing Modes");
 

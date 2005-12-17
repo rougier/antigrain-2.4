@@ -88,10 +88,11 @@ public:
         double x = (width() - 256.0) / 2.0;
         double y = 50.0;
         path.remove_all();
+        agg::gamma_power gp(g);
         for(i = 0; i < 256; i++)
         {
             double v = double(i) / 255.0;
-            double gval = agg::gamma_power(g)(v);
+            double gval = gp(v);
             double dy = gval * 255.0;
             if(i == 0) path.move_to(x + i, y + dy);
             else       path.line_to(x + i, y + dy);

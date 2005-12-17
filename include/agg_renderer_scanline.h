@@ -341,7 +341,6 @@ namespace agg
     public:
         typedef BaseRenderer  base_ren_type;
         typedef SpanGenerator span_gen_type;
-        typedef typename base_ren_type::span_data span_data;
 
         //--------------------------------------------------------------------
         renderer_scanline_direct() : m_ren(0), m_span_gen(0) {}

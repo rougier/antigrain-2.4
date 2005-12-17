@@ -59,7 +59,8 @@ unsigned parse_lion(agg::path_storage& ps, agg::rgba8* colors, unsigned* path_id
 void parse_lion()
 {
     g_npaths = parse_lion(g_path, g_colors, g_path_idx);
-    agg::bounding_rect(g_path, g_path_idx, 0, g_npaths, &g_x1, &g_y1, &g_x2, &g_y2);
+    agg::pod_array_adaptor<unsigned> path_idx(g_path_idx, 100);
+    agg::bounding_rect(g_path, path_idx, 0, g_npaths, &g_x1, &g_y1, &g_x2, &g_y2);
     g_base_dx = (g_x2 - g_x1) / 2.0;
     g_base_dy = (g_y2 - g_y1) / 2.0;
 }

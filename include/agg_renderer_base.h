@@ -33,7 +33,6 @@ namespace agg
         typedef PixelFormat pixfmt_type;
         typedef typename pixfmt_type::color_type color_type;
         typedef typename pixfmt_type::row_data row_data;
-//        typedef typename pixfmt_type::span_data span_data;
 
         //--------------------------------------------------------------------
         renderer_base() : m_ren(0), m_clip_box(1, 1, 0, 0) {}
@@ -259,25 +258,6 @@ namespace agg
             }
         }
 
-
-//        //--------------------------------------------------------------------
-//        span_data span(int x, int y, unsigned len)
-//        {
-//            int x1 = x;
-//            int x2 = x + int(len) - 1;
-//            
-//            if(y  >= ymin() && y  <= ymax() &&
-//               x1 <= xmax() && x2 >= xmin())
-//            {
-//                if(x1 < xmin()) x1 = xmin();
-//                if(x2 > xmax()) x2 = xmax();
-//                return m_ren->span(x1, y, x2 - x1 + 1);
-//            }
-//            return span_data(0);
-//
-//        }
-
-
         //--------------------------------------------------------------------
         void blend_solid_hspan(int x, int y, int len, 
                                const color_type& c, 
@@ -351,7 +331,7 @@ namespace agg
         void blend_color_hspan(int x, int y, int len, 
                                const color_type* colors, 
                                const cover_type* covers,
-                               cover_type cover = cover_full)
+                               cover_type cover = agg::cover_full)
         {
             if(y > ymax()) return;
             if(y < ymin()) return;
@@ -377,7 +357,7 @@ namespace agg
         void blend_color_vspan(int x, int y, int len, 
                                const color_type* colors, 
                                const cover_type* covers,
-                               cover_type cover = cover_full)
+                               cover_type cover = agg::cover_full)
         {
             if(x > xmax()) return;
             if(x < xmin()) return;
@@ -443,7 +423,6 @@ namespace agg
             return rc;
         }
 
-
         //--------------------------------------------------------------------
         template<class RenBuf>
         void copy_from(const RenBuf& src, 
@@ -490,15 +469,13 @@ namespace agg
             }
         }
 
-
-
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
         void blend_from(const SrcPixelFormatRenderer& src, 
                         const rect_i* rect_src_ptr = 0, 
                         int dx = 0, 
                         int dy = 0,
-                        cover_type cover = cover_full)
+                        cover_type cover = agg::cover_full)
         {
             rect_i rsrc(0, 0, src.width(), src.height());
             if(rect_src_ptr)

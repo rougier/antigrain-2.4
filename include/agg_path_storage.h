@@ -145,6 +145,7 @@ namespace agg
             unsigned cmd = v.vertex(i, &x, &y);
             add_vertex(x, y, cmd);
         }
+	return *this;
     }
 
     //------------------------------------------------------------------------
