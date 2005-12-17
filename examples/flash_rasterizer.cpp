@@ -311,7 +311,7 @@ public:
 
     bool open(const char* fname)
     {
-        return m_shape.open(fname);
+        return m_shape.open(full_file_name(fname));
     }
 
     void read_next()

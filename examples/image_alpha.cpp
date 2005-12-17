@@ -188,7 +188,7 @@ public:
     {
         if(key == ' ')
         {
-            FILE* fd = fopen("alpha", "w");
+            FILE* fd = fopen(full_file_name("alpha"), "w");
 
             int i;
             for(i = 0; i < agg::span_conv_brightness_alpha_rgb8::array_size; i++)

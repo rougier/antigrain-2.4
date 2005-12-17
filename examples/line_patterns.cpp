@@ -276,7 +276,7 @@ public:
     {
         if(key == ' ')
         {
-            FILE* fd = fopen("coord", "w");
+            FILE* fd = fopen(full_file_name("coord"), "w");
             fprintf(fd, "%.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f", 
                          m_curve1.x1(), m_curve1.y1(), 
                          m_curve1.x2(), m_curve1.y2(), 

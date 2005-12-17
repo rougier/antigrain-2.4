@@ -206,7 +206,7 @@ public:
                          m[0], m[1], m[2], m[3], m[4], m[5]);
 
             message(buf);
-            FILE* fd = fopen("transform.txt", "a");
+            FILE* fd = fopen(full_file_name("transform.txt"), "a");
             fprintf(fd, "%s\n", buf);
             fclose(fd);
         }
@@ -226,7 +226,7 @@ int agg_main(int argc, char* argv[])
     const char* fname = "tiger.svg";
     if(argc <= 1)
     {
-        FILE* fd = fopen(fname, "r");
+        FILE* fd = fopen(app.full_file_name(fname), "r");
         if(fd == 0)
         {
             app.message("Usage: svg_test <svg_file>\n"
@@ -242,7 +242,7 @@ int agg_main(int argc, char* argv[])
 
     try
     {
-        app.parse_svg(fname);
+        app.parse_svg(app.full_file_name(fname));
     }
     catch(agg::svg::exception& e)
     {

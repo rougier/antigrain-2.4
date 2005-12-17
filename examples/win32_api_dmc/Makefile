@@ -6,9 +6,9 @@
 DM   = \dm\bin
 #
 
-CXX  = $(DM)\dmc.exe -c -o+speed -I..\..\include -I..\..\gpc -I..\..\font_win32_tt 
+CXX  = $(DM)\dmc.exe -c -I..\..\include -I..\..\gpc -I..\..\font_win32_tt 
 C    = $(DM)\dmc.exe -c -o+speed -I..\..\gpc 
-LINK = $(DM)\dmc.exe -L$(DM)\link.exe gdi32.lib
+LINK = $(DM)\dmc.exe -L$(DM)\link.exe -L/SU:WINDOWS gdi32.lib
 LIB  = $(DM)\lib.exe
 
 all: aa_demo.exe \
