@@ -163,13 +163,6 @@ namespace agg
         unsigned cmd = m_source->vertex(x, y);
         switch(cmd)
         {
-        case path_cmd_move_to:
-        case path_cmd_line_to:
-            m_last_x = *x;
-            m_last_y = *y;
-        default:
-            break; 
-        
         case path_cmd_curve3:
             m_source->vertex(&end_x, &end_y);
 
@@ -196,6 +189,8 @@ namespace agg
             cmd = path_cmd_line_to;
             break;
         }
+        m_last_x = *x;
+        m_last_y = *y;
         return cmd;
     }
 

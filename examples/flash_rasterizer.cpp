@@ -447,6 +447,22 @@ public:
             m_scale *= agg::trans_affine_translation(x, y);
             force_redraw();
         }
+
+        if(key == agg::key_left)
+        {
+            m_scale *= agg::trans_affine_translation(-x, -y);
+            m_scale *= agg::trans_affine_rotation(-agg::pi / 20.0);
+            m_scale *= agg::trans_affine_translation(x, y);
+            force_redraw();
+        }
+
+        if(key == agg::key_right)
+        {
+            m_scale *= agg::trans_affine_translation(-x, -y);
+            m_scale *= agg::trans_affine_rotation(agg::pi / 20.0);
+            m_scale *= agg::trans_affine_translation(x, y);
+            force_redraw();
+        }
     }
 
     void on_mouse_move(int x, int y, unsigned flags) 

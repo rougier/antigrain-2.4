@@ -289,7 +289,7 @@ namespace agg
 
         out_vertices.remove_all();
 
-        if(calc_point_location(v0.x, v0.y, v1.x, v1.y, v2.x, v2.y) > 0)
+        if(cross_product(v0.x, v0.y, v1.x, v1.y, v2.x, v2.y) > 0)
         {
             // Inner join
             //---------------

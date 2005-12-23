@@ -1015,6 +1015,18 @@ namespace agg
     }
 
 
+    //--------------------------------------------------------invert_container
+    template<class Array> void invert_container(Array& arr)
+    {
+        int i = 0;
+        int j = arr.size() - 1;
+        while(i < j)
+        {
+            swap_elements(arr[i++], arr[j--]);
+        }
+    }
+
+
     //------------------------------------------------------binary_search_pos
     template<class Array, class Value, class Less>
     unsigned binary_search_pos(const Array& arr, const Value& val, Less less)
@@ -1033,13 +1045,10 @@ namespace agg
             if(less(val, arr[mid])) end = mid; 
             else                    beg = mid;
         }
-/*
-        if(beg <= 0 &&
-           less(val, arr[0])) return 0;
 
-        if(end >= arr.size() - 1 &&
-           less(arr[end], val)) ++end;
-*/
+        //if(beg <= 0 && less(val, arr[0])) return 0;
+        //if(end >= arr.size() - 1 && less(arr[end], val)) ++end;
+
         return end;
     }
 
