@@ -52,7 +52,6 @@ class AGGView : public BView {
                         frame.OffsetTo(0.0, 0.0);
                         fBitmap = new BBitmap(frame, 0, B_RGBA32);
                         if (fBitmap->IsValid()) {
-                            memset(fBitmap->Bits(), 0, fBitmap->BitsLength());
                             fAGG->rbuf_window().attach((uint8*)fBitmap->Bits(),
                                                        fBitmap->Bounds().IntegerWidth() + 1,
                                                        fBitmap->Bounds().IntegerHeight() + 1,
@@ -81,6 +80,7 @@ class AGGView : public BView {
                         // make sure we call this once
                         fAGG->on_resize(Bounds().IntegerWidth() + 1,
                                         Bounds().IntegerHeight() + 1);
+                        MakeFocus();
                     }
     virtual void    DetachedFromWindow()
                     {
@@ -475,7 +475,7 @@ class platform_specific {
 			            fAppPath[0] = 0;
 			            // figure out where we're running from
 			            app_info info;
-			            status_t ret = be_roster->GetRunningAppInfo(be_app->Team(), &info);
+			            status_t ret = fApp->GetAppInfo(&info);
 			            if (ret >= B_OK) {
 				            BPath path(&info.ref);
 					        ret = path.InitCheck();
@@ -490,7 +490,7 @@ class platform_specific {
 					            fprintf(stderr, "making app path failed: %s\n", strerror(ret));
 					        }
 			            } else {
-			                fprintf(stderr, "GetRunningAppInfo() failed: %s\n", strerror(ret));
+			                fprintf(stderr, "GetAppInfo() failed: %s\n", strerror(ret));
 			            }
                     }
                     ~platform_specific()
@@ -631,7 +631,7 @@ class platform_specific {
 
 
     //------------------------------------------------------------------------
-    const char* platform_support::img_ext() const { return ""; }
+    const char* platform_support::img_ext() const { return ".ppm"; }
 
     const char* platform_support::full_file_name(const char* file_name)
     {
@@ -645,7 +645,9 @@ class platform_specific {
     {
         if (idx < max_images)
         {
-            BBitmap* transBitmap = BTranslationUtils::GetBitmap(full_file_name(file));
+        	char path[B_PATH_NAME_LENGTH];
+        	sprintf(path, "%s/%s%s", m_specific->fAppPath, file, img_ext());
+            BBitmap* transBitmap = BTranslationUtils::GetBitmap(path);
             if (transBitmap && transBitmap->IsValid()) {
                 if(transBitmap->ColorSpace() != B_RGB32 && transBitmap->ColorSpace() != B_RGBA32) {
                     // ups we got a smart ass Translator making our live harder
@@ -749,7 +751,7 @@ class platform_specific {
                 return true;
 
             } else {
-                fprintf(stderr, "failed to load bitmap: '%s'\n",full_file_name(file));
+                fprintf(stderr, "failed to load bitmap: '%s'\n", full_file_name(file));
             }
         }
         return false;
