@@ -358,13 +358,13 @@ bin/trans_polar: examples/trans_polar.o $(PLATFORM_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS)
 
 bin/freetype_test: examples/freetype_test.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
 
 bin/trans_curve1_ft: examples/trans_curve1_ft.o examples/interactive_polygon.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
 
 bin/trans_curve2_ft: examples/trans_curve2_ft.o examples/interactive_polygon.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
 
 
 #
