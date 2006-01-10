@@ -1828,8 +1828,8 @@ namespace agg
                     ((value_type*)&v)[order_type::A] = c.a;
                     do
                     {
+                        p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
                         *(pixel_type*)p = v;
-                        p = (value_type*)m_rbuf->next_row(p);
                     }
                     while(--len);
                 }
