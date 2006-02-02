@@ -271,7 +271,7 @@ public:
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
-                255);
+                180);
 
             m_colors[i].apply_gamma_dir(m_gamma);
             m_colors[i].premultiply();
@@ -345,6 +345,7 @@ public:
         // the result over the final scene. It can be too expensive.
         //------------------------------------------------------------
         ras.auto_close(false);
+        //ras.filling_rule(agg::fill_even_odd);
         start_timer();
         for(int s = m_shape.min_style(); s <= m_shape.max_style(); s++)
         {
@@ -372,7 +373,6 @@ public:
         double tfill = elapsed_time();
         ras.auto_close(true);
 
-
         // Draw strokes
         //----------------------
         start_timer();
@@ -385,7 +385,7 @@ public:
             if(m_shape.style(i).line >= 0)
             {
                 ras.add_path(stroke, m_shape.style(i).path_id);
-                ren.color(agg::rgba8(0,0,0, 255));
+                ren.color(agg::rgba8(0,0,0, 128));
                 agg::render_scanlines(ras, sl, ren);
             }
         }
@@ -443,6 +443,22 @@ public:
         {
             m_scale *= agg::trans_affine_translation(-x, -y);
             m_scale *= agg::trans_affine_scaling(1/1.1);
+            m_scale *= agg::trans_affine_translation(x, y);
+            force_redraw();
+        }
+
+        if(key == agg::key_left)
+        {
+            m_scale *= agg::trans_affine_translation(-x, -y);
+            m_scale *= agg::trans_affine_rotation(-agg::pi / 20.0);
+            m_scale *= agg::trans_affine_translation(x, y);
+            force_redraw();
+        }
+
+        if(key == agg::key_right)
+        {
+            m_scale *= agg::trans_affine_translation(-x, -y);
+            m_scale *= agg::trans_affine_rotation(agg::pi / 20.0);
             m_scale *= agg::trans_affine_translation(x, y);
             force_redraw();
         }

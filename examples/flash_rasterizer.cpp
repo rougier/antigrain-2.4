@@ -300,7 +300,7 @@ public:
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
-                255);
+                180);
 
             m_colors[i].apply_gamma_dir(m_gamma);
             m_colors[i].premultiply();
@@ -334,11 +334,12 @@ public:
         unsigned i;
         unsigned w = unsigned(width());
         m_gradient.resize(w);
-        agg::rgba8 c1(255, 0, 0);
-        agg::rgba8 c2(0, 0, 255);
+        agg::rgba8 c1(255, 0, 0, 180);
+        agg::rgba8 c2(0, 0, 255, 180);
         for(i = 0; i < w; i++)
         {
             m_gradient[i] = c1.gradient(c2, i / width());
+            m_gradient[i].premultiply();
         }
 
         agg::rasterizer_scanline_aa<agg::rasterizer_sl_clip_dbl> ras;
@@ -357,6 +358,7 @@ public:
         //----------------------
         rasc.clip_box(0, 0, width(), height());
         rasc.reset();
+        //rasc.filling_rule(agg::fill_even_odd);
         start_timer();
         for(i = 0; i < m_shape.paths(); i++)
         {
@@ -386,7 +388,7 @@ public:
             if(m_shape.style(i).line >= 0)
             {
                 ras.add_path(stroke, m_shape.style(i).path_id);
-                ren.color(agg::rgba8(0,0,0, 255));
+                ren.color(agg::rgba8(0,0,0, 128));
                 agg::render_scanlines(ras, sl, ren);
             }
         }
