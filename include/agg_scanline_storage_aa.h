@@ -723,9 +723,8 @@ namespace agg
                 m_min_y = read_int32() + m_dy;
                 m_max_x = read_int32() + m_dx;
                 m_max_y = read_int32() + m_dy;
-                return true;
             }
-            return false;
+            return m_ptr < m_end;
         }
 
         //--------------------------------------------------------------------

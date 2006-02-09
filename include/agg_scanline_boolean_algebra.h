@@ -1046,7 +1046,11 @@ namespace agg
 
         // Calculate the union of the bounding boxes
         //-----------------
-        rect_i ur = unite_rectangles(r1, r2);
+        rect_i ur(1,1,0,0);
+             if(flag1 && flag2) ur = unite_rectangles(r1, r2);
+        else if(flag1)          ur = r1;
+        else if(flag2)          ur = r2;
+
         if(!ur.is_valid()) return;
 
         ren.prepare();
