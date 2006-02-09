@@ -63,6 +63,7 @@ namespace agg
             class const_iterator
             {
             public:
+                const_iterator() : m_storage(0) {}
                 const_iterator(const embedded_scanline& sl) :
                     m_storage(sl.m_storage),
                     m_span_idx(sl.m_scanline.start_span)
@@ -360,6 +361,7 @@ namespace agg
                     int32 len;
                 };
 
+                const_iterator() : m_ptr(0) {}
                 const_iterator(const embedded_scanline& sl) :
                     m_ptr(sl.m_ptr),
                     m_dx(sl.m_dx)

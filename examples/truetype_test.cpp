@@ -246,7 +246,7 @@ public:
 
     template<class Rasterizer, class Scanline, class RenSolid, class RenBin>
     unsigned draw_text(Rasterizer& ras, Scanline& sl, 
-                   RenSolid& ren_solid, RenBin& ren_bin)
+                       RenSolid& ren_solid, RenBin& ren_bin)
     {
         agg::glyph_rendering gren = agg::glyph_ren_native_mono;
         switch(m_ren_type.cur_item())
