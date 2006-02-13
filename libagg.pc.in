@@ -6,5 +6,5 @@ includedir=@includedir@/agg2
 Name: libagg
 Description: Anti Grain Geometry - A High Quality Rendering Engine for C++
 Version: 2.3
-Libs: -L${libdir} -lagg
+Libs: -L${libdir} -Wl,-rpath,${exec_prefix}/lib -lagg
 Cflags: -I${includedir}

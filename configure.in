@@ -1,5 +1,6 @@
 AC_INIT(src/agg_arc.cpp) # give me a source file, any source file...
 AC_CANONICAL_TARGET
+AC_CONFIG_HEADERS(include/config.h)
 AM_INIT_AUTOMAKE(agg, 2.4.0)
 
 

@@ -16,3 +16,6 @@ EXTRA_DIST = Makefile.AmigaOS \
 						 Makefile.in.MINGW32_NT-5.1 \
 						 Makefile.in.SunOS 
 
+# M4 macro file for inclusion with autoconf
+m4datadir = $(datadir)/aclocal
+m4data_DATA = libagg.m4

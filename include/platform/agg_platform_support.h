@@ -156,9 +156,9 @@ namespace agg
     // probably supported on different platforms. Any platform dependent codes
     // should be converted into these ones. There're only those codes are
     // defined that cannot be represented as printable ASCII-characters. 
-    // All printable ASCII-set can be used in a regilar C/C++ manner: 
+    // All printable ASCII-set can be used in a regular C/C++ manner: 
     // ' ', 'A', '0' '+' and so on.
-    // Since the clasas is used for creating very simple demo-applications
+    // Since the class is used for creating very simple demo-applications
     // we don't need very rich possibilities here, just basic ones. 
     // Actually the numeric key codes are taken from the SDL library, so,
     // the implementation of the SDL support does not require any mapping.
@@ -237,7 +237,7 @@ namespace agg
     //------------------------------------------------------------------------
     // A predeclaration of the platform dependent class. Since we do not
     // know anything here the only we can have is just a pointer to this
-    // class as a data member. It should be created and destroyed explicitely
+    // class as a data member. It should be created and destroyed explicitly
     // in the constructor/destructor of the platform_support class. 
     // Although the pointer to platform_specific is public the application 
     // cannot have access to its members or methods since it does not know
@@ -249,7 +249,7 @@ namespace agg
     // A helper class that contains pointers to a number of controls.
     // This class is used to ease the event handling with controls.
     // The implementation should simply call the appropriate methods
-    // of this class when appropriate events occure.
+    // of this class when appropriate events occur.
     class ctrl_container
     {
         enum max_ctrl_e { max_ctrl = 64 };
@@ -423,7 +423,7 @@ namespace agg
         const char* caption() const { return m_caption; }
 
         //--------------------------------------------------------------------
-        // These 3 menthods handle working with images. The image
+        // These 3 methods handle working with images. The image
         // formats are the simplest ones, such as .BMP in Windows or 
         // .ppm in Linux. In the applications the names of the files
         // should not have any file extensions. Method load_img() can
@@ -454,11 +454,11 @@ namespace agg
 
         //--------------------------------------------------------------------
         // The following provides a very simple mechanism of doing someting
-        // in background. It's not multitheading. When whait_mode is true
+        // in background. It's not multithreading. When wait_mode is true
         // the class waits for the events and it does not ever call on_idle().
         // When it's false it calls on_idle() when the event queue is empty.
         // The mode can be changed anytime. This mechanism is satisfactory
-        // for creation very simple animations.
+        // to create very simple animations.
         bool wait_mode() const { return m_wait_mode; }
         void wait_mode(bool wait_mode) { m_wait_mode = wait_mode; }
 
@@ -488,7 +488,7 @@ namespace agg
         
 
         //--------------------------------------------------------------------
-        // Returns file extension used in the implemenation for the particular
+        // Returns file extension used in the implementation for the particular
         // system.
         const char* img_ext() const;
 
@@ -531,7 +531,7 @@ namespace agg
         // In my demo applications these functions are defined inside
         // the the_application class (implicit inlining) which is in general 
         // very bad practice, I mean vitual inline methods. At least it does
-        // not make sence. 
+        // not make sense. 
         // But in this case it's quite appropriate bacause we have the only
         // instance of the the_application class and it is in the same file 
         // where this class is defined.
@@ -642,7 +642,7 @@ namespace agg
         platform_specific* m_specific;
         ctrl_container m_ctrls;
 
-        // Sorry, I'm too tired to descibe the private 
+        // Sorry, I'm too tired to describe the private 
         // data membders. See the implementations for different
         // platforms for details.
     private:

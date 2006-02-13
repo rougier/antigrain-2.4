@@ -5,6 +5,9 @@
 # build aclocal.m4
 aclocal
 
+# build config.h
+autoheader
+
 # build the configure script
 autoconf
 

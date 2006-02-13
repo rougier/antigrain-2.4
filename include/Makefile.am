@@ -35,7 +35,7 @@ agginclude_HEADERS = \
 	agg_conv_transform.h         agg_rendering_buffer.h          agg_vcgen_dash.h \
 	agg_conv_unclose_polygon.h   agg_rendering_buffer_dynarow.h  agg_vcgen_markers_term.h \
 	agg_curves.h                 agg_rounded_rect.h              agg_vcgen_smooth_poly1.h \
-	agg_dbg_new.h                agg_scanline_bin.h              agg_vcgen_stroke.h \
+	                             agg_scanline_bin.h              agg_vcgen_stroke.h \
 	agg_dda_line.h               agg_scanline_boolean_algebra.h  agg_vcgen_vertex_sequence.h \
 	agg_ellipse.h                agg_scanline_p.h                agg_vertex_sequence.h \
 	agg_ellipse_bresenham.h      agg_scanline_storage_aa.h       agg_vpgen_clip_polygon.h \
