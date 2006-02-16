@@ -829,8 +829,8 @@ namespace agg
             m_scale_x(1.0),
             m_clip_box(0,0,0,0),
             m_clipping(false)
-        {
-        }
+        {}
+        void attach(base_ren_type& ren) { m_ren = &ren; }
 
         //---------------------------------------------------------------------
         void pattern(const pattern_type& p) { m_pattern = &p; }
@@ -924,10 +924,6 @@ namespace agg
             
             fix_degenerate_bisectrix_start(lp, &sx, &sy);
             fix_degenerate_bisectrix_end(lp, &ex, &ey);
-//sx = lp.x1 + (lp.y2 - lp.y1);
-//sy = lp.y1 - (lp.x2 - lp.x1);
-//ex = lp.x2 + (lp.y2 - lp.y1);
-//ey = lp.y2 - (lp.x2 - lp.x1);
             line_interpolator_image<self_type> li(*this, lp, 
                                                   sx, sy, 
                                                   ex, ey, 

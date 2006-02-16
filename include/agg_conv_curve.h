@@ -62,8 +62,7 @@ namespace agg
 
         conv_curve(VertexSource& source) :
           m_source(&source), m_last_x(0.0), m_last_y(0.0) {}
-
-        void set_source(VertexSource& source) { m_source = &source; }
+        void attach(VertexSource& source) { m_source = &source; }
 
         void approximation_method(curve_approximation_method_e v) 
         { 

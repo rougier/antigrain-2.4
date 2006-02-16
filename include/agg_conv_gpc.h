@@ -89,8 +89,8 @@ namespace agg
             memset(&m_result, 0, sizeof(m_result));
         }
 
-        void set_source1(VSA& source) { m_src_a = &source; }
-        void set_source2(VSB& source) { m_src_b = &source; }
+        void attach1(VSA& source) { m_src_a = &source; }
+        void attach2(VSB& source) { m_src_b = &source; }
 
         void operation(gpc_op_e v) { m_operation = v; }
 

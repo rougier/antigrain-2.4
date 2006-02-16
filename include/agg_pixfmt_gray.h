@@ -174,6 +174,7 @@ namespace agg
         pixfmt_alpha_blend_gray(rbuf_type& rb) :
             m_rbuf(&rb)
         {}
+        void attach(rbuf_type& rb) { m_rbuf = &rb; }
 
         //--------------------------------------------------------------------
         AGG_INLINE unsigned width()  const { return m_rbuf->width();  }

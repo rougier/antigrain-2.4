@@ -161,6 +161,10 @@ namespace agg
         unsigned style(unsigned style_idx) const;
 
         //--------------------------------------------------------------------
+        bool navigate_scanline(int y); 
+        bool hit_test(int tx, int ty);
+
+        //--------------------------------------------------------------------
         AGG_INLINE unsigned calculate_alpha(int area) const
         {
             int cover = area >> (poly_subpixel_shift*2 + 1 - aa_shift);
@@ -541,6 +545,50 @@ namespace agg
     {
         return m_ast[style_idx + 1] + m_min_style - 1;
     }
+
+    //------------------------------------------------------------------------ 
+    template<class Clip> 
+    AGG_INLINE bool rasterizer_compound_aa<Clip>::navigate_scanline(int y)
+    {
+        m_outline.sort_cells();
+        if(m_outline.total_cells() == 0) 
+        {
+            return false;
+        }
+        if(m_max_style < m_min_style)
+        {
+            return false;
+        }
+        if(y < m_outline.min_y() || y > m_outline.max_y()) 
+        {
+            return false;
+        }
+        m_scan_y = y;
+        m_styles.allocate(m_max_style - m_min_style + 2, 128);
+        return true;
+    }
+    
+    //------------------------------------------------------------------------ 
+    template<class Clip> 
+    bool rasterizer_compound_aa<Clip>::hit_test(int tx, int ty)
+    {
+        if(!navigate_scanline(ty)) 
+        {
+            return false;
+        }
+
+        unsigned num_styles = sweep_styles(); 
+        if(num_styles <= 0)
+        {
+            return false;
+        }
+
+        scanline_hit_test sl(tx);
+        sweep_scanline(sl, -1);
+        return sl.hit();
+    }
+
+
 
 
 }

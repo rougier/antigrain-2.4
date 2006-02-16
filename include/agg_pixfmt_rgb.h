@@ -234,6 +234,7 @@ namespace agg
         pixfmt_alpha_blend_rgb(rbuf_type& rb) :
             m_rbuf(&rb)
         {}
+        void attach(rbuf_type& rb) { m_rbuf = &rb; }
 
         //--------------------------------------------------------------------
         Blender& blender() { return m_blender; }

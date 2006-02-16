@@ -486,31 +486,6 @@ namespace agg
         return true;
     }
 
-    //------------------------------------------------------scanline_hit_test
-    class scanline_hit_test
-    {
-    public:
-        scanline_hit_test(int x) : m_x(x), m_hit(false) {}
-
-        void reset_spans() {}
-        void finalize(int) {}
-        void add_cell(int x, int)
-        {
-            if(m_x == x) m_hit = true;
-        }
-        void add_span(int x, int len, int)
-        {
-            if(m_x >= x && m_x < x+len) m_hit = true;
-        }
-        unsigned num_spans() const { return 1; }
-        bool hit() const { return m_hit; }
-
-    private:
-        int  m_x;
-        bool m_hit;
-    };
-
-
     //------------------------------------------------------------------------
     template<class Clip> 
     bool rasterizer_scanline_aa<Clip>::hit_test(int tx, int ty)

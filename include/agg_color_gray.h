@@ -163,6 +163,31 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
+        AGG_INLINE void add(const self_type& c, unsigned cover)
+        {
+            calc_type cv, ca;
+            if(cover == cover_mask)
+            {
+                if(c.a == base_mask) 
+                {
+                    *this = c;
+                }
+                else
+                {
+                    cv = v + c.v; v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
+                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                }
+            }
+            else
+            {
+                cv = v + ((c.v * cover + cover_mask/2) >> cover_shift);
+                ca = a + ((c.a * cover + cover_mask/2) >> cover_shift);
+                v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
+                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+            }
+        }
+
+        //--------------------------------------------------------------------
         static self_type no_color() { return self_type(0,0); }
     };
 
@@ -322,6 +347,31 @@ namespace agg
             ret.v = value_type(calc_type(v) + (((calc_type(c.v) - v) * ik) >> base_shift));
             ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
             return ret;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE void add(const self_type& c, unsigned cover)
+        {
+            calc_type cv, ca;
+            if(cover == cover_mask)
+            {
+                if(c.a == base_mask) 
+                {
+                    *this = c;
+                }
+                else
+                {
+                    cv = v + c.v; v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
+                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                }
+            }
+            else
+            {
+                cv = v + ((c.v * cover + cover_mask/2) >> cover_shift);
+                ca = a + ((c.a * cover + cover_mask/2) >> cover_shift);
+                v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
+                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+            }
         }
 
         //--------------------------------------------------------------------

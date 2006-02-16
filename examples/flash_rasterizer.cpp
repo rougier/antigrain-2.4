@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 #include "agg_rendering_buffer.h"
 #include "agg_trans_viewport.h"
 #include "agg_path_storage.h"
@@ -11,15 +12,15 @@
 #include "agg_scanline_u.h"
 #include "agg_scanline_bin.h"
 #include "agg_renderer_scanline.h"
-#include "agg_rasterizer_outline_aa.h"
 #include "agg_rasterizer_scanline_aa.h"
+#include "agg_rasterizer_compound_aa.h"
 #include "agg_span_allocator.h"
 #include "agg_gamma_lut.h"
 #include "agg_pixfmt_rgba.h"
 #include "agg_bounding_rect.h"
+#include "agg_color_gray.h"
 #include "platform/agg_platform_support.h"
 
-#include "agg_rasterizer_compound_aa.h"
 
 
 enum { flip_y = false };
@@ -286,11 +287,14 @@ public:
     agg::gamma_lut<>           m_gamma;
     agg::pod_array<agg::rgba8> m_gradient;
     int                        m_point_idx;
-
+    int                        m_hit_x;
+    int                        m_hit_y;
 
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
-        m_point_idx(-1)
+        m_point_idx(-1),
+        m_hit_x(-1),
+        m_hit_y(-1)
     {
         m_gamma.gamma(2.0);
 
@@ -374,22 +378,34 @@ public:
         agg::render_scanlines_compound(rasc, sl, sl_bin, ren_base, alloc, style_handler);
         double tfill = elapsed_time();
 
+        // Hit-test test
+        bool draw_strokes = true;
+        if(m_hit_x >= 0 && m_hit_y >= 0)
+        {
+            if(rasc.hit_test(m_hit_x, m_hit_y))
+            {
+                draw_strokes = false;
+            }
+        }
 
         // Draw strokes
         //----------------------
         start_timer();
-        ras.clip_box(0, 0, width(), height());
-        stroke.width(1.0 * m_scale.scale());
-        stroke.line_join(agg::round_join);
-        stroke.line_cap(agg::round_cap);
-        for(i = 0; i < m_shape.paths(); i++)
+        if(draw_strokes)
         {
-            ras.reset();
-            if(m_shape.style(i).line >= 0)
+            ras.clip_box(0, 0, width(), height());
+            stroke.width(1.0 * m_scale.scale());
+            stroke.line_join(agg::round_join);
+            stroke.line_cap(agg::round_cap);
+            for(i = 0; i < m_shape.paths(); i++)
             {
-                ras.add_path(stroke, m_shape.style(i).path_id);
-                ren.color(agg::rgba8(0,0,0, 128));
-                agg::render_scanlines(ras, sl, ren);
+                ras.reset();
+                if(m_shape.style(i).line >= 0)
+                {
+                    ras.add_path(stroke, m_shape.style(i).path_id);
+                    ren.color(agg::rgba8(0,0,0, 128));
+                    agg::render_scanlines(ras, sl, ren);
+                }
             }
         }
         double tstroke = elapsed_time();
@@ -469,7 +485,7 @@ public:
 
     void on_mouse_move(int x, int y, unsigned flags) 
     {
-        if((flags & 1) == 0)
+        if((flags & 3) == 0)
         {
             on_mouse_button_up(x, y, flags);
         }
@@ -497,11 +513,20 @@ public:
             m_point_idx = m_shape.hit_test(xd, yd, r);
             force_redraw();
         }
+        if(flags & 2)
+        {
+            m_hit_x = x;
+            m_hit_y = y;
+            force_redraw();
+        }
     }
 
     void on_mouse_button_up(int x, int y, unsigned flags) 
     {
         m_point_idx = -1;
+        m_hit_x = -1;
+        m_hit_y = -1;
+        force_redraw();
     }
 
 

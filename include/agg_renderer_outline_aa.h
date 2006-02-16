@@ -1363,8 +1363,8 @@ namespace agg
             m_profile(&prof),
             m_clip_box(0,0,0,0),
             m_clipping(false)
-        {
-        }
+        {}
+        void attach(base_ren_type& ren) { m_ren = &ren; }
 
         //---------------------------------------------------------------------
         void color(const color_type& c) { m_color = c; }

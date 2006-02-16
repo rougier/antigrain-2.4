@@ -829,6 +829,7 @@ namespace agg
     public:
         //--------------------------------------------------------------------
         pixfmt_alpha_blend_rgb_packed(rbuf_type& rb) : m_rbuf(&rb) {}
+        void attach(rbuf_type& rb) { m_rbuf = &rb; }
         Blender& blender() { return m_blender; }
 
         //--------------------------------------------------------------------

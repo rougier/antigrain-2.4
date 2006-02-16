@@ -46,6 +46,7 @@ namespace agg
             m_dx_int(image_subpixel_scale / 2),
             m_dy_int(image_subpixel_scale / 2)
         {}
+        void attach(source_type& v) { m_src = &v; }
 
         //--------------------------------------------------------------------
                source_type& source()            { return *m_src; }
@@ -57,7 +58,6 @@ namespace agg
         double filter_dy_dbl()            const { return m_dy_dbl; }
 
         //--------------------------------------------------------------------
-        void set_source(source_type& v)          { m_src = &v; }
         void interpolator(interpolator_type& v)  { m_interpolator = &v; }
         void filter(const image_filter_lut& v)   { m_filter = &v; }
         void filter_offset(double dx, double dy)
