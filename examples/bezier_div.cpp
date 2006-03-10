@@ -127,7 +127,7 @@ public:
         m_cusp_limit.no_transform();
 
         m_width.label("Width=%.2f");
-        m_width.range(0.0, 100);
+        m_width.range(-50, 100);
         m_width.value(50.0);
         add_ctrl(m_width);
         m_width.no_transform();
@@ -172,9 +172,10 @@ public:
         m_line_join.text_size(8);
         m_line_join.add_item("Miter Join");
         m_line_join.add_item("Miter Revert");
-        m_line_join.add_item("Miter Round");
         m_line_join.add_item("Round Join");
         m_line_join.add_item("Bevel Join");
+        m_line_join.add_item("Miter Round");
+
         m_line_join.cur_item(1);
         add_ctrl(m_line_join);
         m_line_join.no_transform();

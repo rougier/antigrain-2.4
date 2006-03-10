@@ -922,8 +922,8 @@ namespace agg
                                              m_scanlines_bin);
                     m_bounds.x1 = m_scanlines_bin.min_x();
                     m_bounds.y1 = m_scanlines_bin.min_y();
-                    m_bounds.x2 = m_scanlines_bin.max_x();
-                    m_bounds.y2 = m_scanlines_bin.max_y();
+                    m_bounds.x2 = m_scanlines_bin.max_x() + 1;
+                    m_bounds.y2 = m_scanlines_bin.max_y() + 1;
                     m_data_size = m_scanlines_bin.byte_size(); 
                     m_data_type = glyph_data_mono;
                     m_advance_x = int26p6_to_dbl(m_cur_face->glyph->advance.x);
@@ -947,8 +947,8 @@ namespace agg
                                               m_scanlines_aa);
                     m_bounds.x1 = m_scanlines_aa.min_x();
                     m_bounds.y1 = m_scanlines_aa.min_y();
-                    m_bounds.x2 = m_scanlines_aa.max_x();
-                    m_bounds.y2 = m_scanlines_aa.max_y();
+                    m_bounds.x2 = m_scanlines_aa.max_x() + 1;
+                    m_bounds.y2 = m_scanlines_aa.max_y() + 1;
                     m_data_size = m_scanlines_aa.byte_size(); 
                     m_data_type = glyph_data_gray8;
                     m_advance_x = int26p6_to_dbl(m_cur_face->glyph->advance.x);
@@ -1032,8 +1032,8 @@ namespace agg
                     render_scanlines(m_rasterizer, m_scanline_bin, m_scanlines_bin);
                     m_bounds.x1 = m_scanlines_bin.min_x();
                     m_bounds.y1 = m_scanlines_bin.min_y();
-                    m_bounds.x2 = m_scanlines_bin.max_x();
-                    m_bounds.y2 = m_scanlines_bin.max_y();
+                    m_bounds.x2 = m_scanlines_bin.max_x() + 1;
+                    m_bounds.y2 = m_scanlines_bin.max_y() + 1;
                     m_data_size = m_scanlines_bin.byte_size(); 
                     m_data_type = glyph_data_mono;
                     m_advance_x = int26p6_to_dbl(m_cur_face->glyph->advance.x);
@@ -1070,8 +1070,8 @@ namespace agg
                     render_scanlines(m_rasterizer, m_scanline_aa, m_scanlines_aa);
                     m_bounds.x1 = m_scanlines_aa.min_x();
                     m_bounds.y1 = m_scanlines_aa.min_y();
-                    m_bounds.x2 = m_scanlines_aa.max_x();
-                    m_bounds.y2 = m_scanlines_aa.max_y();
+                    m_bounds.x2 = m_scanlines_aa.max_x() + 1;
+                    m_bounds.y2 = m_scanlines_aa.max_y() + 1;
                     m_data_size = m_scanlines_aa.byte_size(); 
                     m_data_type = glyph_data_gray8;
                     m_advance_x = int26p6_to_dbl(m_cur_face->glyph->advance.x);

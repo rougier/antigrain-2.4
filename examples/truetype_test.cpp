@@ -214,7 +214,7 @@ public:
         m_width.no_transform();
 
         m_weight.label("Font Weight=%.2f");
-        m_weight.range(-1, 1);
+        m_weight.range(-2, 2);
         m_weight.text_thickness(1.5);
         add_ctrl(m_weight);
         m_weight.no_transform();
