@@ -156,7 +156,7 @@ namespace agg
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_arc(VertexConsumer& out_vertices,
+    void math_stroke<VC>::calc_arc(VC& out_vertices,
                                    double x,   double y, 
                                    double dx1, double dy1, 
                                    double dx2, double dy2)
@@ -200,7 +200,7 @@ namespace agg
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_miter(VertexConsumer& out_vertices,
+    void math_stroke<VC>::calc_miter(VC& out_vertices,
                                      const vertex_dist& v0, 
                                      const vertex_dist& v1, 
                                      const vertex_dist& v2,
@@ -288,7 +288,7 @@ namespace agg
 
     //--------------------------------------------------------stroke_calc_cap
     template<class VC> 
-    void math_stroke<VC>::calc_cap(VertexConsumer& out_vertices,
+    void math_stroke<VC>::calc_cap(VC& out_vertices,
                                    const vertex_dist& v0, 
                                    const vertex_dist& v1, 
                                    double len)
@@ -350,7 +350,7 @@ namespace agg
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_join(VertexConsumer& out_vertices,
+    void math_stroke<VC>::calc_join(VC& out_vertices,
                                     const vertex_dist& v0, 
                                     const vertex_dist& v1, 
                                     const vertex_dist& v2,
