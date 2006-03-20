@@ -177,14 +177,27 @@ public:
                 agg::trans_perspective tr(m_quad.polygon(), g_x1, g_y1, g_x2, g_y2);
                 if(tr.is_valid())
                 {
-                    typedef agg::span_interpolator_linear<agg::trans_perspective> interpolator_type;
-                    typedef agg::span_subdiv_adaptor<interpolator_type> subdiv_adaptor_type;
-                    interpolator_type interpolator(tr);
-                    subdiv_adaptor_type subdiv_adaptor(interpolator);
+                    // Subdivision and linear interpolation (faster, but less accurate)
+                    //-----------------------
+                    //typedef agg::span_interpolator_linear<agg::trans_perspective> interpolator_type;
+                    //typedef agg::span_subdiv_adaptor<interpolator_type> subdiv_adaptor_type;
+                    //interpolator_type interpolator(tr);
+                    //subdiv_adaptor_type subdiv_adaptor(interpolator);
+                    //
+                    //typedef agg::span_image_filter_rgba_2x2<img_accessor_type,
+                    //                                        subdiv_adaptor_type> span_gen_type;
+                    //span_gen_type sg(ia, subdiv_adaptor, filter);
+                    //-----------------------
 
+                    // Direct calculations of the coordinates
+                    //-----------------------
+                    typedef agg::span_interpolator_trans<agg::trans_perspective> interpolator_type;
+                    interpolator_type interpolator(tr);
                     typedef agg::span_image_filter_rgba_2x2<img_accessor_type,
-                                                            subdiv_adaptor_type> span_gen_type;
-                    span_gen_type sg(ia, subdiv_adaptor, filter);
+                                                            interpolator_type> span_gen_type;
+                    span_gen_type sg(ia, interpolator, filter);
+                    //-----------------------
+
                     agg::render_scanlines_aa(g_rasterizer, g_scanline, rb_pre, sa, sg);
                 }
                 break;
