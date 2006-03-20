@@ -22,19 +22,13 @@
 namespace agg
 {
 
-    polygon_ctrl_impl::~polygon_ctrl_impl()
-    {
-        delete [] m_polygon;
-    }
-
-
     polygon_ctrl_impl::polygon_ctrl_impl(unsigned np, double point_radius) :
         ctrl(0, 0, 1, 1, false),
-        m_polygon(new double[np * 2]),
+        m_polygon(np * 2),
         m_num_points(np),
         m_node(-1),
         m_edge(-1),
-        m_vs(m_polygon, m_num_points, false),
+        m_vs(&m_polygon[0], m_num_points, false),
         m_stroke(m_vs),
         m_point_radius(point_radius),
         m_status(0),

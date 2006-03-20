@@ -1,7 +1,7 @@
 #ifndef INTERACTIVE_POLYGON_INCLUDED
 #define INTERACTIVE_POLYGON_INCLUDED
 
-#include "agg_basics.h"
+#include "agg_array.h"
 #include "agg_conv_stroke.h"
 #include "agg_ellipse.h"
 
@@ -62,7 +62,6 @@ namespace agg
     class interactive_polygon
     {
     public:
-        ~interactive_polygon();
         interactive_polygon(unsigned np, double point_radius);
 
         unsigned num_points() const { return m_num_points; }
@@ -71,7 +70,7 @@ namespace agg
         double& xn(unsigned n) { return m_polygon[n * 2];     }
         double& yn(unsigned n) { return m_polygon[n * 2 + 1]; }
     
-        const double* polygon() const { return m_polygon; }
+        const double* polygon() const { return &m_polygon[0]; }
 
         int  node() const { return m_node; }
         void node(int n) { m_node = n; }
@@ -92,10 +91,10 @@ namespace agg
         bool point_in_polygon(double x, double y) const;
 
 
-        double*  m_polygon;
-        unsigned m_num_points;
-        int      m_node;
-        int      m_edge;
+        pod_array<double> m_polygon;
+        unsigned          m_num_points;
+        int               m_node;
+        int               m_edge;
         simple_polygon_vertex_source m_vs;
         conv_stroke<simple_polygon_vertex_source> m_stroke;
         ellipse  m_ellipse;

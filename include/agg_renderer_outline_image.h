@@ -15,6 +15,7 @@
 #ifndef AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
 #define AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
 
+#include "agg_array.h"
 #include "agg_math.h"
 #include "agg_line_aa_basics.h"
 #include "agg_dda_line.h"
@@ -70,17 +71,11 @@ namespace agg
         typedef typename filter_type::color_type color_type;
 
         //--------------------------------------------------------------------
-        ~line_image_pattern()
-        {
-            delete [] m_data;
-        }
-
-        //--------------------------------------------------------------------
         line_image_pattern(const Filter& filter) :
             m_filter(&filter),
             m_dilation(filter.dilation() + 1),
             m_dilation_hr(m_dilation << line_subpixel_shift),
-            m_data(0),
+            m_data(),
             m_width(0),
             m_height(0),
             m_width_hr(0),
@@ -96,7 +91,7 @@ namespace agg
             m_filter(&filter),
             m_dilation(filter.dilation() + 1),
             m_dilation_hr(m_dilation << line_subpixel_shift),
-            m_data(0),
+            m_data(),
             m_width(0),
             m_height(0),
             m_width_hr(0),
@@ -117,12 +112,11 @@ namespace agg
             m_offset_y_hr = m_dilation_hr + m_half_height_hr - line_subpixel_scale/2;
             m_half_height_hr += line_subpixel_scale/2;
 
-            delete [] m_data;
-            m_data = new color_type [(m_width + m_dilation * 2) * (m_height + m_dilation * 2)];
+            m_data.resize((m_width + m_dilation * 2) * (m_height + m_dilation * 2));
 
-            m_buf.attach(m_data, m_width  + m_dilation * 2, 
-                                 m_height + m_dilation * 2, 
-                                 m_width  + m_dilation * 2);
+            m_buf.attach(&m_data[0], m_width  + m_dilation * 2, 
+                                     m_height + m_dilation * 2, 
+                                     m_width  + m_dilation * 2);
             unsigned x, y;
             color_type* d1;
             color_type* d2;
@@ -195,7 +189,7 @@ namespace agg
         const filter_type*        m_filter;
         unsigned                  m_dilation;
         int                       m_dilation_hr;
-        color_type*               m_data;
+        pod_array<color_type>     m_data;
         unsigned                  m_width;
         unsigned                  m_height;
         int                       m_width_hr;

@@ -22,22 +22,7 @@
 
 namespace agg
 {
-
-    //------------------------------------------------------------------------
-    rbox_ctrl_impl::~rbox_ctrl_impl()
-    {
-        if(m_num_items)
-        {
-            char** item = m_items + m_num_items - 1;
-            while(m_num_items--)
-            {
-                delete *item;
-                --item;
-            }
-        }
-    }
-
-    
+  
     //------------------------------------------------------------------------
     rbox_ctrl_impl::rbox_ctrl_impl(double x1, double y1, 
                                    double x2, double y2, bool flip_y) :
@@ -73,8 +58,8 @@ namespace agg
     {
         if(m_num_items < 32)
         {
-            m_items[m_num_items] = new char[strlen(text) + 1];
-            strcpy(m_items[m_num_items], text);
+            m_items[m_num_items].resize(strlen(text) + 1);
+            strcpy(&m_items[m_num_items][0], text);
             m_num_items++;
         }
     }
@@ -142,7 +127,7 @@ namespace agg
             break;
 
         case 2:                 // Text
-            m_text.text(m_items[0]);
+            m_text.text(&m_items[0][0]);
             m_text.start_point(m_xs1 + m_dy * 1.5, m_ys1 + m_dy / 2.0);
             m_text.size(m_text_height, m_text_width);
             m_text_poly.width(m_text_thickness);
@@ -209,7 +194,7 @@ namespace agg
                 }
                 else
                 {
-                    m_text.text(m_items[m_draw_item]);
+                    m_text.text(&m_items[m_draw_item][0]);
                     m_text.start_point(m_xs1 + m_dy * 1.5, 
                                        m_ys1 + m_dy * (m_draw_item + 1) - m_dy / 2.0);
 

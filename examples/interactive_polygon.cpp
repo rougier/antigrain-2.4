@@ -3,19 +3,12 @@
 
 namespace agg
 {
-
-    interactive_polygon::~interactive_polygon()
-    {
-        delete [] m_polygon;
-    }
-
-
     interactive_polygon::interactive_polygon(unsigned np, double point_radius) :
-        m_polygon(new double[np * 2]),
+        m_polygon(np * 2),
         m_num_points(np),
         m_node(-1),
         m_edge(-1),
-        m_vs(m_polygon, m_num_points, false),
+        m_vs(&m_polygon[0], m_num_points, false),
         m_stroke(m_vs),
         m_point_radius(point_radius),
         m_status(0),

@@ -20,6 +20,7 @@
 #ifndef POLYGON_CTRL_INCLUDED
 #define POLYGON_CTRL_INCLUDED
 
+#include "agg_array.h"
 #include "agg_conv_stroke.h"
 #include "agg_ellipse.h"
 #include "agg_color_rgba.h"
@@ -82,7 +83,6 @@ namespace agg
     class polygon_ctrl_impl : public ctrl
     {
     public:
-        ~polygon_ctrl_impl();
         polygon_ctrl_impl(unsigned np, double point_radius=5);
 
         unsigned num_points() const { return m_num_points; }
@@ -91,7 +91,7 @@ namespace agg
         double& xn(unsigned n) { return m_polygon[n * 2];     }
         double& yn(unsigned n) { return m_polygon[n * 2 + 1]; }
     
-        const double* polygon() const { return m_polygon; }
+        const double* polygon() const { return &m_polygon[0]; }
 
         void   line_width(double w) { m_stroke.width(w); }
         double line_width() const   { return m_stroke.width(); }
@@ -121,11 +121,11 @@ namespace agg
         bool check_edge(unsigned i, double x, double y) const;
         bool point_in_polygon(double x, double y) const;
 
-        double*  m_polygon;
-        unsigned m_num_points;
-        int      m_node;
-        int      m_edge;
-        simple_polygon_vertex_source m_vs;
+        pod_array<double> m_polygon;
+        unsigned          m_num_points;
+        int               m_node;
+        int               m_edge;
+        simple_polygon_vertex_source              m_vs;
         conv_stroke<simple_polygon_vertex_source> m_stroke;
         ellipse  m_ellipse;
         double   m_point_radius;

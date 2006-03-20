@@ -20,7 +20,7 @@
 #ifndef AGG_RBOX_CTRL_INCLUDED
 #define AGG_RBOX_CTRL_INCLUDED
 
-#include "agg_basics.h"
+#include "agg_array.h"
 #include "agg_ellipse.h"
 #include "agg_conv_stroke.h"
 #include "agg_gsv_text.h"
@@ -37,7 +37,6 @@ namespace agg
     class rbox_ctrl_impl : public ctrl
     {
     public:
-        ~rbox_ctrl_impl();
         rbox_ctrl_impl(double x1, double y1, double x2, double y2, bool flip_y=false);
 
         void border_width(double t, double extra=0.0);
@@ -62,14 +61,14 @@ namespace agg
     private:
         void calc_rbox();
 
-        double   m_border_width;
-        double   m_border_extra;
-        double   m_text_thickness;
-        double   m_text_height;
-        double   m_text_width;
-        char*    m_items[32];
-        unsigned m_num_items;
-        int      m_cur_item;
+        double          m_border_width;
+        double          m_border_extra;
+        double          m_text_thickness;
+        double          m_text_height;
+        double          m_text_width;
+        pod_array<char> m_items[32];
+        unsigned        m_num_items;
+        int             m_cur_item;
 
         double   m_xs1;
         double   m_ys1;
