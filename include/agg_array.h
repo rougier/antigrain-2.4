@@ -521,8 +521,8 @@ namespace agg
                 pod_allocator<T>::deallocate(*blk, block_size);
                 --blk;
             }
-            pod_allocator<T*>::deallocate(m_blocks, m_max_blocks);
         }
+        pod_allocator<T*>::deallocate(m_blocks, m_max_blocks);
     }
 
 
@@ -536,6 +536,12 @@ namespace agg
             while(m_num_blocks > nb)
             {
                 pod_allocator<T>::deallocate(m_blocks[--m_num_blocks], block_size);
+            }
+            if(m_num_blocks == 0)
+            {
+                pod_allocator<T*>::deallocate(m_blocks, m_max_blocks);
+                m_blocks = 0;
+                m_max_blocks = 0;
             }
             m_size = size;
         }
