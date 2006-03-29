@@ -256,7 +256,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        row_data row(int x, int y) const
+        row_data row(int y) const
         {
             return m_rbuf->row(y);
         }
