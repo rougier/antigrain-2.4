@@ -505,6 +505,8 @@ public:
 
             case 1: //m_case_type.add_item("13---24");
                 m_curve1.curve(150, 150, 350, 150, 150, 150, 350, 150);
+                //m_curve1.curve(252, 227, 16, 227, 506, 227, 285, 227);
+                //m_curve1.curve(252, 227, 16, 227, 387, 227, 285, 227);
                 break;
 
             case 2: //m_case_type.add_item("Smooth Cusp 1");
