@@ -304,7 +304,7 @@ public:
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
-                180);
+                230);
 
             m_colors[i].apply_gamma_dir(m_gamma);
             m_colors[i].premultiply();
@@ -394,7 +394,7 @@ public:
         if(draw_strokes)
         {
             ras.clip_box(0, 0, width(), height());
-            stroke.width(1.0 * m_scale.scale());
+            stroke.width(sqrt(m_scale.scale()));
             stroke.line_join(agg::round_join);
             stroke.line_cap(agg::round_cap);
             for(i = 0; i < m_shape.paths(); i++)
