@@ -271,7 +271,7 @@ public:
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
-                180);
+                230);
 
             m_colors[i].apply_gamma_dir(m_gamma);
             m_colors[i].premultiply();
@@ -376,7 +376,7 @@ public:
         // Draw strokes
         //----------------------
         start_timer();
-        stroke.width(1.0 * m_scale.scale());
+        stroke.width(sqrt(m_scale.scale()));
         stroke.line_join(agg::round_join);
         stroke.line_cap(agg::round_cap);
         for(i = 0; i < m_shape.paths(); i++)

@@ -19,6 +19,7 @@
 #include <math.h>
 #include "agg_config.h"
 
+//---------------------------------------------------------AGG_CUSTOM_ALLOCATOR
 #ifdef AGG_CUSTOM_ALLOCATOR
 #include "agg_allocator.h"
 #else
@@ -129,15 +130,17 @@ namespace agg
 #pragma warning(disable : 4035) //Disable warning "no return value"
     AGG_INLINE int iround(double v)              //-------iround
     {
+        int t;
         __asm fld   qword ptr [v]
-        __asm fistp dword ptr [ebp-8]
-        __asm mov eax, dword ptr [ebp-8]
+        __asm fistp dword ptr [t]
+        __asm mov eax, dword ptr [t]
     }
     AGG_INLINE unsigned uround(double v)         //-------uround
     {
+        unsigned t;
         __asm fld   qword ptr [v]
-        __asm fistp dword ptr [ebp-8]
-        __asm mov eax, dword ptr [ebp-8]
+        __asm fistp dword ptr [t]
+        __asm mov eax, dword ptr [t]
     }
 #pragma warning(pop)
     AGG_INLINE unsigned ufloor(double v)         //-------ufloor

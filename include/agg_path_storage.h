@@ -1235,10 +1235,7 @@ namespace agg
         while(end < m_vertices.total_vertices() && 
               !is_next_poly(m_vertices.command(end))) ++end;
 
-        if(end - start > 2)
-        {
-            invert_polygon(start, end);
-        }
+        invert_polygon(start, end);
     }
 
     //------------------------------------------------------------------------
