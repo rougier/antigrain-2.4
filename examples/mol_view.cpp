@@ -336,25 +336,25 @@ namespace agg
         {
         case 0:
             *x = m_x1 - m_dx;
-            *y = m_y1 + m_dy;
+            *y = m_y1 - m_dy;
             m_vertex++;
             return path_cmd_move_to;
 
         case 1:
             *x = m_x2 - m_dx;
-            *y = m_y2 + m_dy;
+            *y = m_y2 - m_dy;
             m_vertex++;
             return path_cmd_line_to;
 
         case 2:
             *x = m_x2 + m_dx;
-            *y = m_y2 - m_dy;
+            *y = m_y2 + m_dy;
             m_vertex++;
             return path_cmd_line_to;
 
         case 3:
             *x = m_x1 + m_dx;
-            *y = m_y1 - m_dy;
+            *y = m_y1 + m_dy;
             m_vertex++;
             return path_cmd_line_to;
         }
@@ -425,13 +425,13 @@ namespace agg
 
         case 1:
             *x = m_x2 - m_dx;
-            *y = m_y2 + m_dy;
+            *y = m_y2 - m_dy;
             m_vertex++;
             return path_cmd_line_to;
 
         case 2:
             *x = m_x2 + m_dx;
-            *y = m_y2 - m_dy;
+            *y = m_y2 + m_dy;
             m_vertex++;
             return path_cmd_line_to;
         }
@@ -509,9 +509,9 @@ namespace agg
         double dy;
         calc_orthogonal(m_thickness*2.0, m_x1, m_y1, m_x2, m_y2, &dx, &dy);
         m_xt2 = m_x2 - dx;
-        m_yt2 = m_y2 + dy;
+        m_yt2 = m_y2 - dy;
         m_xt3 = m_x2 + dx;
-        m_yt3 = m_y2 - dy;
+        m_yt3 = m_y2 + dy;
         m_vertex = 0;
     }
 
@@ -650,15 +650,15 @@ public:
 */
 
             m_line1.init(m_bond.x1 - dx1, 
-                         m_bond.y1 + dy1, 
+                         m_bond.y1 - dy1, 
                          m_bond.x2 - dx1, 
-                         m_bond.y2 + dy1);
+                         m_bond.y2 - dy1);
             m_line1.rewind(0);
 
             m_line2.init(m_bond.x1 + dx2, 
-                         m_bond.y1 - dy2, 
+                         m_bond.y1 + dy2, 
                          m_bond.x2 + dx2, 
-                         m_bond.y2 - dy2);
+                         m_bond.y2 + dy2);
             m_line2.rewind(0);
             m_status = 0;
             break;

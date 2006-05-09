@@ -182,8 +182,8 @@ namespace agg
         double dx = x2 - x1;
         double dy = y2 - y1;
         double d = sqrt(dx*dx + dy*dy); 
-        *x = thickness * dy / d;
-        *y = thickness * dx / d;
+        *x =  thickness * dy / d;
+        *y = -thickness * dx / d;
     }
 
     //--------------------------------------------------------dilate_triangle
@@ -210,12 +210,12 @@ namespace agg
             calc_orthogonal(d, x2, y2, x3, y3, &dx2, &dy2);
             calc_orthogonal(d, x3, y3, x1, y1, &dx3, &dy3);
         }
-        *x++ = x1 + dx1;  *y++ = y1 - dy1;
-        *x++ = x2 + dx1;  *y++ = y2 - dy1;
-        *x++ = x2 + dx2;  *y++ = y2 - dy2;
-        *x++ = x3 + dx2;  *y++ = y3 - dy2;
-        *x++ = x3 + dx3;  *y++ = y3 - dy3;
-        *x++ = x1 + dx3;  *y++ = y1 - dy3;
+        *x++ = x1 + dx1;  *y++ = y1 + dy1;
+        *x++ = x2 + dx1;  *y++ = y2 + dy1;
+        *x++ = x2 + dx2;  *y++ = y2 + dy2;
+        *x++ = x3 + dx2;  *y++ = y3 + dy2;
+        *x++ = x3 + dx3;  *y++ = y3 + dy3;
+        *x++ = x1 + dx3;  *y++ = y1 + dy3;
     }
 
     //------------------------------------------------------calc_triangle_area
