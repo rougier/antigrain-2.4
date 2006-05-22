@@ -2,8 +2,6 @@
 # Makefile for AmigaOS 4.0
 #
 
-.PHONY : help all setup lib examples svg freetype clean install wget
-
 CXX = g++
 CXXFLAGS = -mcrt=clib2 -O3 -Iinclude -Igpc -Ifont_freetype
 CXXLIBS = -Llib -lagg
@@ -13,7 +11,7 @@ AR = ar
 ARFLAGS = cr
 STRIP = strip -R.comment
 
-AGGLIBNAME = lib/libagg.a
+LIBNAME = lib/libagg.a
 SVGNAME = bin/svg_test
 
 EXAMPLES =\
@@ -130,6 +128,7 @@ examples/svg_viewer/agg_svg_path_tokenizer.cpp \
 examples/svg_viewer/svg_test.cpp \
 $(PLATFORM_SRC)
 
+EXAMPLES_OBJ = $(addsuffix .o,$(EXAMPLES))
 PLATFORM_OBJ = $(PLATFORM_SRC:.cpp=.o)
 FREETYPE_OBJ = $(FREETYPE_SRC:.cpp=.o)
 LIB_OBJ = $(LIB_CXXSRC:.cpp=.o) $(LIB_CSRC:.c=.o)
@@ -139,15 +138,15 @@ SVG_OBJ = $(SVG_SRC:.cpp=.o)
 #
 # Targets
 #
+.PHONY : help all lib examples svg freetype clean install wget
+
 help:
 	@Echo Requirements:
 	@Echo - AmigaOS 4.0
-	@Echo - SDK 51.15
-	@Echo - GCC 4.0.2
-	@Echo - clib2 1.198
+	@Echo - SDK 51.22
 	@Echo - optional: libexpat.a for SVG viewer
-	@Echo - optional: libfreetype.a for FreeType examples
-	@Echo '""'
+	@Echo - optional: libft2.a for FreeType examples
+	@Echo ""
 	@Echo Targets:
 	@Echo all - build AGG library and all tests/examples
 	@Echo lib - build AGG library only
@@ -158,13 +157,10 @@ help:
 	@Echo install - build AGG library and install into SDK
 	@Echo wget - download and install example test files with wget
 
-all: setup lib examples svg freetype
+all: lib examples svg freetype
 	$(STRIP) $(EXAMPLES) $(SVGNAME) $(FREETYPE_EXAMPLES)
 
-setup:
-	-@MakeDir >NIL: lib bin
-
-lib: setup $(AGGLIBNAME)
+lib: $(LIBNAME)
 
 examples: lib $(EXAMPLES)
 
@@ -173,17 +169,17 @@ svg: lib $(SVGNAME)
 freetype: lib $(FREETYPE_EXAMPLES)
 
 clean:
-	-@Delete >NIL: FORCE QUIET examples/#?.o
-	-@Delete >NIL: FORCE QUIET $(PLATFORM_OBJ) $(FREETYPE_OBJ) $(LIB_OBJ) $(SVG_OBJ)
-	-@Delete >NIL: FORCE QUIET ALL lib bin
+	-@Delete *>NIL: FORCE QUIET $(EXAMPLES_OBJ)
+	-@Delete *>NIL: FORCE QUIET $(PLATFORM_OBJ) $(FREETYPE_OBJ) $(LIB_OBJ) $(SVG_OBJ)
+	-@Delete *>NIL: FORCE QUIET ALL lib bin
 
 install: lib
-	-@Copy CLONE $(AGGLIBNAME) SDK:Local/clib2/lib
-	-@Copy CLONE ALL include/#?.h SDK:Local/clib2/include/agg
-	-@Copy CLONE ALL gpc/#?.h SDK:Local/clib2/include/gpc
+	-@Copy CLONE $(LIBNAME) SDK:Local/clib2/lib
+	-@Copy CLONE ALL include/#?.h SDK:Local/common/include/agg
+	-@Copy CLONE ALL gpc/#?.h SDK:Local/common/include/gpc
 
-$(AGGLIBNAME): $(LIB_OBJ)
-	$(AR) $(ARFLAGS) $(AGGLIBNAME) $^
+$(LIBNAME): $(LIB_OBJ)
+	$(AR) $(ARFLAGS) $@ $^
 
 $(SVGNAME): $(SVG_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lexpat
@@ -358,13 +354,13 @@ bin/trans_polar: examples/trans_polar.o $(PLATFORM_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS)
 
 bin/freetype_test: examples/freetype_test.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lft2
 
 bin/trans_curve1_ft: examples/trans_curve1_ft.o examples/interactive_polygon.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lft2
 
 bin/trans_curve2_ft: examples/trans_curve2_ft.o examples/interactive_polygon.o $(FREETYPE_OBJ) $(PLATFORM_OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lfreetype -lz
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(CXXLIBS) -lft2
 
 
 #
@@ -395,7 +391,9 @@ wget:
 # Pattern Rules
 #
 %.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $*.cpp -o $@
+	@MakeDir lib bin force
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) $*.c -o $@
+	@MakeDir lib bin force
+	$(CC) -c $(CFLAGS) $< -o $@
