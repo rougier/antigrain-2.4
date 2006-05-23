@@ -128,7 +128,6 @@ examples/svg_viewer/agg_svg_path_tokenizer.cpp \
 examples/svg_viewer/svg_test.cpp \
 $(PLATFORM_SRC)
 
-EXAMPLES_OBJ = $(addsuffix .o,$(EXAMPLES))
 PLATFORM_OBJ = $(PLATFORM_SRC:.cpp=.o)
 FREETYPE_OBJ = $(FREETYPE_SRC:.cpp=.o)
 LIB_OBJ = $(LIB_CXXSRC:.cpp=.o) $(LIB_CSRC:.c=.o)
@@ -169,7 +168,7 @@ svg: lib $(SVGNAME)
 freetype: lib $(FREETYPE_EXAMPLES)
 
 clean:
-	-@Delete *>NIL: FORCE QUIET $(EXAMPLES_OBJ)
+	-@Delete *>NIL: FORCE QUIET examples/#?.o
 	-@Delete *>NIL: FORCE QUIET $(PLATFORM_OBJ) $(FREETYPE_OBJ) $(LIB_OBJ) $(SVG_OBJ)
 	-@Delete *>NIL: FORCE QUIET ALL lib bin
 
