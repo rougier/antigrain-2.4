@@ -6,7 +6,7 @@ CXX = g++
 CXXFLAGS = -mcrt=clib2 -O3 -Iinclude -Igpc -Ifont_freetype
 CXXLIBS = -Llib -lagg
 CC = gcc
-CFLAGS = -mcrt=clib2 -O3
+CFLAGS = -mcrt=clib2 -O3 -Igpc
 AR = ar
 ARFLAGS = cr
 STRIP = strip -R.comment
