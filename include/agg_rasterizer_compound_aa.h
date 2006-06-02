@@ -112,7 +112,9 @@ namespace agg
             m_max_style(-0x7FFFFFFF),
             m_start_x(0),
             m_start_y(0),
-            m_scan_y(0x7FFFFFFF)
+            m_scan_y(0x7FFFFFFF),
+            m_sl_start(0),
+            m_sl_len(0)
         {}
 
         //--------------------------------------------------------------------
@@ -161,6 +163,8 @@ namespace agg
         void sort();
         bool rewind_scanlines();
         unsigned sweep_styles();
+        int      scanline_start()  const { return m_sl_start; }
+        unsigned scanline_length() const { return m_sl_len;   }
         unsigned style(unsigned style_idx) const;
 
         cover_type* allocate_cover_buffer(unsigned len);
@@ -262,6 +266,8 @@ namespace agg
         coord_type m_start_x;
         coord_type m_start_y;
         int        m_scan_y;
+        int        m_sl_start;
+        unsigned   m_sl_len;
     };
 
 
@@ -281,6 +287,8 @@ namespace agg
         m_min_style =  0x7FFFFFFF;
         m_max_style = -0x7FFFFFFF;
         m_scan_y    =  0x7FFFFFFF;
+        m_sl_start  =  0;
+        m_sl_len    = 0;
     }
 
     //------------------------------------------------------------------------
@@ -470,77 +478,82 @@ namespace agg
             m_asm.allocate((num_styles + 7) >> 3, 8);
             m_asm.zero();
 
-            // Pre-add zero (for no-fill style, that is, -1).
-            // We need that to ensure that the "-1 style" would go first.
-            m_asm[0] |= 1; 
-            m_ast.add(0);
-            style = &m_styles[0];
-            style->start_cell = 0;
-            style->num_cells = 0;
-            style->last_x = -0x7FFFFFFF;
-
-            while(num_cells--)
+            if(num_cells)
             {
-                curr_cell = *cells++;
-                add_style(curr_cell->left);
-                add_style(curr_cell->right);
-            }
+                // Pre-add zero (for no-fill style, that is, -1).
+                // We need that to ensure that the "-1 style" would go first.
+                m_asm[0] |= 1; 
+                m_ast.add(0);
+                style = &m_styles[0];
+                style->start_cell = 0;
+                style->num_cells = 0;
+                style->last_x = -0x7FFFFFFF;
 
-            // Convert the Y-histogram into the array of starting indexes
-            unsigned i;
-            unsigned start_cell = 0;
-            for(i = 0; i < m_ast.size(); i++)
-            {
-                style_info& st = m_styles[m_ast[i]];
-                unsigned v = st.start_cell;
-                st.start_cell = start_cell;
-                start_cell += v;
-            }
-
-            cells = m_outline.scanline_cells(m_scan_y);
-            num_cells = m_outline.scanline_num_cells(m_scan_y);
-
-            while(num_cells--)
-            {
-                curr_cell = *cells++;
-                style_id = (curr_cell->left < 0) ? 0 : 
-                            curr_cell->left - m_min_style + 1;
-
-                style = &m_styles[style_id];
-                if(curr_cell->x == style->last_x)
+                m_sl_start = cells[0]->x;
+                m_sl_len   = cells[num_cells-1]->x - m_sl_start + 1;
+                while(num_cells--)
                 {
-                    cell = &m_cells[style->start_cell + style->num_cells - 1];
-                    cell->area  += curr_cell->area;
-                    cell->cover += curr_cell->cover;
-                }
-                else
-                {
-                    cell = &m_cells[style->start_cell + style->num_cells];
-                    cell->x       = curr_cell->x;
-                    cell->area    = curr_cell->area;
-                    cell->cover   = curr_cell->cover;
-                    style->last_x = curr_cell->x;
-                    style->num_cells++;
+                    curr_cell = *cells++;
+                    add_style(curr_cell->left);
+                    add_style(curr_cell->right);
                 }
 
-                style_id = (curr_cell->right < 0) ? 0 : 
-                            curr_cell->right - m_min_style + 1;
-
-                style = &m_styles[style_id];
-                if(curr_cell->x == style->last_x)
+                // Convert the Y-histogram into the array of starting indexes
+                unsigned i;
+                unsigned start_cell = 0;
+                for(i = 0; i < m_ast.size(); i++)
                 {
-                    cell = &m_cells[style->start_cell + style->num_cells - 1];
-                    cell->area  -= curr_cell->area;
-                    cell->cover -= curr_cell->cover;
+                    style_info& st = m_styles[m_ast[i]];
+                    unsigned v = st.start_cell;
+                    st.start_cell = start_cell;
+                    start_cell += v;
                 }
-                else
+
+                cells = m_outline.scanline_cells(m_scan_y);
+                num_cells = m_outline.scanline_num_cells(m_scan_y);
+
+                while(num_cells--)
                 {
-                    cell = &m_cells[style->start_cell + style->num_cells];
-                    cell->x       =  curr_cell->x;
-                    cell->area    = -curr_cell->area;
-                    cell->cover   = -curr_cell->cover;
-                    style->last_x =  curr_cell->x;
-                    style->num_cells++;
+                    curr_cell = *cells++;
+                    style_id = (curr_cell->left < 0) ? 0 : 
+                                curr_cell->left - m_min_style + 1;
+
+                    style = &m_styles[style_id];
+                    if(curr_cell->x == style->last_x)
+                    {
+                        cell = &m_cells[style->start_cell + style->num_cells - 1];
+                        cell->area  += curr_cell->area;
+                        cell->cover += curr_cell->cover;
+                    }
+                    else
+                    {
+                        cell = &m_cells[style->start_cell + style->num_cells];
+                        cell->x       = curr_cell->x;
+                        cell->area    = curr_cell->area;
+                        cell->cover   = curr_cell->cover;
+                        style->last_x = curr_cell->x;
+                        style->num_cells++;
+                    }
+
+                    style_id = (curr_cell->right < 0) ? 0 : 
+                                curr_cell->right - m_min_style + 1;
+
+                    style = &m_styles[style_id];
+                    if(curr_cell->x == style->last_x)
+                    {
+                        cell = &m_cells[style->start_cell + style->num_cells - 1];
+                        cell->area  -= curr_cell->area;
+                        cell->cover -= curr_cell->cover;
+                    }
+                    else
+                    {
+                        cell = &m_cells[style->start_cell + style->num_cells];
+                        cell->x       =  curr_cell->x;
+                        cell->area    = -curr_cell->area;
+                        cell->cover   = -curr_cell->cover;
+                        style->last_x =  curr_cell->x;
+                        style->num_cells++;
+                    }
                 }
             }
             if(m_ast.size() > 1) break;
