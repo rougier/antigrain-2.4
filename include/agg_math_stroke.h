@@ -373,6 +373,12 @@ namespace agg
         {
             // Inner join
             //---------------
+            double limit = ((len1 < len2) ? len1 : len2) / m_width_abs;
+            if(limit < m_inner_miter_limit)
+            {
+                limit = m_inner_miter_limit;
+            }
+
             switch(m_inner_join)
             {
             default: // inner_bevel
@@ -384,7 +390,7 @@ namespace agg
                 calc_miter(out_vertices,
                            v0, v1, v2, dx1, dy1, dx2, dy2, 
                            miter_join_revert, 
-                           m_inner_miter_limit);
+                           limit);
                 break;
 
             case inner_jag:
@@ -396,7 +402,7 @@ namespace agg
                         calc_miter(out_vertices,
                                    v0, v1, v2, dx1, dy1, dx2, dy2, 
                                    miter_join_revert, 
-                                   m_inner_miter_limit);
+                                   limit);
                     }
                     else
                     {

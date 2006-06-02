@@ -360,7 +360,12 @@ public:
                    m_curve1.x2(), m_curve1.y2(),
                    m_curve1.x3(), m_curve1.y3(),
                    m_curve1.x4(), m_curve1.y4());
+
         path.concat_path(curve);
+//path.move_to(m_curve1.x1(), m_curve1.y1());
+//path.line_to(m_curve1.x2(), m_curve1.y2());
+//path.line_to(m_curve1.x3(), m_curve1.y3());
+//path.line_to(m_curve1.x4(), m_curve1.y4());
 
 
         agg::conv_stroke<agg::path_storage> stroke(path);

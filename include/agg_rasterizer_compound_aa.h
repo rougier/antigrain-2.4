@@ -86,8 +86,9 @@ namespace agg
         };
 
     public:
-        typedef Clip                     clip_type;
-        typedef typename Clip::conv_type conv_type;
+        typedef Clip                      clip_type;
+        typedef typename Clip::conv_type  conv_type;
+        typedef typename Clip::coord_type coord_type;
 
         enum aa_scale_e
         {
@@ -109,6 +110,8 @@ namespace agg
             m_cells(),
             m_min_style(0x7FFFFFFF),
             m_max_style(-0x7FFFFFFF),
+            m_start_x(0),
+            m_start_y(0),
             m_scan_y(0x7FFFFFFF)
         {}
 
@@ -159,6 +162,8 @@ namespace agg
         bool rewind_scanlines();
         unsigned sweep_styles();
         unsigned style(unsigned style_idx) const;
+
+        cover_type* allocate_cover_buffer(unsigned len);
 
         //--------------------------------------------------------------------
         bool navigate_scanline(int y); 
@@ -250,10 +255,13 @@ namespace agg
         pod_vector<unsigned>   m_ast;     // Active Style Table (unique values)
         pod_vector<int8u>      m_asm;     // Active Style Mask 
         pod_vector<cell_info>  m_cells;
+        pod_vector<cover_type> m_cover_buf;
 
-        int      m_min_style;
-        int      m_max_style;
-        int      m_scan_y;
+        int        m_min_style;
+        int        m_max_style;
+        coord_type m_start_x;
+        coord_type m_start_y;
+        int        m_scan_y;
     };
 
 
@@ -320,7 +328,8 @@ namespace agg
     void rasterizer_compound_aa<Clip>::move_to(int x, int y)
     {
         if(m_outline.sorted()) reset();
-        m_clipper.move_to(conv_type::downscale(x), conv_type::downscale(y));
+        m_clipper.move_to(m_start_x = conv_type::downscale(x), 
+                          m_start_y = conv_type::downscale(y));
     }
 
     //------------------------------------------------------------------------
@@ -337,7 +346,8 @@ namespace agg
     void rasterizer_compound_aa<Clip>::move_to_d(double x, double y) 
     { 
         if(m_outline.sorted()) reset();
-        m_clipper.move_to(conv_type::upscale(x), conv_type::upscale(y)); 
+        m_clipper.move_to(m_start_x = conv_type::upscale(x), 
+                          m_start_y = conv_type::upscale(y)); 
     }
 
     //------------------------------------------------------------------------
@@ -358,11 +368,14 @@ namespace agg
             move_to_d(x, y);
         }
         else 
+        if(is_vertex(cmd))
         {
-            if(is_vertex(cmd))
-            {
-                line_to_d(x, y);
-            }
+            line_to_d(x, y);
+        }
+        else
+        if(is_close(cmd))
+        {
+            m_clipper.line_to(m_outline, m_start_x, m_start_y);
         }
     }
 
@@ -534,6 +547,10 @@ namespace agg
             ++m_scan_y;
         }
         ++m_scan_y;
+
+        range_adaptor<pod_vector<unsigned> > ra(m_ast, 1, m_ast.size() - 1);
+        quick_sort(ra, unsigned_greater); 
+
         return m_ast.size() - 1;
     }
 
@@ -588,8 +605,13 @@ namespace agg
         return sl.hit();
     }
 
-
-
+    //------------------------------------------------------------------------ 
+    template<class Clip> 
+    cover_type* rasterizer_compound_aa<Clip>::allocate_cover_buffer(unsigned len)
+    {
+        m_cover_buf.allocate(len, 256);
+        return &m_cover_buf[0];
+    }
 
 }
 

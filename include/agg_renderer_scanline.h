@@ -498,8 +498,9 @@ namespace agg
             sl_bin.reset(min_x, ras.max_x());
 
             typedef typename BaseRenderer::color_type color_type;
-            color_type* color_span = alloc.allocate(len * 2);
-            color_type* mix_buffer = color_span + len;
+            color_type* color_span   = alloc.allocate(len * 2);
+            color_type* mix_buffer   = color_span + len;
+            cover_type* cover_buffer = ras.allocate_cover_buffer(len);
             unsigned num_spans;
 
             unsigned num_styles;
@@ -561,6 +562,10 @@ namespace agg
                                    0, 
                                    span_bin->len * sizeof(color_type));
 
+                            memset(cover_buffer + span_bin->x - min_x, 
+                                   0, 
+                                   span_bin->len * sizeof(cover_type));
+
                             if(--num_spans == 0) break;
                             ++span_bin;
                         }
@@ -573,9 +578,11 @@ namespace agg
 
                             if(ras.sweep_scanline(sl_aa, i))
                             {
+                                unsigned    cover;
                                 color_type* colors;
                                 color_type* cspan;
-                                typename ScanlineAA::cover_type* covers;
+                                cover_type* src_covers;
+                                cover_type* dst_covers;
                                 span_aa   = sl_aa.begin();
                                 num_spans = sl_aa.num_spans();
                                 if(solid)
@@ -587,12 +594,23 @@ namespace agg
                                         color_type c = sh.color(style);
                                         len    = span_aa->len;
                                         colors = mix_buffer + span_aa->x - min_x;
-                                        covers = span_aa->covers;
+                                        src_covers = span_aa->covers;
+                                        dst_covers = cover_buffer + span_aa->x - min_x;
                                         do
                                         {
-                                            colors->add(c, *covers);
+                                            cover = *src_covers;
+                                            if(*dst_covers + cover > cover_full)
+                                            {
+                                                cover = cover_full - *dst_covers;
+                                            }
+                                            if(cover)
+                                            {
+                                                colors->add(c, cover);
+                                                *dst_covers += cover;
+                                            }
                                             ++colors;
-                                            ++covers;
+                                            ++src_covers;
+                                            ++dst_covers;
                                         }
                                         while(--len);
                                         if(--num_spans == 0) break;
@@ -613,13 +631,24 @@ namespace agg
                                                          sl_aa.y(), 
                                                          len, 
                                                          style);
-                                        covers = span_aa->covers;
+                                        src_covers = span_aa->covers;
+                                        dst_covers = cover_buffer + span_aa->x - min_x;
                                         do
                                         {
-                                            colors->add(*cspan, *covers);
+                                            cover = *src_covers;
+                                            if(*dst_covers + cover > cover_full)
+                                            {
+                                                cover = cover_full - *dst_covers;
+                                            }
+                                            if(cover)
+                                            {
+                                                colors->add(*cspan, cover);
+                                                *dst_covers += cover;
+                                            }
                                             ++cspan;
                                             ++colors;
-                                            ++covers;
+                                            ++src_covers;
+                                            ++dst_covers;
                                         }
                                         while(--len);
                                         if(--num_spans == 0) break;
@@ -644,7 +673,6 @@ namespace agg
                             if(--num_spans == 0) break;
                             ++span_bin;
                         }
-
                     }
                 }
             }
