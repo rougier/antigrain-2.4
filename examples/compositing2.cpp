@@ -32,6 +32,7 @@ void force_comp_op_link()
     // For unknown reason Digital Mars C++ doesn't want to link these 
     // functions if they are not specified explicitly. 
     agg::int8u p[4] = {0};
+    agg::comp_op_rgba_invert     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_darken     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_lighten    <color, order>::blend_pix(p,0,0,0,0,0);
@@ -135,6 +136,7 @@ public:
         m_comp_op.add_item("difference");
         m_comp_op.add_item("exclusion");
         m_comp_op.add_item("contrast");
+        m_comp_op.add_item("invert");
         m_comp_op.cur_item(3);
         add_ctrl(m_comp_op);
     }

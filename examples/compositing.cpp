@@ -32,6 +32,7 @@ void force_comp_op_link()
     // For unknown reason Digital Mars C++ doesn't want to link these 
     // functions if they are not specified explicitly. 
     agg::int8u p[4] = {0};
+    agg::comp_op_rgba_invert     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_darken     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_lighten    <color, order>::blend_pix(p,0,0,0,0,0);
@@ -159,7 +160,7 @@ void circle(RenBase& rbase, color c1, color c2,
 
 
 template<class RenBase> 
-void dst_shape(RenBase& rbase, color c1, color c2, 
+void src_shape(RenBase& rbase, color c1, color c2, 
                double x1, double y1, double x2, double y2)
 {
     typedef RenBase renderer_base_type;
@@ -211,11 +212,11 @@ public:
         m_comp_op(420, 5.0, 420+170.0, 395.0, !flip_y)
     {
         m_alpha_src.label("Src Alpha=%.2f");
-        m_alpha_src.value(1.0);
+        m_alpha_src.value(0.75);
         add_ctrl(m_alpha_src);
 
         m_alpha_dst.label("Dst Alpha=%.2f");
-        m_alpha_dst.value(0.75);
+        m_alpha_dst.value(1.0);
         add_ctrl(m_alpha_dst);
 
         m_comp_op.text_size(7);
@@ -245,6 +246,7 @@ public:
         m_comp_op.add_item("difference");
         m_comp_op.add_item("exclusion");
         m_comp_op.add_item("contrast");
+        m_comp_op.add_item("invert");
         m_comp_op.cur_item(3);
         add_ctrl(m_comp_op);
     }
@@ -271,30 +273,37 @@ public:
 
         rb.blend_from(prim_pixfmt_type(rbuf_img(1)), 
                       0, 250, 180, 
-                      unsigned(m_alpha_src.value() * 255));
+                      unsigned(m_alpha_dst.value() * 255));
 
         circle(rb, 
-               agg::rgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_src.value() * 255)), 
-               agg::rgba8(0xFE, 0x9F, 0x34, unsigned(m_alpha_src.value() * 255)),
+               agg::rgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_dst.value() * 255)), 
+               agg::rgba8(0xFE, 0x9F, 0x34, unsigned(m_alpha_dst.value() * 255)),
                70*3, 100+24*3, 37*3, 100+79*3,
-               m_alpha_src.value());
+               m_alpha_dst.value());
 
         ren_pixf.comp_op(m_comp_op.cur_item());
 
         if(m_comp_op.cur_item() == 25) // Contrast
         {
-            double v = m_alpha_dst.value();
-            dst_shape(renderer, 
+            double v = m_alpha_src.value();
+            src_shape(renderer, 
                       agg::rgba(v, v, v), 
                       agg::rgba(v, v, v),
                       300+50, 100+24*3, 107+50, 100+79*3);
         }
         else
         {
-            dst_shape(renderer, 
-                      agg::rgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_dst.value() * 255)), 
-                      agg::rgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_dst.value() * 255)),
+
+            src_shape(renderer, 
+                      agg::rgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                      agg::rgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_src.value() * 255)),
                       300+50, 100+24*3, 107+50, 100+79*3);
+/*
+            src_shape(renderer, 
+                      agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                      agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)),
+                      300+50, 100+24*3, 107+50, 100+79*3);
+*/
         }
     }
 
@@ -320,6 +329,7 @@ public:
         prim_pixfmt_type pixf2(rbuf_img(0));
         prim_ren_base_type rb2(pixf2);
         rb2.clear(agg::rgba8(0,0,0,0));
+        //rb2.clear(agg::rgba8(255,255,255,255));
 
         typedef agg::blender_rgba_pre<color, order> blender_type_pre; 
         typedef agg::pixfmt_alpha_blend_rgba<blender_type_pre, rbuf_type, pixel_type> pixfmt_pre;
