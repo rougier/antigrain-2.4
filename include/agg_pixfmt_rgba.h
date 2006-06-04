@@ -1326,7 +1326,43 @@ namespace agg
             base_mask  = color_type::base_mask
         };
 
-        // Dca' = Sca + Dca - 2.min(Sca.Da, Dca.Sa)
+        // Dca' = (Da - Dca) * Sa + Dca.(1 - Sa)
+        // Da'  = Sa + Da - Sa.Da 
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned sr, unsigned sg, unsigned sb, 
+                                         unsigned sa, unsigned cover)
+        {
+            sa = (sa * cover + 255) >> 8;
+            if(sa)
+            {
+                calc_type da = p[Order::A];
+                calc_type dr = ((da - p[Order::R]) * sa + base_mask) >> base_shift;
+                calc_type dg = ((da - p[Order::G]) * sa + base_mask) >> base_shift;
+                calc_type db = ((da - p[Order::B]) * sa + base_mask) >> base_shift;
+                calc_type s1a = base_mask - sa;
+                p[Order::R] = (value_type)(dr + ((p[Order::R] * s1a + base_mask) >> base_shift));
+                p[Order::G] = (value_type)(dg + ((p[Order::G] * s1a + base_mask) >> base_shift));
+                p[Order::B] = (value_type)(db + ((p[Order::B] * s1a + base_mask) >> base_shift));
+                p[Order::A] = (value_type)(sa + da - ((sa * da + base_mask) >> base_shift));
+            }
+        }
+    };
+
+    //=================================================comp_op_rgba_invert_rgb
+    template<class ColorT, class Order> struct comp_op_rgba_invert_rgb
+    {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+        enum base_scale_e
+        { 
+            base_shift = color_type::base_shift,
+            base_mask  = color_type::base_mask
+        };
+
+        // Dca' = (Da - Dca) * Sca + Dca.(1 - Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
                                          unsigned sr, unsigned sg, unsigned sb, 
@@ -1353,9 +1389,6 @@ namespace agg
             }
         }
     };
-
-
-
 
 
 
@@ -1406,6 +1439,7 @@ namespace agg
         comp_op_rgba_exclusion  <ColorT,Order>::blend_pix,
         comp_op_rgba_contrast   <ColorT,Order>::blend_pix,
         comp_op_rgba_invert     <ColorT,Order>::blend_pix,
+        comp_op_rgba_invert_rgb <ColorT,Order>::blend_pix,
         0
     };
 
@@ -1440,6 +1474,7 @@ namespace agg
         comp_op_exclusion,     //----comp_op_exclusion
         comp_op_contrast,      //----comp_op_contrast
         comp_op_invert,        //----comp_op_invert
+        comp_op_invert_rgb,    //----comp_op_invert_rgb
 
         end_of_comp_op_e
     };
