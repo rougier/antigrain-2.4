@@ -237,32 +237,32 @@ clean:
 agg.bmp:
 	@echo "Required file missing!!"
 	@echo "Please download http://www.antigrain.com/agg.bmp to /examples/macosx_carbon/"
-	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/agg.bmp
+	@echo "Attempting to retrieve via curl: (will fail if curl is not installed)"
+	curl -O http://www.antigrain.com/agg.bmp
 
 compositing.bmp:
 	@echo "Required file missing!!"
 	@echo "Please download http://www.antigrain.com/compositing.bmp to /examples/macosx_carbon/"
-	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/compositing.bmp
+	@echo "Attempting to retrieve via curl: (will fail if curl is not installed)"
+	curl -O http://www.antigrain.com/compositing.bmp
 
 spheres.bmp:
 	@echo "Required file missing!!"
 	@echo "Please download http://www.antigrain.com/spheres.bmp to /examples/macosx_carbon/"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/spheres.bmp
+	@echo "Attempting to retrieve file: (will fail if curl is not installed)"
+	curl -O http://www.antigrain.com/spheres.bmp
 
 1.sdf:
 	@echo "Required file missing!!"
 	@echo "Please download http://www.antigrain.com/1.sdf to /examples/macosx_carbon/"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/1.sdf
+	@echo "Attempting to retrieve file: (will fail if curl is not installed)"
+	curl -O http://www.antigrain.com/1.sdf
 
 1.bmp:
 	@echo "Required file missing!!"
 	@echo "Please download http://www.antigrain.com/line_patterns.bmp.zip to /examples/macosx_carbon/ and decoompress it"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/line_patterns.bmp.zip
+	@echo "Attempting to retrieve file: (will fail if curl is not installed)"
+	curl -O http://www.antigrain.com/line_patterns.bmp.zip
 	unzip -o line_patterns.bmp.zip
 
 %.app:
