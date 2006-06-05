@@ -490,7 +490,8 @@ pascal void DoPeriodicTask (EventLoopTimerRef theTimer, void* userData);
 		Str255 p_msg;
 		
 		::CopyCStringToPascal (msg, p_msg);
-		::StandardAlert (kAlertPlainAlert, (const unsigned char*) "\pAGG Message", p_msg, NULL, &item);
+		::StandardAlert (kAlertPlainAlert, (const unsigned char*) "\013AGG Message", p_msg, NULL, &item);
+		//::StandardAlert (kAlertPlainAlert, (const unsigned char*) "\pAGG Message", p_msg, NULL, &item);
     }
 
 

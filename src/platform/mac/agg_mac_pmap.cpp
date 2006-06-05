@@ -155,8 +155,8 @@ namespace agg
     void pixel_map::draw(WindowRef window, int x, int y, double scale) const
     {
         if(m_pmap == nil || m_buf == NULL) return;
-        unsigned width  = this->width() * scale;
-        unsigned height = this->height() * scale;
+        unsigned width  = (unsigned)(this->width() * scale);
+        unsigned height = (unsigned)(this->height() * scale);
         Rect rect;
         SetRect (&rect, x, y, x + width, y + height);
         draw(window, &rect);
