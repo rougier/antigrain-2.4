@@ -3,6 +3,6 @@ AGGCXXFLAGS = -O3 -I/Library/Frameworks/SDL.framework/Headers -L/usr/lib
 CXX = g++
 C = gcc
 #CXX = icc
-LIB = ar cr
+LIB = ar cr -s
 
 .PHONY : clean
