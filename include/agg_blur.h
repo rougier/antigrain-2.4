@@ -43,6 +43,8 @@ namespace agg
         //--------------------------------------------------------------------
         template<class Img> void blur_x(Img& img, unsigned radius)
         {
+            if(radius < 1) return;
+
             unsigned x, y, xp, i;
             unsigned stack_ptr;
             unsigned stack_start;
@@ -202,12 +204,12 @@ namespace agg
         typedef T value_type;
         value_type r,g,b,a;
 
-        void clear() 
+        AGG_INLINE void clear() 
         { 
             r = g = b = a = 0; 
         }
 
-        template<class ArgT> void add(ArgT& v)
+        template<class ArgT> AGG_INLINE void add(ArgT& v)
         {
             r += v.r;
             g += v.g;
@@ -215,7 +217,7 @@ namespace agg
             a += v.a;
         }
 
-        template<class ArgT> void add(ArgT& v, unsigned k)
+        template<class ArgT> AGG_INLINE void add(ArgT& v, unsigned k)
         {
             r += v.r * k;
             g += v.g * k;
@@ -223,7 +225,7 @@ namespace agg
             a += v.a * k;
         }
 
-        template<class ArgT> void sub(ArgT& v)
+        template<class ArgT> AGG_INLINE void sub(ArgT& v)
         {
             r -= v.r;
             g -= v.g;
@@ -231,7 +233,7 @@ namespace agg
             a -= v.a;
         }
 
-        template<class ArgT> void calc_pix(ArgT& v, unsigned div)
+        template<class ArgT> AGG_INLINE void calc_pix(ArgT& v, unsigned div)
         {
             typedef typename ArgT::value_type value_type;
             v.r = value_type(r / div);
@@ -240,7 +242,8 @@ namespace agg
             v.a = value_type(a / div);
         }
 
-        template<class ArgT> void calc_pix(ArgT& v, unsigned mul, unsigned shr)
+        template<class ArgT> 
+        AGG_INLINE void calc_pix(ArgT& v, unsigned mul, unsigned shr)
         {
             typedef typename ArgT::value_type value_type;
             v.r = value_type((r * mul) >> shr);
@@ -251,8 +254,325 @@ namespace agg
     };
 
 
+    //=========================================================stack_blur_rgb
+    template<class T=unsigned> struct stack_blur_rgb
+    {
+        typedef T value_type;
+        value_type r,g,b;
+
+        AGG_INLINE void clear() 
+        { 
+            r = g = b = 0; 
+        }
+
+        template<class ArgT> AGG_INLINE void add(ArgT& v)
+        {
+            r += v.r;
+            g += v.g;
+            b += v.b;
+        }
+
+        template<class ArgT> AGG_INLINE void add(ArgT& v, unsigned k)
+        {
+            r += v.r * k;
+            g += v.g * k;
+            b += v.b * k;
+        }
+
+        template<class ArgT> AGG_INLINE void sub(ArgT& v)
+        {
+            r -= v.r;
+            g -= v.g;
+            b -= v.b;
+        }
+
+        template<class ArgT> AGG_INLINE void calc_pix(ArgT& v, unsigned div)
+        {
+            typedef typename ArgT::value_type value_type;
+            v.r = value_type(r / div);
+            v.g = value_type(g / div);
+            v.b = value_type(b / div);
+        }
+
+        template<class ArgT> 
+        AGG_INLINE void calc_pix(ArgT& v, unsigned mul, unsigned shr)
+        {
+            typedef typename ArgT::value_type value_type;
+            v.r = value_type((r * mul) >> shr);
+            v.g = value_type((g * mul) >> shr);
+            v.b = value_type((b * mul) >> shr);
+        }
+    };
 
 
+    //========================================================stack_blur_gray
+    template<class T=unsigned> struct stack_blur_gray
+    {
+        typedef T value_type;
+        value_type v;
+
+        AGG_INLINE void clear() 
+        { 
+            v = 0; 
+        }
+
+        template<class ArgT> AGG_INLINE void add(ArgT& v)
+        {
+            v += v.v;
+        }
+
+        template<class ArgT> AGG_INLINE void add(ArgT& v, unsigned k)
+        {
+            v += v.v * k;
+        }
+
+        template<class ArgT> AGG_INLINE void sub(ArgT& v)
+        {
+            v -= v.v;
+        }
+
+        template<class ArgT> AGG_INLINE void calc_pix(ArgT& v, unsigned div)
+        {
+            typedef typename ArgT::value_type value_type;
+            v.v = value_type(v / div);
+        }
+
+        template<class ArgT> 
+        AGG_INLINE void calc_pix(ArgT& v, unsigned mul, unsigned shr)
+        {
+            typedef typename ArgT::value_type value_type;
+            v.v = value_type((v * mul) >> shr);
+        }
+    };
+
+
+
+
+
+    //===========================================================recursive_blur
+    template<class ColorT, class AccumulatorT> class recursive_blur
+    {
+    public:
+        typedef ColorT color_type;
+        typedef AccumulatorT accumulator_type;
+        typedef color_type::value_type value_type;
+        typedef typename accumulator_type::value_type calc_type;
+
+        //--------------------------------------------------------------------
+        template<class Img> void blur_x(Img& img, double radius)
+        {
+            if(radius < 0.62) return;
+            if(img.width() < 3) return;
+
+            calc_type s = calc_type(radius * 0.5);
+            calc_type q = calc_type((s < 2.5) ?
+                                    3.97156 - 4.14554 * sqrt(1 - 0.26891 * s) :
+                                    0.98711 * s - 0.96330);
+
+            calc_type q2 = calc_type(q * q);
+            calc_type q3 = calc_type(q2 * q);
+
+            calc_type b0 = calc_type(1.0 / (1.578250 + 
+                                            2.444130 * q + 
+                                            1.428100 * q2 + 
+                                            0.422205 * q3));
+
+            calc_type b1 = calc_type( 2.44413 * q + 
+                                      2.85619 * q2 + 
+                                      1.26661 * q3);
+
+            calc_type b2 = calc_type(-1.42810 * q2 + 
+                                     -1.26661 * q3);
+
+            calc_type b3 = calc_type(0.422205 * q3);
+
+            calc_type b  = calc_type(1 - (b1 + b2 + b3) * b0);
+
+            b1 *= b0;
+            b2 *= b0;
+            b3 *= b0;
+
+            int w = img.width();
+            int h = img.height();
+            int wm = w-1;
+            int x, y;
+
+            m_sum1.allocate(w);
+            m_sum2.allocate(w);
+            m_buf.allocate(w);
+
+            for(y = 0; y < h; y++)
+            {
+                accumulator_type c;
+                c.from_pix(img.pixel(0, y));
+                m_sum1[0].calc(b, b1, b2, b3, c, c, c, c);
+                c.from_pix(img.pixel(1, y));
+                m_sum1[1].calc(b, b1, b2, b3, c, m_sum1[0], m_sum1[0], m_sum1[0]);
+                c.from_pix(img.pixel(2, y));
+                m_sum1[2].calc(b, b1, b2, b3, c, m_sum1[1], m_sum1[0], m_sum1[0]);
+
+                for(x = 3; x < w; ++x)
+                {
+                    c.from_pix(img.pixel(x, y));
+                    m_sum1[x].calc(b, b1, b2, b3, c, m_sum1[x-1], m_sum1[x-2], m_sum1[x-3]);
+                }
+    
+                m_sum2[wm  ].calc(b, b1, b2, b3, m_sum1[wm  ], m_sum1[wm  ], m_sum1[wm], m_sum1[wm]);
+                m_sum2[wm-1].calc(b, b1, b2, b3, m_sum1[wm-1], m_sum2[wm  ], m_sum2[wm], m_sum2[wm]);
+                m_sum2[wm-2].calc(b, b1, b2, b3, m_sum1[wm-2], m_sum2[wm-1], m_sum2[wm], m_sum2[wm]);
+                m_sum2[wm  ].to_pix(m_buf[wm  ]);
+                m_sum2[wm-1].to_pix(m_buf[wm-1]);
+                m_sum2[wm-2].to_pix(m_buf[wm-2]);
+
+                for(x = wm-3; x >= 0; --x)
+                {
+                    m_sum2[x].calc(b, b1, b2, b3, m_sum1[x], m_sum2[x+1], m_sum2[x+2], m_sum2[x+3]);
+                    m_sum2[x].to_pix(m_buf[x]);
+                }
+                img.copy_color_hspan(0, y, w, &m_buf[0]);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class Img> void blur_y(Img& img, double radius)
+        {
+            pixfmt_transposer<Img> img2(img);
+            blur_x(img2, radius);
+        }
+
+        //--------------------------------------------------------------------
+        template<class Img> void blur(Img& img, double radius)
+        {
+            blur_x(img, radius);
+            pixfmt_transposer<Img> img2(img);
+            blur_x(img2, radius);
+        }
+
+    private:
+        agg::pod_vector<accumulator_type> m_sum1;
+        agg::pod_vector<accumulator_type> m_sum2;
+        agg::pod_vector<color_type>       m_buf;
+    };
+
+
+    //=====================================================recursive_blur_rgba
+    template<class T=double> struct recursive_blur_rgba
+    {
+        typedef T value_type;
+        typedef recursive_blur_rgba<T> self_type;
+
+        value_type r,g,b,a;
+
+        template<class ColorT> 
+        AGG_INLINE void from_pix(const ColorT& c)
+        {
+            r = c.r;
+            g = c.g;
+            b = c.b;
+            a = c.a;
+        }
+
+        AGG_INLINE void calc(value_type b1, 
+                             value_type b2, 
+                             value_type b3, 
+                             value_type b4,
+                             const self_type& c1, 
+                             const self_type& c2, 
+                             const self_type& c3, 
+                             const self_type& c4)
+        {
+            r = b1*c1.r + b2*c2.r + b3*c3.r + b4*c4.r;
+            g = b1*c1.g + b2*c2.g + b3*c3.g + b4*c4.g;
+            b = b1*c1.b + b2*c2.b + b3*c3.b + b4*c4.b;
+            a = b1*c1.a + b2*c2.a + b3*c3.a + b4*c4.a;
+        }
+
+        template<class ColorT> 
+        AGG_INLINE void to_pix(ColorT& c) const
+        {
+            typedef typename ColorT::value_type cv_type;
+            c.r = (cv_type)uround(r);
+            c.g = (cv_type)uround(g);
+            c.b = (cv_type)uround(b);
+            c.a = (cv_type)uround(a);
+        }
+    };
+
+
+    //======================================================recursive_blur_rgb
+    template<class T=double> struct recursive_blur_rgb
+    {
+        typedef T value_type;
+        typedef recursive_blur_rgb<T> self_type;
+
+        value_type r,g,b;
+
+        template<class ColorT> 
+        AGG_INLINE void from_pix(const ColorT& c)
+        {
+            r = c.r;
+            g = c.g;
+            b = c.b;
+        }
+
+        AGG_INLINE void calc(value_type b1, 
+                             value_type b2, 
+                             value_type b3, 
+                             value_type b4,
+                             const self_type& c1, 
+                             const self_type& c2, 
+                             const self_type& c3, 
+                             const self_type& c4)
+        {
+            r = b1*c1.r + b2*c2.r + b3*c3.r + b4*c4.r;
+            g = b1*c1.g + b2*c2.g + b3*c3.g + b4*c4.g;
+            b = b1*c1.b + b2*c2.b + b3*c3.b + b4*c4.b;
+        }
+
+        template<class ColorT> 
+        AGG_INLINE void to_pix(ColorT& c) const
+        {
+            typedef typename ColorT::value_type cv_type;
+            c.r = (cv_type)uround(r);
+            c.g = (cv_type)uround(g);
+            c.b = (cv_type)uround(b);
+        }
+    };
+
+
+    //=====================================================recursive_blur_gray
+    template<class T=double> struct recursive_blur_gray
+    {
+        typedef T value_type;
+        typedef recursive_blur_gray<T> self_type;
+
+        value_type v;
+
+        template<class ColorT> 
+        AGG_INLINE void from_pix(const ColorT& c)
+        {
+            v = c.v;
+        }
+
+        AGG_INLINE void calc(value_type b1, 
+                             value_type b2, 
+                             value_type b3, 
+                             value_type b4,
+                             const self_type& c1, 
+                             const self_type& c2, 
+                             const self_type& c3, 
+                             const self_type& c4)
+        {
+            v = b1*c1.v + b2*c2.v + b3*c3.v + b4*c4.v;
+        }
+
+        template<class ColorT> 
+        AGG_INLINE void to_pix(ColorT& c) const
+        {
+            typedef typename ColorT::value_type cv_type;
+            c.v = (cv_type)uround(v);
+        }
+    };
 
 }
 
