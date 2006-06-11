@@ -128,7 +128,9 @@ namespace agg
             base_shift = color_type::base_shift,
             base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask,
-            pix_width  = sizeof(value_type)
+            pix_width  = sizeof(value_type),
+            pix_step   = Step,
+            pix_offset = Offset
         };
 
     private:
@@ -175,27 +177,41 @@ namespace agg
             m_rbuf(&rb)
         {}
         void attach(rbuf_type& rb) { m_rbuf = &rb; }
+        //--------------------------------------------------------------------
+
+        template<class PixFmt>
+        bool attach(PixFmt& pixf, int x1, int y1, int x2, int y2)
+        {
+            rect_i r(x1, y1, x2, y2);
+            if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
+            {
+                m_rbuf->attach(pixf.pix_ptr(r.x1, r.y1), 
+                               (r.x2 - r.x1) + 1,
+                               (r.y2 - r.y1) + 1,
+                               pixf.stride());
+                return true;
+            }
+            return false;
+        }
 
         //--------------------------------------------------------------------
         AGG_INLINE unsigned width()  const { return m_rbuf->width();  }
         AGG_INLINE unsigned height() const { return m_rbuf->height(); }
+        AGG_INLINE int      stride() const { return m_rbuf->stride(); }
 
         //--------------------------------------------------------------------
-        const int8u* row_ptr(int y) const
-        {
-            return m_rbuf->row_ptr(y);
-        }
+              int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
+        const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
+        row_data     row(int y)     const { return m_rbuf->row(y); }
 
-        //--------------------------------------------------------------------
         const int8u* pix_ptr(int x, int y) const
         {
-            return m_rbuf->row_ptr(y) + x * pix_width;
+            return m_rbuf->row_ptr(y) + x * Step + Offset;
         }
 
-        //--------------------------------------------------------------------
-        row_data row(int y) const
+        int8u* pix_ptr(int x, int y)
         {
-            return m_rbuf->row(y);
+            return m_rbuf->row_ptr(y) + x * Step + Offset;
         }
 
         //--------------------------------------------------------------------
@@ -207,7 +223,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE color_type pixel(int x, int y) const
         {
-            value_type* p = (value_type*)m_rbuf->row(y) + x * Step + Offset;
+            value_type* p = (value_type*)m_rbuf->row_ptr(y) + x * Step + Offset;
             return color_type(*p);
         }
 
@@ -400,7 +416,8 @@ namespace agg
 
             do 
             {
-                *p++ = colors->v;
+                *p = colors->v;
+                p += Step;
                 ++colors;
             }
             while(--len);

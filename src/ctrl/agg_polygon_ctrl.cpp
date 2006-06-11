@@ -33,7 +33,8 @@ namespace agg
         m_point_radius(point_radius),
         m_status(0),
         m_dx(0.0),
-        m_dy(0.0)
+        m_dy(0.0),
+        m_in_polygon_check(true)
     {
         m_stroke.width(1.0);
     }

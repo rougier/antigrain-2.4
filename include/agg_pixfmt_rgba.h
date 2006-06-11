@@ -1774,26 +1774,41 @@ namespace agg
         void attach(rbuf_type& rb) { m_rbuf = &rb; }
 
         //--------------------------------------------------------------------
-        AGG_INLINE unsigned width()  const { return m_rbuf->width();  }
-        AGG_INLINE unsigned height() const { return m_rbuf->height(); }
-
-        //--------------------------------------------------------------------
-        const int8u* row_ptr(int y) const
+        template<class PixFmt>
+        bool attach(PixFmt& pixf, int x1, int y1, int x2, int y2)
         {
-            return m_rbuf->row_ptr(y);
+            rect_i r(x1, y1, x2, y2);
+            if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
+            {
+                m_rbuf->attach(pixf.pix_ptr(r.x1, r.y1), 
+                               (r.x2 - r.x1) + 1,
+                               (r.y2 - r.y1) + 1,
+                               pixf.stride());
+                return true;
+            }
+            return false;
         }
 
         //--------------------------------------------------------------------
+        AGG_INLINE unsigned width()  const { return m_rbuf->width();  }
+        AGG_INLINE unsigned height() const { return m_rbuf->height(); }
+        AGG_INLINE int      stride() const { return m_rbuf->stride(); }
+
+        //--------------------------------------------------------------------
+              int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
+        const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
+        row_data     row(int y)     const { return m_rbuf->row(y); }
+
+        //--------------------------------------------------------------------
+        int8u* pix_ptr(int x, int y)
+        {
+            return m_rbuf->row_ptr(y) + x * pix_width;
+        }
         const int8u* pix_ptr(int x, int y) const
         {
             return m_rbuf->row_ptr(y) + x * pix_width;
         }
 
-        //--------------------------------------------------------------------
-        row_data row(int y) const
-        {
-            return m_rbuf->row(y);
-        }
 
         //--------------------------------------------------------------------
         AGG_INLINE static void make_pix(int8u* p, const color_type& c)
@@ -2342,29 +2357,44 @@ namespace agg
         void attach(rbuf_type& rb) { m_rbuf = &rb; }
 
         //--------------------------------------------------------------------
-        unsigned width()  const { return m_rbuf->width();  }
-        unsigned height() const { return m_rbuf->height(); }
+        template<class PixFmt>
+        bool attach(PixFmt& pixf, int x1, int y1, int x2, int y2)
+        {
+            rect_i r(x1, y1, x2, y2);
+            if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
+            {
+                m_rbuf->attach(pixf.pix_ptr(r.x1, r.y1), 
+                               (r.x2 - r.x1) + 1,
+                               (r.y2 - r.y1) + 1,
+                               pixf.stride());
+                return true;
+            }
+            return false;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE unsigned width()  const { return m_rbuf->width();  }
+        AGG_INLINE unsigned height() const { return m_rbuf->height(); }
+        AGG_INLINE int      stride() const { return m_rbuf->stride(); }
 
         //--------------------------------------------------------------------
         void comp_op(unsigned op) { m_comp_op = op; }
         unsigned comp_op() const  { return m_comp_op; }
 
         //--------------------------------------------------------------------
-        const int8u* row_ptr(int y) const
-        {
-            return m_rbuf->row_ptr(y);
-        }
+              int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
+        const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
+        row_data     row(int y)     const { return m_rbuf->row(y); }
 
         //--------------------------------------------------------------------
-        const int8u* pix_ptr(int x, int y) const
+        int8u* pix_ptr(int x, int y)
         {
             return m_rbuf->row_ptr(y) + x * pix_width;
         }
 
-        //--------------------------------------------------------------------
-        row_data row(int y) const
+        const int8u* pix_ptr(int x, int y) const
         {
-            return m_rbuf->row(y);
+            return m_rbuf->row_ptr(y) + x * pix_width;
         }
 
         //--------------------------------------------------------------------
