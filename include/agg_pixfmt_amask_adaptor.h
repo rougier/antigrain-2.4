@@ -172,6 +172,13 @@ namespace agg
             m_pixf->blend_color_hspan(x, y, len, colors, &m_span[0], cover_full);
         }
 
+        //--------------------------------------------------------------------
+        void copy_color_vspan(int x, int y, unsigned len, const color_type* colors)
+        {
+            realloc_span(len);
+            m_mask->fill_vspan(x, y, &m_span[0], len);
+            m_pixf->blend_color_vspan(x, y, len, colors, &m_span[0], cover_full);
+        }
 
         //--------------------------------------------------------------------
         void blend_color_hspan(int x, int y,
