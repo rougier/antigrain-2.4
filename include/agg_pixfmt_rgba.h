@@ -1780,10 +1780,11 @@ namespace agg
             rect_i r(x1, y1, x2, y2);
             if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
             {
-                m_rbuf->attach(pixf.pix_ptr(r.x1, r.y1), 
+                int stride = pixf.stride();
+                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1), 
                                (r.x2 - r.x1) + 1,
                                (r.y2 - r.y1) + 1,
-                               pixf.stride());
+                               stride);
                 return true;
             }
             return false;
@@ -2364,10 +2365,11 @@ namespace agg
             rect_i r(x1, y1, x2, y2);
             if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
             {
-                m_rbuf->attach(pixf.pix_ptr(r.x1, r.y1), 
+                int stride = pixf.stride();
+                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1), 
                                (r.x2 - r.x1) + 1,
                                (r.y2 - r.y1) + 1,
-                               pixf.stride());
+                               stride);
                 return true;
             }
             return false;

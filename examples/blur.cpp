@@ -55,9 +55,9 @@ public:
         m_method     (10.0, 10.0, 130.0, 70.0, !flip_y),
         m_radius     (130 + 10.0, 10.0 + 4.0, 130 + 300.0, 10.0 + 8.0 + 4.0, !flip_y),
         m_shadow_ctrl(4),
-        m_channel_r  (10.0, 80.0,  "Red"),
-        m_channel_g  (10.0, 95.0,  "Green"),
-        m_channel_b  (10.0, 110.0, "Blue"),
+        m_channel_r  (10.0, 80.0,  "Red", !flip_y),
+        m_channel_g  (10.0, 95.0,  "Green", !flip_y),
+        m_channel_b  (10.0, 110.0, "Blue", !flip_y),
         m_shape_trans(m_path, m_shape_mtx),
         m_shape(m_shape_trans)
     {
