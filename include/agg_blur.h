@@ -1067,7 +1067,7 @@ namespace agg
     public:
         typedef ColorT color_type;
         typedef CalculatorT calculator_type;
-        typedef color_type::value_type value_type;
+        typedef typename color_type::value_type value_type;
         typedef typename calculator_type::value_type calc_type;
 
         //--------------------------------------------------------------------

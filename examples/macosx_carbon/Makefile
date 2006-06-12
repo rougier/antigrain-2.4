@@ -24,6 +24,7 @@ all:
 	make alpha_mask2
 	make alpha_mask3
 	make bezier_div
+	make blur
 	make bspline
 	make circles
 	make component_rendering
@@ -46,6 +47,7 @@ all:
 	make raster_text
 	make rasterizers
 	make rasterizers2
+	make rasterizer_compound
 	make rounded_rect
 	make scanline_boolean
 	make scanline_boolean2
@@ -85,6 +87,9 @@ alpha_mask3: ../alpha_mask3.o ../make_arrows.o ../make_gb_poly.o $(PLATFORMSOURC
 
 bezier_div: ../bezier_div.o ../interactive_polygon.o $(PLATFORMSOURCES)  bezier_div.app
 	$(CXX) $(CXXFLAGS) ../bezier_div.o ../interactive_polygon.o $(PLATFORMSOURCES) -o bezier_div.app/Contents/MacOS/bezier_div $(LIBS)
+
+blur: ../blur.o $(PLATFORMSOURCES) blur.app
+	$(CXX) $(CXXFLAGS) ../blur.o $(PLATFORMSOURCES) -o blur.app/Contents/MacOS/blur $(LIBS)
 
 bspline: ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES) bspline.app
 	$(CXX) $(CXXFLAGS) ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES) -o bspline.app/Contents/MacOS/bspline $(LIBS)
@@ -211,6 +216,9 @@ rasterizers: ../rasterizers.o $(PLATFORMSOURCES) rasterizers.app
 
 rasterizers2: ../rasterizers2.o $(PLATFORMSOURCES) rasterizers2.app
 	$(CXX) $(CXXFLAGS) ../rasterizers2.o $(PLATFORMSOURCES) -o rasterizers2.app/Contents/MacOS/rasterizers2 $(LIBS)
+
+rasterizer_compound: ../rasterizer_compound.o $(PLATFORMSOURCES) rasterizer_compound.app
+	$(CXX) $(CXXFLAGS) ../rasterizer_compound.o $(PLATFORMSOURCES) -o rasterizer_compound.app/Contents/MacOS/rasterizer_compound $(LIBS)
 
 rounded_rect: ../rounded_rect.o $(PLATFORMSOURCES) rounded_rect.app
 	$(CXX) $(CXXFLAGS) ../rounded_rect.o $(PLATFORMSOURCES) -o rounded_rect.app/Contents/MacOS/rounded_rect $(LIBS)

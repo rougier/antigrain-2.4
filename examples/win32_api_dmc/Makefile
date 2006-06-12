@@ -18,6 +18,7 @@ all: aa_demo.exe \
      alpha_mask2.exe \
      alpha_mask3.exe \
      bezier_div.exe \
+     blur.exe \
      bspline.exe \
      circles.exe \
      component_rendering.exe \
@@ -60,6 +61,7 @@ all: aa_demo.exe \
      polymorphic_renderer.exe \
      rasterizers.exe \
      rasterizers2.exe \
+     rasterizer_compound.exe \
      raster_text.exe \
      rounded_rect.exe \
      scanline_boolean.exe \
@@ -110,6 +112,12 @@ bezier_div.exe: bezier_div.obj agg.lib
 	$(LINK) $**
 
 bezier_div.obj: ..\bezier_div.cpp
+	$(CXX) $** -o$@
+
+blur.exe: blur.obj agg.lib
+	$(LINK) $**
+
+blur.obj: ..\blur.cpp
 	$(CXX) $** -o$@
 
 bspline.exe: bspline.obj interactive_polygon.obj agg.lib
@@ -362,6 +370,12 @@ rasterizers2.exe: rasterizers2.obj agg.lib
 	$(LINK) $**
 
 rasterizers2.obj: ..\rasterizers2.cpp
+	$(CXX) $** -o$@
+
+rasterizer_compound.exe: rasterizer_compound.obj agg.lib
+	$(LINK) $**
+
+rasterizer_compound.obj: ..\rasterizer_compound.cpp
 	$(CXX) $** -o$@
 
 raster_text.exe: raster_text.obj agg.lib

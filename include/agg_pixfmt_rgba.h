@@ -1795,16 +1795,17 @@ namespace agg
         AGG_INLINE int      stride() const { return m_rbuf->stride(); }
 
         //--------------------------------------------------------------------
-              int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
-        const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
-        row_data     row(int y)     const { return m_rbuf->row(y); }
+        AGG_INLINE       int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
+        AGG_INLINE const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
+        AGG_INLINE row_data     row(int y)     const { return m_rbuf->row(y); }
 
         //--------------------------------------------------------------------
-        int8u* pix_ptr(int x, int y)
+        AGG_INLINE int8u* pix_ptr(int x, int y)
         {
             return m_rbuf->row_ptr(y) + x * pix_width;
         }
-        const int8u* pix_ptr(int x, int y) const
+
+        AGG_INLINE const int8u* pix_ptr(int x, int y) const
         {
             return m_rbuf->row_ptr(y) + x * pix_width;
         }
@@ -2378,24 +2379,24 @@ namespace agg
         AGG_INLINE int      stride() const { return m_rbuf->stride(); }
 
         //--------------------------------------------------------------------
+        AGG_INLINE       int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
+        AGG_INLINE const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
+        AGG_INLINE row_data     row(int y)     const { return m_rbuf->row(y); }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE int8u* pix_ptr(int x, int y)
+        {
+            return m_rbuf->row_ptr(y) + x * pix_width;
+        }
+
+        AGG_INLINE const int8u* pix_ptr(int x, int y) const
+        {
+            return m_rbuf->row_ptr(y) + x * pix_width;
+        }
+
+        //--------------------------------------------------------------------
         void comp_op(unsigned op) { m_comp_op = op; }
         unsigned comp_op() const  { return m_comp_op; }
-
-        //--------------------------------------------------------------------
-              int8u* row_ptr(int y)       { return m_rbuf->row_ptr(y); }
-        const int8u* row_ptr(int y) const { return m_rbuf->row_ptr(y); }
-        row_data     row(int y)     const { return m_rbuf->row(y); }
-
-        //--------------------------------------------------------------------
-        int8u* pix_ptr(int x, int y)
-        {
-            return m_rbuf->row_ptr(y) + x * pix_width;
-        }
-
-        const int8u* pix_ptr(int x, int y) const
-        {
-            return m_rbuf->row_ptr(y) + x * pix_width;
-        }
 
         //--------------------------------------------------------------------
         AGG_INLINE static void make_pix(int8u* p, const color_type& c)

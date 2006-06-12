@@ -39,7 +39,6 @@ namespace agg
         AGG_INLINE unsigned width()  const { return m_pixf->height();  }
         AGG_INLINE unsigned height() const { return m_pixf->width(); }
 
-
         //--------------------------------------------------------------------
         AGG_INLINE color_type pixel(int x, int y) const
         {

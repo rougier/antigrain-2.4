@@ -27,6 +27,7 @@ base:
 	make alpha_mask2
 	make alpha_mask3
 	make bezier_div
+	make blur
 	make bspline
 	make circles
 	make component_rendering
@@ -53,6 +54,7 @@ base:
 	make raster_text
 	make rasterizers
 	make rasterizers2
+	make rasterizer_compound
 	make rounded_rect
 	make scanline_boolean
 	make scanline_boolean2
@@ -107,6 +109,9 @@ alpha_mask3: ../alpha_mask3.o ../make_arrows.o ../make_gb_poly.o $(PLATFORMSOURC
 	
 bezier_div: ../bezier_div.o ../interactive_polygon.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o bezier_div $(LIBS)
+
+blur: ../blur.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o blur $(LIBS)
 
 bspline: ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o bspline $(LIBS)
@@ -230,6 +235,9 @@ rasterizers: ../rasterizers.o $(PLATFORMSOURCES)
 
 rasterizers2: ../rasterizers2.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o rasterizers2 $(LIBS)
+
+rasterizer_compound: ../rasterizer_compound.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o rasterizer_compound $(LIBS)
 
 rounded_rect: ../rounded_rect.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o rounded_rect $(LIBS)

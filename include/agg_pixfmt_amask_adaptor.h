@@ -67,6 +67,13 @@ namespace agg
         void attach_alpha_mask(const amask_type& mask) { m_mask = &mask; }
 
         //--------------------------------------------------------------------
+        template<class PixFmt>
+        bool attach_pixfmt(PixFmt& pixf, int x1, int y1, int x2, int y2)
+        {
+            return m_pixf->attach(pixf, x1, y1, x2, y2);
+        }
+
+        //--------------------------------------------------------------------
         unsigned width()  const { return m_pixf->width();  }
         unsigned height() const { return m_pixf->height(); }
 
