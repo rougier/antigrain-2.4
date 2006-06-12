@@ -18,20 +18,21 @@
 enum flip_y_e { flip_y = true };
 
 typedef agg::rgba8 color;
+typedef color::value_type value_type;
 typedef agg::order_bgra order;
 typedef agg::int32u pixel_type;
 typedef agg::rendering_buffer rbuf_type;
 #define pix_format agg::pix_format_bgra32
 
 typedef agg::blender_rgba<color, order> prim_blender_type; 
-typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, rbuf_type> prim_pixfmt_type;
+typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, rbuf_type, pixel_type> prim_pixfmt_type;
 typedef agg::renderer_base<prim_pixfmt_type> prim_ren_base_type;
 
 void force_comp_op_link()
 {
     // For unknown reason Digital Mars C++ doesn't want to link these 
     // functions if they are not specified explicitly. 
-    agg::int8u p[4] = {0};
+    value_type p[4] = {0};
     agg::comp_op_rgba_invert_rgb <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_invert     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
@@ -365,6 +366,7 @@ public:
         ras.add_path(pt);
         ren.color(agg::rgba(0,0,0));
         agg::render_scanlines(ras, sl, ren);
+
 
         agg::render_ctrl_rs(ras, sl, ren, m_alpha_src);
         agg::render_ctrl_rs(ras, sl, ren, m_alpha_dst);
