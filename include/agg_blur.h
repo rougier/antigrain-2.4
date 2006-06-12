@@ -86,11 +86,11 @@ namespace agg
 
 
     //==============================================================stack_blur
-    template<class ColorT, class AccumulatorT> class stack_blur
+    template<class ColorT, class CalculatorT> class stack_blur
     {
     public:
-        typedef ColorT       color_type;
-        typedef AccumulatorT accumulator_type;
+        typedef ColorT      color_type;
+        typedef CalculatorT calculator_type;
 
         //--------------------------------------------------------------------
         template<class Img> void blur_x(Img& img, unsigned radius)
@@ -101,11 +101,11 @@ namespace agg
             unsigned stack_ptr;
             unsigned stack_start;
 
-            color_type       pix;
-            color_type*      stack_pix;
-            accumulator_type sum;
-            accumulator_type sum_in;
-            accumulator_type sum_out;
+            color_type      pix;
+            color_type*     stack_pix;
+            calculator_type sum;
+            calculator_type sum_in;
+            calculator_type sum_out;
 
             unsigned w   = img.width();
             unsigned h   = img.height();
@@ -201,8 +201,8 @@ namespace agg
         pod_vector<color_type> m_stack;
     };
 
-    //=========================================================stack_blur_rgba
-    template<class T=unsigned> struct stack_blur_rgba
+    //====================================================stack_blur_calc_rgba
+    template<class T=unsigned> struct stack_blur_calc_rgba
     {
         typedef T value_type;
         value_type r,g,b,a;
@@ -257,8 +257,8 @@ namespace agg
     };
 
 
-    //=========================================================stack_blur_rgb
-    template<class T=unsigned> struct stack_blur_rgb
+    //=====================================================stack_blur_calc_rgb
+    template<class T=unsigned> struct stack_blur_calc_rgb
     {
         typedef T value_type;
         value_type r,g,b;
@@ -308,8 +308,8 @@ namespace agg
     };
 
 
-    //=========================================================stack_blur_gray
-    template<class T=unsigned> struct stack_blur_gray
+    //====================================================stack_blur_calc_gray
+    template<class T=unsigned> struct stack_blur_calc_gray
     {
         typedef T value_type;
         value_type v;
@@ -350,9 +350,9 @@ namespace agg
 
 
 
-    //===========================================================stack_blur_u8
+    //========================================================stack_blur_gray8
     template<class Img> 
-    void stack_blur_u8(Img& img, unsigned rx, unsigned ry)
+    void stack_blur_gray8(Img& img, unsigned rx, unsigned ry)
     {
         unsigned x, y, xp, yp, i;
         unsigned stack_ptr;
@@ -520,6 +520,13 @@ namespace agg
     void stack_blur_rgb24(Img& img, unsigned rx, unsigned ry)
     {
         typedef typename Img::color_type color_type;
+        typedef typename Img::order_type order_type;
+        enum order_e 
+        { 
+            R = order_type::R, 
+            G = order_type::G, 
+            B = order_type::B 
+        };
 
         unsigned x, y, xp, yp, i;
         unsigned stack_ptr;
@@ -574,29 +581,29 @@ namespace agg
                 for(i = 0; i <= rx; i++)
                 {
                     stack_pix_ptr    = &stack[i];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    sum_r           += src_pix_ptr[0] * (i + 1);
-                    sum_g           += src_pix_ptr[1] * (i + 1);
-                    sum_b           += src_pix_ptr[2] * (i + 1);
-                    sum_out_r       += src_pix_ptr[0];
-                    sum_out_g       += src_pix_ptr[1];
-                    sum_out_b       += src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    sum_r           += src_pix_ptr[R] * (i + 1);
+                    sum_g           += src_pix_ptr[G] * (i + 1);
+                    sum_b           += src_pix_ptr[B] * (i + 1);
+                    sum_out_r       += src_pix_ptr[R];
+                    sum_out_g       += src_pix_ptr[G];
+                    sum_out_b       += src_pix_ptr[B];
                 }
                 for(i = 1; i <= rx; i++)
                 {
                     if(i <= wm) src_pix_ptr += Img::pix_width; 
                     stack_pix_ptr = &stack[i + rx];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    sum_r           += src_pix_ptr[0] * (rx + 1 - i);
-                    sum_g           += src_pix_ptr[1] * (rx + 1 - i);
-                    sum_b           += src_pix_ptr[2] * (rx + 1 - i);
-                    sum_in_r        += src_pix_ptr[0];
-                    sum_in_g        += src_pix_ptr[1];
-                    sum_in_b        += src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    sum_r           += src_pix_ptr[R] * (rx + 1 - i);
+                    sum_g           += src_pix_ptr[G] * (rx + 1 - i);
+                    sum_b           += src_pix_ptr[B] * (rx + 1 - i);
+                    sum_in_r        += src_pix_ptr[R];
+                    sum_in_g        += src_pix_ptr[G];
+                    sum_in_b        += src_pix_ptr[B];
                 }
 
                 stack_ptr = rx;
@@ -606,10 +613,10 @@ namespace agg
                 dst_pix_ptr = img.pix_ptr(0, y);
                 for(x = 0; x < w; x++)
                 {
-                    dst_pix_ptr[0] = (sum_r * mul_sum) >> shr_sum;
-                    dst_pix_ptr[1] = (sum_g * mul_sum) >> shr_sum;
-                    dst_pix_ptr[2] = (sum_b * mul_sum) >> shr_sum;
-                    dst_pix_ptr Img::pix_width;
+                    dst_pix_ptr[R] = (sum_r * mul_sum) >> shr_sum;
+                    dst_pix_ptr[G] = (sum_g * mul_sum) >> shr_sum;
+                    dst_pix_ptr[B] = (sum_b * mul_sum) >> shr_sum;
+                    dst_pix_ptr   += Img::pix_width;
 
                     sum_r -= sum_out_r;
                     sum_g -= sum_out_g;
@@ -625,17 +632,17 @@ namespace agg
 
                     if(xp < wm) 
                     {
-                        src_pix_ptr Img::pix_width;
+                        src_pix_ptr += Img::pix_width;
                         ++xp;
                     }
         
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
         
-                    sum_in_r += src_pix_ptr[0];
-                    sum_in_g += src_pix_ptr[1];
-                    sum_in_b += src_pix_ptr[2];
+                    sum_in_r += src_pix_ptr[R];
+                    sum_in_g += src_pix_ptr[G];
+                    sum_in_b += src_pix_ptr[B];
                     sum_r    += sum_in_r;
                     sum_g    += sum_in_g;
                     sum_b    += sum_in_b;
@@ -679,29 +686,29 @@ namespace agg
                 for(i = 0; i <= ry; i++)
                 {
                     stack_pix_ptr    = &stack[i];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    sum_r           += src_pix_ptr[0] * (i + 1);
-                    sum_g           += src_pix_ptr[1] * (i + 1);
-                    sum_b           += src_pix_ptr[2] * (i + 1);
-                    sum_out_r       += src_pix_ptr[0];
-                    sum_out_g       += src_pix_ptr[1];
-                    sum_out_b       += src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    sum_r           += src_pix_ptr[R] * (i + 1);
+                    sum_g           += src_pix_ptr[G] * (i + 1);
+                    sum_b           += src_pix_ptr[B] * (i + 1);
+                    sum_out_r       += src_pix_ptr[R];
+                    sum_out_g       += src_pix_ptr[G];
+                    sum_out_b       += src_pix_ptr[B];
                 }
                 for(i = 1; i <= ry; i++)
                 {
                     if(i <= hm) src_pix_ptr += stride; 
                     stack_pix_ptr = &stack[i + ry];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    sum_r           += src_pix_ptr[0] * (ry + 1 - i);
-                    sum_g           += src_pix_ptr[1] * (ry + 1 - i);
-                    sum_b           += src_pix_ptr[2] * (ry + 1 - i);
-                    sum_in_r        += src_pix_ptr[0];
-                    sum_in_g        += src_pix_ptr[1];
-                    sum_in_b        += src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    sum_r           += src_pix_ptr[R] * (ry + 1 - i);
+                    sum_g           += src_pix_ptr[G] * (ry + 1 - i);
+                    sum_b           += src_pix_ptr[B] * (ry + 1 - i);
+                    sum_in_r        += src_pix_ptr[R];
+                    sum_in_g        += src_pix_ptr[G];
+                    sum_in_b        += src_pix_ptr[B];
                 }
 
                 stack_ptr = ry;
@@ -711,9 +718,9 @@ namespace agg
                 dst_pix_ptr = img.pix_ptr(x, 0);
                 for(y = 0; y < h; y++)
                 {
-                    dst_pix_ptr[0] = (sum_r * mul_sum) >> shr_sum;
-                    dst_pix_ptr[1] = (sum_g * mul_sum) >> shr_sum;
-                    dst_pix_ptr[2] = (sum_b * mul_sum) >> shr_sum;
+                    dst_pix_ptr[R] = (sum_r * mul_sum) >> shr_sum;
+                    dst_pix_ptr[G] = (sum_g * mul_sum) >> shr_sum;
+                    dst_pix_ptr[B] = (sum_b * mul_sum) >> shr_sum;
                     dst_pix_ptr += stride;
 
                     sum_r -= sum_out_r;
@@ -734,13 +741,13 @@ namespace agg
                         ++yp;
                     }
         
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
         
-                    sum_in_r += src_pix_ptr[0];
-                    sum_in_g += src_pix_ptr[1];
-                    sum_in_b += src_pix_ptr[2];
+                    sum_in_r += src_pix_ptr[R];
+                    sum_in_g += src_pix_ptr[G];
+                    sum_in_b += src_pix_ptr[B];
                     sum_r    += sum_in_r;
                     sum_g    += sum_in_g;
                     sum_b    += sum_in_b;
@@ -767,6 +774,14 @@ namespace agg
     void stack_blur_rgba32(Img& img, unsigned rx, unsigned ry)
     {
         typedef typename Img::color_type color_type;
+        typedef typename Img::order_type order_type;
+        enum order_e 
+        { 
+            R = order_type::R, 
+            G = order_type::G, 
+            B = order_type::B,
+            A = order_type::A 
+        };
 
         unsigned x, y, xp, yp, i;
         unsigned stack_ptr;
@@ -827,35 +842,35 @@ namespace agg
                 for(i = 0; i <= rx; i++)
                 {
                     stack_pix_ptr    = &stack[i];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
-                    sum_r           += src_pix_ptr[0] * (i + 1);
-                    sum_g           += src_pix_ptr[1] * (i + 1);
-                    sum_b           += src_pix_ptr[2] * (i + 1);
-                    sum_a           += src_pix_ptr[3] * (i + 1);
-                    sum_out_r       += src_pix_ptr[0];
-                    sum_out_g       += src_pix_ptr[1];
-                    sum_out_b       += src_pix_ptr[2];
-                    sum_out_a       += src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
+                    sum_r           += src_pix_ptr[R] * (i + 1);
+                    sum_g           += src_pix_ptr[G] * (i + 1);
+                    sum_b           += src_pix_ptr[B] * (i + 1);
+                    sum_a           += src_pix_ptr[A] * (i + 1);
+                    sum_out_r       += src_pix_ptr[R];
+                    sum_out_g       += src_pix_ptr[G];
+                    sum_out_b       += src_pix_ptr[B];
+                    sum_out_a       += src_pix_ptr[A];
                 }
                 for(i = 1; i <= rx; i++)
                 {
                     if(i <= wm) src_pix_ptr += Img::pix_width; 
                     stack_pix_ptr = &stack[i + rx];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
-                    sum_r           += src_pix_ptr[0] * (rx + 1 - i);
-                    sum_g           += src_pix_ptr[1] * (rx + 1 - i);
-                    sum_b           += src_pix_ptr[2] * (rx + 1 - i);
-                    sum_a           += src_pix_ptr[3] * (rx + 1 - i);
-                    sum_in_r        += src_pix_ptr[0];
-                    sum_in_g        += src_pix_ptr[1];
-                    sum_in_b        += src_pix_ptr[2];
-                    sum_in_a        += src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
+                    sum_r           += src_pix_ptr[R] * (rx + 1 - i);
+                    sum_g           += src_pix_ptr[G] * (rx + 1 - i);
+                    sum_b           += src_pix_ptr[B] * (rx + 1 - i);
+                    sum_a           += src_pix_ptr[A] * (rx + 1 - i);
+                    sum_in_r        += src_pix_ptr[R];
+                    sum_in_g        += src_pix_ptr[G];
+                    sum_in_b        += src_pix_ptr[B];
+                    sum_in_a        += src_pix_ptr[A];
                 }
 
                 stack_ptr = rx;
@@ -865,10 +880,10 @@ namespace agg
                 dst_pix_ptr = img.pix_ptr(0, y);
                 for(x = 0; x < w; x++)
                 {
-                    dst_pix_ptr[0] = (sum_r * mul_sum) >> shr_sum;
-                    dst_pix_ptr[1] = (sum_g * mul_sum) >> shr_sum;
-                    dst_pix_ptr[2] = (sum_b * mul_sum) >> shr_sum;
-                    dst_pix_ptr[3] = (sum_a * mul_sum) >> shr_sum;
+                    dst_pix_ptr[R] = (sum_r * mul_sum) >> shr_sum;
+                    dst_pix_ptr[G] = (sum_g * mul_sum) >> shr_sum;
+                    dst_pix_ptr[B] = (sum_b * mul_sum) >> shr_sum;
+                    dst_pix_ptr[A] = (sum_a * mul_sum) >> shr_sum;
                     dst_pix_ptr += Img::pix_width;
 
                     sum_r -= sum_out_r;
@@ -891,15 +906,15 @@ namespace agg
                         ++xp;
                     }
         
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
         
-                    sum_in_r += src_pix_ptr[0];
-                    sum_in_g += src_pix_ptr[1];
-                    sum_in_b += src_pix_ptr[2];
-                    sum_in_a += src_pix_ptr[3];
+                    sum_in_r += src_pix_ptr[R];
+                    sum_in_g += src_pix_ptr[G];
+                    sum_in_b += src_pix_ptr[B];
+                    sum_in_a += src_pix_ptr[A];
                     sum_r    += sum_in_r;
                     sum_g    += sum_in_g;
                     sum_b    += sum_in_b;
@@ -949,35 +964,35 @@ namespace agg
                 for(i = 0; i <= ry; i++)
                 {
                     stack_pix_ptr    = &stack[i];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
-                    sum_r           += src_pix_ptr[0] * (i + 1);
-                    sum_g           += src_pix_ptr[1] * (i + 1);
-                    sum_b           += src_pix_ptr[2] * (i + 1);
-                    sum_a           += src_pix_ptr[3] * (i + 1);
-                    sum_out_r       += src_pix_ptr[0];
-                    sum_out_g       += src_pix_ptr[1];
-                    sum_out_b       += src_pix_ptr[2];
-                    sum_out_a       += src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
+                    sum_r           += src_pix_ptr[R] * (i + 1);
+                    sum_g           += src_pix_ptr[G] * (i + 1);
+                    sum_b           += src_pix_ptr[B] * (i + 1);
+                    sum_a           += src_pix_ptr[A] * (i + 1);
+                    sum_out_r       += src_pix_ptr[R];
+                    sum_out_g       += src_pix_ptr[G];
+                    sum_out_b       += src_pix_ptr[B];
+                    sum_out_a       += src_pix_ptr[A];
                 }
                 for(i = 1; i <= ry; i++)
                 {
                     if(i <= hm) src_pix_ptr += stride; 
                     stack_pix_ptr = &stack[i + ry];
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
-                    sum_r           += src_pix_ptr[0] * (ry + 1 - i);
-                    sum_g           += src_pix_ptr[1] * (ry + 1 - i);
-                    sum_b           += src_pix_ptr[2] * (ry + 1 - i);
-                    sum_a           += src_pix_ptr[3] * (ry + 1 - i);
-                    sum_in_r        += src_pix_ptr[0];
-                    sum_in_g        += src_pix_ptr[1];
-                    sum_in_b        += src_pix_ptr[2];
-                    sum_in_a        += src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
+                    sum_r           += src_pix_ptr[R] * (ry + 1 - i);
+                    sum_g           += src_pix_ptr[G] * (ry + 1 - i);
+                    sum_b           += src_pix_ptr[B] * (ry + 1 - i);
+                    sum_a           += src_pix_ptr[A] * (ry + 1 - i);
+                    sum_in_r        += src_pix_ptr[R];
+                    sum_in_g        += src_pix_ptr[G];
+                    sum_in_b        += src_pix_ptr[B];
+                    sum_in_a        += src_pix_ptr[A];
                 }
 
                 stack_ptr = ry;
@@ -987,10 +1002,10 @@ namespace agg
                 dst_pix_ptr = img.pix_ptr(x, 0);
                 for(y = 0; y < h; y++)
                 {
-                    dst_pix_ptr[0] = (sum_r * mul_sum) >> shr_sum;
-                    dst_pix_ptr[1] = (sum_g * mul_sum) >> shr_sum;
-                    dst_pix_ptr[2] = (sum_b * mul_sum) >> shr_sum;
-                    dst_pix_ptr[3] = (sum_a * mul_sum) >> shr_sum;
+                    dst_pix_ptr[R] = (sum_r * mul_sum) >> shr_sum;
+                    dst_pix_ptr[G] = (sum_g * mul_sum) >> shr_sum;
+                    dst_pix_ptr[B] = (sum_b * mul_sum) >> shr_sum;
+                    dst_pix_ptr[A] = (sum_a * mul_sum) >> shr_sum;
                     dst_pix_ptr += stride;
 
                     sum_r -= sum_out_r;
@@ -1013,15 +1028,15 @@ namespace agg
                         ++yp;
                     }
         
-                    stack_pix_ptr->r = src_pix_ptr[0];
-                    stack_pix_ptr->g = src_pix_ptr[1];
-                    stack_pix_ptr->b = src_pix_ptr[2];
-                    stack_pix_ptr->a = src_pix_ptr[3];
+                    stack_pix_ptr->r = src_pix_ptr[R];
+                    stack_pix_ptr->g = src_pix_ptr[G];
+                    stack_pix_ptr->b = src_pix_ptr[B];
+                    stack_pix_ptr->a = src_pix_ptr[A];
         
-                    sum_in_r += src_pix_ptr[0];
-                    sum_in_g += src_pix_ptr[1];
-                    sum_in_b += src_pix_ptr[2];
-                    sum_in_a += src_pix_ptr[3];
+                    sum_in_r += src_pix_ptr[R];
+                    sum_in_g += src_pix_ptr[G];
+                    sum_in_b += src_pix_ptr[B];
+                    sum_in_a += src_pix_ptr[A];
                     sum_r    += sum_in_r;
                     sum_g    += sum_in_g;
                     sum_b    += sum_in_b;
@@ -1047,13 +1062,13 @@ namespace agg
 
 
     //===========================================================recursive_blur
-    template<class ColorT, class AccumulatorT> class recursive_blur
+    template<class ColorT, class CalculatorT> class recursive_blur
     {
     public:
         typedef ColorT color_type;
-        typedef AccumulatorT accumulator_type;
+        typedef CalculatorT calculator_type;
         typedef color_type::value_type value_type;
-        typedef typename accumulator_type::value_type calc_type;
+        typedef typename calculator_type::value_type calc_type;
 
         //--------------------------------------------------------------------
         template<class Img> void blur_x(Img& img, double radius)
@@ -1100,7 +1115,7 @@ namespace agg
 
             for(y = 0; y < h; y++)
             {
-                accumulator_type c;
+                calculator_type c;
                 c.from_pix(img.pixel(0, y));
                 m_sum1[0].calc(b, b1, b2, b3, c, c, c, c);
                 c.from_pix(img.pixel(1, y));
@@ -1146,17 +1161,17 @@ namespace agg
         }
 
     private:
-        agg::pod_vector<accumulator_type> m_sum1;
-        agg::pod_vector<accumulator_type> m_sum2;
-        agg::pod_vector<color_type>       m_buf;
+        agg::pod_vector<calculator_type> m_sum1;
+        agg::pod_vector<calculator_type> m_sum2;
+        agg::pod_vector<color_type>      m_buf;
     };
 
 
-    //=====================================================recursive_blur_rgba
-    template<class T=double> struct recursive_blur_rgba
+    //=================================================recursive_blur_calc_rgba
+    template<class T=double> struct recursive_blur_calc_rgba
     {
         typedef T value_type;
-        typedef recursive_blur_rgba<T> self_type;
+        typedef recursive_blur_calc_rgba<T> self_type;
 
         value_type r,g,b,a;
 
@@ -1196,11 +1211,11 @@ namespace agg
     };
 
 
-    //======================================================recursive_blur_rgb
-    template<class T=double> struct recursive_blur_rgb
+    //=================================================recursive_blur_calc_rgb
+    template<class T=double> struct recursive_blur_calc_rgb
     {
         typedef T value_type;
-        typedef recursive_blur_rgb<T> self_type;
+        typedef recursive_blur_calc_rgb<T> self_type;
 
         value_type r,g,b;
 
@@ -1237,11 +1252,11 @@ namespace agg
     };
 
 
-    //=====================================================recursive_blur_gray
-    template<class T=double> struct recursive_blur_gray
+    //================================================recursive_blur_calc_gray
+    template<class T=double> struct recursive_blur_calc_gray
     {
         typedef T value_type;
-        typedef recursive_blur_gray<T> self_type;
+        typedef recursive_blur_calc_gray<T> self_type;
 
         value_type v;
 
