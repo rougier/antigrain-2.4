@@ -769,7 +769,7 @@ namespace agg
                 while(!is_stop(cmd = vs.vertex(&x, &y)))
                 {
                     m_vertices.add_vertex(x, y, is_move_to(cmd) ? 
-                                                    path_cmd_line_to : 
+                                                    unsigned(path_cmd_line_to) : 
                                                     cmd);
                 }
             }
