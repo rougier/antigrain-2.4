@@ -285,8 +285,10 @@ namespace agg
     // via row_ptr() may be faster. But it requires memory allocation 
     // when creating. For example, on typical Intel Pentium hardware 
     // row_ptr_cache speeds span_image_filter_rgb_nn up to 10%
-    // It can be redefined in agg_config.h
-    // 
+    //
+    // It's used only in short hand typedefs like pixfmt_rgba32 and can be 
+    // redefined in agg_config.h
+    // In real applications you can use both, depending on your needs
     //------------------------------------------------------------------------
 #ifdef AGG_RENDERING_BUFFER
     typedef AGG_RENDERING_BUFFER rendering_buffer;

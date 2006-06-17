@@ -203,13 +203,13 @@ public:
                 {
                     // More general method, but 30-40% slower.
                     //------------------
-                    m_stack_blur.blur(pixf2, agg::uround(m_radius.value()));
+                    //m_stack_blur.blur(pixf2, agg::uround(m_radius.value()));
 
                     // Faster, but bore specific. 
                     // Works only for 8 bits per channel and only with radii <= 254.
                     //------------------
-                    //agg::stack_blur_rgb24(pixf2, agg::uround(m_radius.value()), 
-                    //                             agg::uround(m_radius.value()));
+                    agg::stack_blur_rgb24(pixf2, agg::uround(m_radius.value()), 
+                                                 agg::uround(m_radius.value()));
                 }
                 else
                 {
