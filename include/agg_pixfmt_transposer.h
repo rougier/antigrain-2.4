@@ -32,7 +32,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         pixfmt_transposer() : m_pixf(0) {}
-        pixfmt_transposer(pixfmt_type& pixf) : m_pixf(&pixf) {}
+        explicit pixfmt_transposer(pixfmt_type& pixf) : m_pixf(&pixf) {}
         void attach(pixfmt_type& pixf) { m_pixf = &pixf; }
 
         //--------------------------------------------------------------------

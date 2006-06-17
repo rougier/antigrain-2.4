@@ -45,7 +45,7 @@ namespace agg
         };
 
     public:
-        conv_adaptor_vcgen(VertexSource& source) :
+        explicit conv_adaptor_vcgen(VertexSource& source) :
             m_source(&source), 
             m_status(initial)
         {}

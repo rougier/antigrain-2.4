@@ -57,7 +57,7 @@ namespace agg
         };
 
         alpha_mask_u8() : m_rbuf(0) {}
-        alpha_mask_u8(rendering_buffer& rbuf) : m_rbuf(&rbuf) {}
+        explicit alpha_mask_u8(rendering_buffer& rbuf) : m_rbuf(&rbuf) {}
 
         void attach(rendering_buffer& rbuf) { m_rbuf = &rbuf; }
 
@@ -361,7 +361,7 @@ namespace agg
         };
 
         amask_no_clip_u8() : m_rbuf(0) {}
-        amask_no_clip_u8(rendering_buffer& rbuf) : m_rbuf(&rbuf) {}
+        explicit amask_no_clip_u8(rendering_buffer& rbuf) : m_rbuf(&rbuf) {}
 
         void attach(rendering_buffer& rbuf) { m_rbuf = &rbuf; }
 

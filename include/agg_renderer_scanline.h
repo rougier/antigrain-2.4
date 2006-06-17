@@ -111,7 +111,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         renderer_scanline_aa_solid() : m_ren(0) {}
-        renderer_scanline_aa_solid(base_ren_type& ren) : m_ren(&ren) {}
+        explicit renderer_scanline_aa_solid(base_ren_type& ren) : m_ren(&ren) {}
         void attach(base_ren_type& ren)
         {
             m_ren = &ren;
@@ -311,7 +311,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         renderer_scanline_bin_solid() : m_ren(0) {}
-        renderer_scanline_bin_solid(base_ren_type& ren) : m_ren(&ren) {}
+        explicit renderer_scanline_bin_solid(base_ren_type& ren) : m_ren(&ren) {}
         void attach(base_ren_type& ren)
         {
             m_ren = &ren;

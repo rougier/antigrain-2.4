@@ -1772,7 +1772,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         pixfmt_alpha_blend_rgba() : m_rbuf(0) {}
-        pixfmt_alpha_blend_rgba(rbuf_type& rb) : m_rbuf(&rb) {}
+        explicit pixfmt_alpha_blend_rgba(rbuf_type& rb) : m_rbuf(&rb) {}
         void attach(rbuf_type& rb) { m_rbuf = &rb; }
 
         //--------------------------------------------------------------------
@@ -2354,7 +2354,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         pixfmt_custom_blend_rgba() : m_rbuf(0), m_comp_op(3) {}
-        pixfmt_custom_blend_rgba(rbuf_type& rb, unsigned comp_op=3) : 
+        explicit pixfmt_custom_blend_rgba(rbuf_type& rb, unsigned comp_op=3) : 
             m_rbuf(&rb),
             m_comp_op(comp_op)
         {}
