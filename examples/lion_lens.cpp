@@ -131,6 +131,25 @@ public:
 
         agg::render_ctrl(g_rasterizer, g_scanline, rb, m_magn_slider);
         agg::render_ctrl(g_rasterizer, g_scanline, rb, m_radius_slider);
+
+
+        // Testing inverse_transform()
+        //--------------------
+        //double x, y;
+        //for(y = 0; y < height(); y += 10)
+        //{
+        //    for(x = 0; x < height(); x += 10)
+        //    {
+        //        double x2 = x+0.5;
+        //        double y2 = y+0.5;
+        //        lens.transform(&x2, &y2);
+        //        lens.inverse_transform(&x2, &y2);
+        //        agg::ellipse e(x2, y2, 1, 1);
+        //        g_rasterizer.add_path(e);
+        //        r.color(agg::rgba8(0,0,0));
+        //        agg::render_scanlines(g_rasterizer, g_scanline, r);
+        //    }
+        //}
     }
 
 
