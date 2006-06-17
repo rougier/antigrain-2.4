@@ -35,12 +35,7 @@ namespace agg
     class rendering_buffer_dynarow
     {
     public:
-        //----------------------------------------------------------------------
-        struct row_data
-        {
-            int x1, x2;
-            const int8u* ptr;
-        };
+        typedef row_info<int8u> row_data;
 
         //-------------------------------------------------------------------
         ~rendering_buffer_dynarow()

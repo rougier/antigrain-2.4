@@ -490,6 +490,24 @@ namespace agg
     typedef vertex_base<float>  vertex_f; //-----vertex_f
     typedef vertex_base<double> vertex_d; //-----vertex_d
 
+    //----------------------------------------------------------------row_info
+    template<class T> struct row_info
+    {
+        int x1, x2;
+        T* ptr;
+        row_info() {}
+        row_info(int x1_, int x2_, T* ptr_) : x1(x1_), x2(x2_), ptr(ptr_) {}
+    };
+
+    //----------------------------------------------------------const_row_info
+    template<class T> struct const_row_info
+    {
+        int x1, x2;
+        const T* ptr;
+        const_row_info() {}
+        const_row_info(int x1_, int x2_, const T* ptr_) : 
+            x1(x1_), x2(x2_), ptr(ptr_) {}
+    };
 }
 
 
