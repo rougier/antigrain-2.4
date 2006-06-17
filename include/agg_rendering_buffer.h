@@ -90,9 +90,6 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE T const* const* rows() const { return &m_rows[0]; }
-
-        //--------------------------------------------------------------------
         template<class RenBuf>
         void copy_from(const RenBuf& src)
         {
