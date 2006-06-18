@@ -473,9 +473,6 @@ namespace agg
 
 
 
-
-
-
     //=============================================render_scanlines_compound
     template<class Rasterizer, 
              class ScanlineAA, 
@@ -489,6 +486,192 @@ namespace agg
                                    BaseRenderer& ren,
                                    SpanAllocator& alloc,
                                    StyleHandler& sh)
+    {
+        if(ras.rewind_scanlines())
+        {
+            int min_x = ras.min_x();
+            int len = ras.max_x() - min_x + 2;
+            sl_aa.reset(min_x, ras.max_x());
+            sl_bin.reset(min_x, ras.max_x());
+
+            typedef typename BaseRenderer::color_type color_type;
+            color_type* color_span = alloc.allocate(len * 2);
+            color_type* mix_buffer = color_span + len;
+            unsigned num_spans;
+
+            unsigned num_styles;
+            unsigned style;
+            bool     solid;
+            while((num_styles = ras.sweep_styles()) > 0)
+            {
+                typename ScanlineAA::const_iterator span_aa;
+                if(num_styles == 1)
+                {
+                    // Optimization for a single style. Happens often
+                    //-------------------------
+                    if(ras.sweep_scanline(sl_aa, 0))
+                    {
+                        style = ras.style(0);
+                        if(sh.is_solid(style))
+                        {
+                            // Just solid fill
+                            //-----------------------
+                            render_scanline_aa_solid(sl_aa, ren, sh.color(style));
+                        }
+                        else
+                        {
+                            // Arbitrary span generator
+                            //-----------------------
+                            span_aa   = sl_aa.begin();
+                            num_spans = sl_aa.num_spans();
+                            for(;;)
+                            {
+                                len = span_aa->len;
+                                sh.generate_span(color_span, 
+                                                 span_aa->x, 
+                                                 sl_aa.y(), 
+                                                 len, 
+                                                 style);
+
+                                ren.blend_color_hspan(span_aa->x, 
+                                                      sl_aa.y(), 
+                                                      span_aa->len,
+                                                      color_span,
+                                                      span_aa->covers);
+                                if(--num_spans == 0) break;
+                                ++span_aa;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if(ras.sweep_scanline(sl_bin, -1))
+                    {
+                        // Clear the spans of the mix_buffer
+                        //--------------------
+                        typename ScanlineBin::const_iterator span_bin = sl_bin.begin();
+                        num_spans = sl_bin.num_spans();
+                        for(;;)
+                        {
+                            memset(mix_buffer + span_bin->x - min_x, 
+                                   0, 
+                                   span_bin->len * sizeof(color_type));
+
+                            if(--num_spans == 0) break;
+                            ++span_bin;
+                        }
+
+                        unsigned i;
+                        for(i = 0; i < num_styles; i++)
+                        {
+                            style = ras.style(i);
+                            solid = sh.is_solid(style);
+
+                            if(ras.sweep_scanline(sl_aa, i))
+                            {
+                                color_type* colors;
+                                color_type* cspan;
+                                typename ScanlineAA::cover_type* covers;
+                                span_aa   = sl_aa.begin();
+                                num_spans = sl_aa.num_spans();
+                                if(solid)
+                                {
+                                    // Just solid fill
+                                    //-----------------------
+                                    for(;;)
+                                    {
+                                        color_type c = sh.color(style);
+                                        len    = span_aa->len;
+                                        colors = mix_buffer + span_aa->x - min_x;
+                                        covers = span_aa->covers;
+                                        do
+                                        {
+                                            if(*covers == cover_full) 
+                                            {
+                                                *colors = c;
+                                            }
+                                            else
+                                            {
+                                                colors->add(c, *covers);
+                                            }
+                                            ++colors;
+                                            ++covers;
+                                        }
+                                        while(--len);
+                                        if(--num_spans == 0) break;
+                                        ++span_aa;
+                                    }
+                                }
+                                else
+                                {
+                                    // Arbitrary span generator
+                                    //-----------------------
+                                    for(;;)
+                                    {
+                                        len = span_aa->len;
+                                        colors = mix_buffer + span_aa->x - min_x;
+                                        cspan  = color_span;
+                                        sh.generate_span(cspan, 
+                                                         span_aa->x, 
+                                                         sl_aa.y(), 
+                                                         len, 
+                                                         style);
+                                        covers = span_aa->covers;
+                                        do
+                                        {
+                                            if(*covers == cover_full) 
+                                            {
+                                                *colors = *cspan;
+                                            }
+                                            else
+                                            {
+                                                colors->add(*cspan, *covers);
+                                            }
+                                            ++cspan;
+                                            ++colors;
+                                            ++covers;
+                                        }
+                                        while(--len);
+                                        if(--num_spans == 0) break;
+                                        ++span_aa;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Emit the blended result as a color hspan
+                        //-------------------------
+                        span_bin = sl_bin.begin();
+                        num_spans = sl_bin.num_spans();
+                        for(;;)
+                        {
+                            ren.blend_color_hspan(span_bin->x, 
+                                                  sl_bin.y(), 
+                                                  span_bin->len,
+                                                  mix_buffer + span_bin->x - min_x,
+                                                  0,
+                                                  cover_full);
+                            if(--num_spans == 0) break;
+                            ++span_bin;
+                        }
+                    } // if(ras.sweep_scanline(sl_bin, -1))
+                } // if(num_styles == 1) ... else
+            } // while((num_styles = ras.sweep_styles()) > 0)
+        } // if(ras.rewind_scanlines())
+    }
+
+    //=======================================render_scanlines_compound_layered
+    template<class Rasterizer, 
+             class ScanlineAA, 
+             class BaseRenderer, 
+             class SpanAllocator,
+             class StyleHandler>
+    void render_scanlines_compound_layered(Rasterizer& ras, 
+                                           ScanlineAA& sl_aa,
+                                           BaseRenderer& ren,
+                                           SpanAllocator& alloc,
+                                           StyleHandler& sh)
     {
         if(ras.rewind_scanlines())
         {

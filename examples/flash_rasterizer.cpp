@@ -243,7 +243,7 @@ namespace agg
         //---------------------------------------------
         bool is_solid(unsigned style) const 
         { 
-            return style != 1; 
+            return true;//style != 1; 
         }
 
         // Just returns a color

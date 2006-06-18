@@ -70,6 +70,15 @@ namespace agg
     };
 
 
+    //===========================================================layer_order_e
+    enum layer_order_e
+    {
+        layer_unsorted, //------layer_unsorted
+        layer_direct,   //------layer_direct
+        layer_inverse   //------layer_inverse
+    };
+
+
     //==================================================rasterizer_compound_aa
     template<class Clip=rasterizer_sl_clip_int> class rasterizer_compound_aa
     {
@@ -104,6 +113,7 @@ namespace agg
             m_outline(),
             m_clipper(),
             m_filling_rule(fill_non_zero),
+            m_layer_order(layer_direct),
             m_styles(),  // Active Styles
             m_ast(),     // Active Style Table (unique values)
             m_asm(),     // Active Style Mask 
@@ -124,6 +134,7 @@ namespace agg
         void reset_clipping();
         void clip_box(double x1, double y1, double x2, double y2);
         void filling_rule(filling_rule_e filling_rule);
+        void layer_order(layer_order_e order);
         void master_alpha(int style, double alpha);
 
         //--------------------------------------------------------------------
@@ -269,6 +280,7 @@ namespace agg
         rasterizer_cells_aa<cell_style_aa> m_outline;
         clip_type              m_clipper;
         filling_rule_e         m_filling_rule;
+        layer_order_e          m_layer_order;
         pod_vector<style_info> m_styles;  // Active Styles
         pod_vector<unsigned>   m_ast;     // Active Style Table (unique values)
         pod_vector<int8u>      m_asm;     // Active Style Mask 
@@ -311,6 +323,13 @@ namespace agg
     void rasterizer_compound_aa<Clip>::filling_rule(filling_rule_e filling_rule) 
     { 
         m_filling_rule = filling_rule; 
+    }
+
+    //------------------------------------------------------------------------
+    template<class Clip> 
+    void rasterizer_compound_aa<Clip>::layer_order(layer_order_e order)
+    {
+        m_layer_order = order;
     }
 
     //------------------------------------------------------------------------
@@ -577,8 +596,12 @@ namespace agg
         }
         ++m_scan_y;
 
-        range_adaptor<pod_vector<unsigned> > ra(m_ast, 1, m_ast.size() - 1);
-        quick_sort(ra, unsigned_greater); 
+        if(m_layer_order != layer_unsorted)
+        {
+            range_adaptor<pod_vector<unsigned> > ra(m_ast, 1, m_ast.size() - 1);
+            if(m_layer_order == layer_direct) quick_sort(ra, unsigned_greater);
+            else                              quick_sort(ra, unsigned_less);
+        }
 
         return m_ast.size() - 1;
     }

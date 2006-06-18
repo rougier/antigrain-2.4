@@ -9,7 +9,6 @@
 #include "agg_conv_curve.h"
 #include "agg_conv_stroke.h"
 #include "agg_scanline_u.h"
-#include "agg_scanline_bin.h"
 #include "agg_renderer_scanline.h"
 #include "agg_span_allocator.h"
 #include "agg_pixfmt_rgba.h"
@@ -59,7 +58,7 @@ class the_application : public agg::platform_support
     agg::slider_ctrl<agg::rgba8> m_alpha2;
     agg::slider_ctrl<agg::rgba8> m_alpha3;
     agg::slider_ctrl<agg::rgba8> m_alpha4;
-    agg::cbox_ctrl<agg::rgba8>   m_zorder;
+    agg::cbox_ctrl<agg::rgba8>   m_invert_order;
     agg::path_storage            m_path;
 
 public:
@@ -70,7 +69,7 @@ public:
         m_alpha2(5, 25, 180, 32, !flip_y),
         m_alpha3(5, 45, 180, 52, !flip_y),
         m_alpha4(5, 65, 180, 72, !flip_y),
-        m_zorder(190, 25, "Invert Z-Order")
+        m_invert_order(190, 25, "Invert Z-Order")
     {
         add_ctrl(m_width);
         m_width.range(-20.0, 50.0);
@@ -97,7 +96,7 @@ public:
         m_alpha4.value(1);
         m_alpha4.label("Alpha4=%1.3f");
 
-        add_ctrl(m_zorder);
+        add_ctrl(m_invert_order);
     }
 
     void compose_path()
@@ -182,7 +181,6 @@ public:
         agg::rasterizer_scanline_aa<> ras;
         agg::rasterizer_compound_aa<agg::rasterizer_sl_clip_dbl> rasc;
         agg::scanline_u8 sl;
-        agg::scanline_bin sl_bin;
         agg::span_allocator<agg::rgba8> alloc;
 
         // Draw two triangles
@@ -217,69 +215,69 @@ public:
         compose_path();
 
         agg::rgba8 styles[4];
-        unsigned order[4] = {3, 2, 1, 0};
 
-        if(m_zorder.status())
+        if(m_invert_order.status())
         {
-            order[0] = 0;
-            order[1] = 1;
-            order[2] = 2;
-            order[3] = 3;
+            rasc.layer_order(agg::layer_inverse);
+        }
+        else
+        {
+            rasc.layer_order(agg::layer_direct);
         }
 
-        styles[order[0]] = agg::rgba8(lut.dir(255),
-                                      lut.dir(0),
-                                      lut.dir(108),
-                                      220).premultiply();
+        styles[3] = agg::rgba8(lut.dir(255),
+                               lut.dir(0),
+                               lut.dir(108),
+                               200).premultiply();
 
-        styles[order[1]] = agg::rgba8(lut.dir(51),
-                                      lut.dir(0),
-                                      lut.dir(151),
-                                      180).premultiply();
+        styles[2] = agg::rgba8(lut.dir(51),
+                               lut.dir(0),
+                               lut.dir(151),
+                               180).premultiply();
 
-        styles[order[2]] = agg::rgba8(lut.dir(143),
-                                      lut.dir(90),
-                                      lut.dir(6),
-                                      200).premultiply();
+        styles[1] = agg::rgba8(lut.dir(143),
+                               lut.dir(90),
+                               lut.dir(6),
+                               200).premultiply();
 
-        styles[order[3]] = agg::rgba8(lut.dir(0),
-                                      lut.dir(0),
-                                      lut.dir(255),
-                                      220).premultiply();
+        styles[0] = agg::rgba8(lut.dir(0),
+                               lut.dir(0),
+                               lut.dir(255),
+                               220).premultiply();
 
         style_handler sh(styles, 4);
 
         stroke.width(m_width.value());
 
         rasc.reset();
-        rasc.master_alpha(order[0], m_alpha1.value());
-        rasc.master_alpha(order[1], m_alpha2.value());
-        rasc.master_alpha(order[2], m_alpha3.value());
-        rasc.master_alpha(order[3], m_alpha4.value());
+        rasc.master_alpha(3, m_alpha1.value());
+        rasc.master_alpha(2, m_alpha2.value());
+        rasc.master_alpha(1, m_alpha3.value());
+        rasc.master_alpha(0, m_alpha4.value());
 
         agg::ellipse ell(220.0, 180.0, 120.0, 10.0, 128, false);
         agg::conv_stroke<agg::ellipse> str_ell(ell);
         str_ell.width(m_width.value() / 2);
 
-        rasc.styles(order[0], -1);
+        rasc.styles(3, -1);
         rasc.add_path(str_ell);
 
-        rasc.styles(order[1], -1);
+        rasc.styles(2, -1);
         rasc.add_path(ell);
 
-        rasc.styles(order[2], -1);
+        rasc.styles(1, -1);
         rasc.add_path(stroke);
 
-        rasc.styles(order[3], -1);
+        rasc.styles(0, -1);
         rasc.add_path(curve);
 
-        agg::render_scanlines_compound(rasc, sl, sl_bin, renb_pre, alloc, sh);
+        agg::render_scanlines_compound_layered(rasc, sl, renb_pre, alloc, sh);
         agg::render_ctrl(ras, sl, renb, m_width);
         agg::render_ctrl(ras, sl, renb, m_alpha1);
         agg::render_ctrl(ras, sl, renb, m_alpha2);
         agg::render_ctrl(ras, sl, renb, m_alpha3);
         agg::render_ctrl(ras, sl, renb, m_alpha4);
-        agg::render_ctrl(ras, sl, renb, m_zorder);
+        agg::render_ctrl(ras, sl, renb, m_invert_order);
 
         pixf.apply_gamma_inv(lut);
     }
