@@ -322,7 +322,7 @@ namespace agg
             }
         }
 
-        //This is calculation sqrt itself.
+        //This code calculates the sqrt.
         bit -= 9;
         if(bit > 0)
         {
