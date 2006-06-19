@@ -84,9 +84,10 @@ namespace agg
     // m *= agg::trans_affine_rotation(30.0 * 3.1415926 / 180.0);  // rotate
     // m *= agg::trans_affine_translation(100.0, 100.0);           // move back to (100,100)
     //----------------------------------------------------------------------
-    class trans_affine
+    struct trans_affine
     {
-    public:
+        double m0, m1, m2, m3, m4, m5;
+
         //------------------------------------------ Construction
         // Construct an identity matrix - it does not transform anything
         trans_affine() :
@@ -271,14 +272,6 @@ namespace agg
             *sx = sqrt(m0*m0 + m2*m2);
             *sy = sqrt(m1*m1 + m3*m3);
         }
-
-    private:
-        double m0;
-        double m1;
-        double m2;
-        double m3;
-        double m4;
-        double m5;
     };
 
     //------------------------------------------------------------------------
