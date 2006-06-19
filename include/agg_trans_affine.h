@@ -142,6 +142,12 @@ namespace agg
         // Reset - actually load an identity matrix
         const trans_affine& reset();
 
+        // Direct transformations operations
+        void translate(double tx, double ty);
+        void rotate(double a);
+        void scale(double s);
+        void scale(double sx, double sy);
+
         // Multiply matrix to another one
         const trans_affine& multiply(const trans_affine& m);
 
@@ -307,6 +313,54 @@ namespace agg
         double x = 0.707106781 * m0 + 0.707106781 * m2;
         double y = 0.707106781 * m1 + 0.707106781 * m3;
         return sqrt(x*x + y*y);
+    }
+
+    //------------------------------------------------------------------------
+    inline void trans_affine::translate(double tx, double ty) 
+    { 
+        m4 += tx; 
+        m5 += ty; 
+    }
+
+    //------------------------------------------------------------------------
+    inline void trans_affine::rotate(double a) 
+    {
+        double ca = cos(a); 
+        double sa = sin(a);
+        double t0 = m0 * ca - m1 * sa;
+        double t2 = m2 * ca - m3 * sa;
+        double t4 = m4 * ca - m5 * sa;
+        m1 = m0 * sa + m1 * ca;
+        m3 = m2 * sa + m3 * ca; 
+        m5 = m4 * sa + m5 * ca;
+        m0 = t0;
+        m2 = t2;
+        m4 = t4;
+    }
+
+    //------------------------------------------------------------------------
+    inline void trans_affine::scale(double sx, double sy) 
+    {
+        double mm0 = sx; // Possible hint for the optimizer
+        double mm3 = sy; 
+        m0 *= mm0;
+        m2 *= mm0;
+        m4 *= mm0;
+        m1 *= mm3;
+        m3 *= mm3;
+        m5 *= mm3;
+    }
+
+    //------------------------------------------------------------------------
+    inline void trans_affine::scale(double s) 
+    {
+        double m = s; // Possible hint for the optimizer
+        m0 *= m;
+        m2 *= m;
+        m4 *= m;
+        m1 *= m;
+        m3 *= m;
+        m5 *= m;
     }
 
     //------------------------------------------------------------------------

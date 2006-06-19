@@ -257,15 +257,18 @@ namespace agg
     //----------------------------------------------------------------rect_base
     template<class T> struct rect_base
     {
+        typedef T            value_type;
         typedef rect_base<T> self_type;
-        T x1;
-        T y1;
-        T x2;
-        T y2;
+        T x1, y1, x2, y2;
 
         rect_base() {}
         rect_base(T x1_, T y1_, T x2_, T y2_) :
             x1(x1_), y1(y1_), x2(x2_), y2(y2_) {}
+
+        void init(T x1_, T y1_, T x2_, T y2_) 
+        {
+            x1 = x1_; y1 = y1_; x2 = x2_; y2 = y2_; 
+        }
 
         const self_type& normalize()
         {
@@ -287,6 +290,11 @@ namespace agg
         bool is_valid() const
         {
             return x1 <= x2 && y1 <= y2;
+        }
+
+        bool hit_test(T x, T y) const
+        {
+            return (x >= x1 && x <= x2 && y >= y1 && y <= y2);
         }
     };
 

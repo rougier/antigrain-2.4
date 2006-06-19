@@ -9,7 +9,7 @@ agginclude_HEADERS = \
 	agg_basics.h                 agg_line_aa_basics.h            agg_span_gouraud_rgba.h \
 	agg_bezier_arc.h             agg_math.h                      agg_span_gradient.h \
 	agg_bitset_iterator.h        agg_blur.h                      agg_math_stroke.h \
-	agg_span_gradient_alpha.h \
+	agg_span_gradient_alpha.h    agg_gradient_lut.h \
 	agg_bounding_rect.h          agg_path_length.h               agg_span_image_filter.h \
 	agg_bspline.h                agg_path_storage.h              agg_span_image_filter_gray.h \
 	agg_clip_liang_barsky.h      agg_path_storage_integer.h      agg_span_image_filter_rgb.h \

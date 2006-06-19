@@ -53,6 +53,8 @@ namespace agg
         void line_space(double line_space);
         void start_point(double x, double y);
         void text(const char* text);
+        
+        double text_width();
 
         void rewind(unsigned path_id);
         unsigned vertex(double* x, double* y);

@@ -146,6 +146,10 @@ namespace agg
     };
 
 
+
+
+
+
     //==========================================================gradient_circle
     class gradient_circle
     {
@@ -168,7 +172,6 @@ namespace agg
         }
     };
 
-
     //========================================================gradient_radial_d
     class gradient_radial_d
     {
@@ -178,7 +181,6 @@ namespace agg
             return uround(sqrt(double(x)*double(x) + double(y)*double(y)));
         }
     };
-
 
     //====================================================gradient_radial_focus
     class gradient_radial_focus
@@ -261,10 +263,6 @@ namespace agg
     };
 
 
-
-
-
-
     //==============================================================gradient_x
     class gradient_x
     {
@@ -280,7 +278,6 @@ namespace agg
         static int calculate(int, int y, int) { return y; }
     };
 
-
     //========================================================gradient_diamond
     class gradient_diamond
     {
@@ -293,7 +290,6 @@ namespace agg
         }
     };
 
-
     //=============================================================gradient_xy
     class gradient_xy
     {
@@ -303,7 +299,6 @@ namespace agg
             return abs(x) * abs(y) / d; 
         }
     };
-
 
     //========================================================gradient_sqrt_xy
     class gradient_sqrt_xy
@@ -315,7 +310,6 @@ namespace agg
         }
     };
 
-
     //==========================================================gradient_conic
     class gradient_conic
     {
@@ -325,7 +319,6 @@ namespace agg
             return uround(fabs(atan2(double(y), double(x))) * double(d) / pi);
         }
     };
-
 
     //=================================================gradient_repeat_adaptor
     template<class GradientF> class gradient_repeat_adaptor
@@ -344,7 +337,6 @@ namespace agg
     private:
         const GradientF* m_gradient;
     };
-
 
     //================================================gradient_reflect_adaptor
     template<class GradientF> class gradient_reflect_adaptor

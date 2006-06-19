@@ -36,6 +36,7 @@ base:
 	make gamma_correction
 	make gamma_ctrl
 	make gouraud
+	make gradient_focal
 	make gradients
 	make graph_test
 	make idea
@@ -138,6 +139,9 @@ gamma_ctrl: ../gamma_ctrl.o $(PLATFORMSOURCES)
 
 gouraud: ../gouraud.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gouraud $(LIBS)
+
+gradient_focal: ../gradient_focal.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o gradient_focal $(LIBS)
 
 gradients: ../gradients.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gradients $(LIBS)
@@ -263,6 +267,7 @@ clean:
 	rm -f gamma_ctrl
 	rm -f gouraud
 	rm -f gradients
+	rm -f gradient_focal
 	rm -f graph_test
 	rm -f idea
 	rm -f lion

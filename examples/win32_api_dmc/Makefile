@@ -36,6 +36,7 @@ all: aa_demo.exe \
      gouraud.exe \
      gouraud_mesh.exe \
      gpc_test.exe \
+     gradient_focal.exe \
      gradients.exe \
      graph_test.exe \
      idea.exe \
@@ -220,6 +221,12 @@ gpc_test.exe: gpc_test.obj  make_arrows.obj make_gb_poly.obj agg.lib
 	$(LINK) $**
 
 gpc_test.obj: ..\gpc_test.cpp
+	$(CXX) $** -o$@
+
+gradient_focal.exe: gradient_focal.obj agg.lib
+	$(LINK) $**
+
+gradient_focal.obj: ..\gradient_focal.cpp
 	$(CXX) $** -o$@
 
 gradients.exe: gradients.obj agg.lib

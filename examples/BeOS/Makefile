@@ -41,6 +41,7 @@ base:
 	make gamma_tuner
 	make gouraud
 	make gouraud_mesh
+	make gradient_focal
 	make gradients
 	make graph_test
 	make idea
@@ -160,6 +161,9 @@ gouraud: ../gouraud.o $(PLATFORMSOURCES)
 
 gouraud_mesh: ../gouraud_mesh.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gouraud_mesh $(LIBS)
+
+gradient_focal: ../gradient_focal.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o gradient_focal $(LIBS)
 
 gradients: ../gradients.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gradients $(LIBS)
@@ -289,6 +293,7 @@ clean:
 	rm -rf gamma_tuner
 	rm -rf gouraud
 	rm -rf gouraud_mesh
+	rm -rf gradient_focal
 	rm -rf gradients
 	rm -rf graph_test
 	rm -rf idea

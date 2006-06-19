@@ -34,6 +34,7 @@ all:
 	make gamma_correction
 	make gamma_ctrl
 	make gouraud
+	make gradient_focal
 	make gradients
 	make graph_test
 	make idea
@@ -125,6 +126,9 @@ gamma_ctrl: ../gamma_ctrl.o $(PLATFORMSOURCES) gamma_ctrl.app
 
 gouraud: ../gouraud.o $(PLATFORMSOURCES) gouraud.app
 	$(CXX) $(CXXFLAGS) ../gouraud.o $(PLATFORMSOURCES) -o gouraud.app/Contents/MacOS/gouraud $(LIBS)
+
+gradient_focal: ../gradient_focal.o $(PLATFORMSOURCES) gradient_focal.app
+	$(CXX) $(CXXFLAGS) ../gradient_focal.o $(PLATFORMSOURCES) -o gradient_focal.app/Contents/MacOS/gradient_focal $(LIBS)
 
 gradients: ../gradients.o $(PLATFORMSOURCES) gradients.app
 	$(CXX) $(CXXFLAGS) ../gradients.o $(PLATFORMSOURCES) -o gradients.app/Contents/MacOS/gradients $(LIBS)
