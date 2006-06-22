@@ -249,6 +249,12 @@ namespace agg
         // Calculate the determinant of matrix
         double determinant() const
         {
+            return sx * sy - shy * shx;
+        }
+
+        // Calculate the reciprocal of the determinant
+        double determinant_reciprocal() const
+        {
             return 1.0 / (sx * sy - shy * shx);
         }
 
@@ -268,8 +274,6 @@ namespace agg
         void   translation(double* dx, double* dy) const;
         void   scaling(double* x, double* y) const;
         void   scaling_abs(double* x, double* y) const;
-        double trans_affine::area() const;
-
     };
 
     //------------------------------------------------------------------------
@@ -291,7 +295,7 @@ namespace agg
     //------------------------------------------------------------------------
     inline void trans_affine::inverse_transform(double* x, double* y) const
     {
-        register double d = determinant();
+        register double d = determinant_reciprocal();
         register double a = (*x - tx) * d;
         register double b = (*y - ty) * d;
         *x = a * sy - b * shx;
@@ -387,23 +391,6 @@ namespace agg
         *x = sqrt(sx  * sx  + shx * shx);
         *y = sqrt(shy * shy + sy  * sy);
     }
-
-    //------------------------------------------------------------------------
-    inline double trans_affine::area() const
-    {
-        return sx * sy - shy * shx;
-        // Why does this work? Here is the derivation:
-        // 1) Take the points p0(0,0), px(1,0), and py(0,1) and transform 
-        //    them using to points t0, tx, and ty.
-        // 2) Create two vectors u and v by subtracting t0 from tx and ty
-        // 3) u and v define a parallelogram that we want the area of, this is
-        //    just the cross product of the vectors u and v.
-        //
-        // NB: This returns a negative "area" if the transform is reflecting
-        //
-        // Contributed by John Horigan
-    }
-
 
     //====================================================trans_affine_rotation
     // Rotation matrix. sin() and cos() are calculated twice for the same angle.

@@ -85,7 +85,7 @@ namespace agg
     //------------------------------------------------------------------------
     const trans_affine& trans_affine::invert()
     {
-        double d  = determinant();
+        double d  = determinant_reciprocal();
 
         double t0  =  sy  * d;
                sy  =  sx  * d;
