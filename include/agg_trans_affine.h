@@ -24,7 +24,7 @@
 
 namespace agg
 {
-    const double affine_epsilon = 1e-14; // About of precision of doubles
+    const double affine_epsilon = 1e-14; 
 
     //============================================================trans_affine
     //
@@ -86,17 +86,17 @@ namespace agg
     //----------------------------------------------------------------------
     struct trans_affine
     {
-        double m0, m1, m2, m3, m4, m5;
+        double sx, shy, shx, sy, tx, ty;
 
         //------------------------------------------ Construction
         // Construct an identity matrix - it does not transform anything
         trans_affine() :
-            m0(1.0), m1(0.0), m2(0.0), m3(1.0), m4(0.0), m5(0.0)
+            sx(1.0), shy(0.0), shx(0.0), sy(1.0), tx(0.0), ty(0.0)
         {}
 
         // Construct a custom matrix. Usually used in derived classes
         trans_affine(double v0, double v1, double v2, double v3, double v4, double v5) :
-            m0(v0), m1(v1), m2(v2), m3(v3), m4(v4), m5(v5)
+            sx(v0), shy(v1), shx(v2), sy(v3), tx(v4), ty(v5)
         {}
 
         // Construct a matrix to transform a parallelogram to another one.
@@ -144,10 +144,10 @@ namespace agg
         const trans_affine& reset();
 
         // Direct transformations operations
-        void translate(double tx, double ty);
+        void translate(double x, double y);
         void rotate(double a);
         void scale(double s);
-        void scale(double sx, double sy);
+        void scale(double x, double y);
 
         // Multiply matrix to another one
         const trans_affine& multiply(const trans_affine& m);
@@ -176,13 +176,13 @@ namespace agg
         // Store matrix to an array [6] of double
         void store_to(double* m) const
         {
-            *m++ = m0; *m++ = m1; *m++ = m2; *m++ = m3; *m++ = m4; *m++ = m5;
+            *m++ = sx; *m++ = shy; *m++ = shx; *m++ = sy; *m++ = tx; *m++ = ty;
         }
 
         // Load matrix from an array [6] of double
         const trans_affine& load_from(const double* m)
         {
-            m0 = *m++; m1 = *m++; m2 = *m++; m3 = *m++; m4 = *m++;  m5 = *m++;
+            sx = *m++; shy = *m++; shx = *m++; sy = *m++; tx = *m++;  ty = *m++;
             return *this;
         }
 
@@ -249,7 +249,7 @@ namespace agg
         // Calculate the determinant of matrix
         double determinant() const
         {
-            return 1.0 / (m0 * m3 - m1 * m2);
+            return 1.0 / (sx * sy - shy * shx);
         }
 
         // Get the average scale (by X and Y). 
@@ -266,53 +266,51 @@ namespace agg
         // Determine the major parameters. Use carefully considering degenerate matrices
         double rotation() const;
         void   translation(double* dx, double* dy) const;
-        void   scaling(double* sx, double* sy) const;
-        void   scaling_abs(double* sx, double* sy) const
-        {
-            *sx = sqrt(m0*m0 + m2*m2);
-            *sy = sqrt(m1*m1 + m3*m3);
-        }
+        void   scaling(double* x, double* y) const;
+        void   scaling_abs(double* x, double* y) const;
+        double trans_affine::area() const;
+
     };
 
     //------------------------------------------------------------------------
     inline void trans_affine::transform(double* x, double* y) const
     {
-        register double tx = *x;
-        *x = tx * m0 + *y * m2 + m4;
-        *y = tx * m1 + *y * m3 + m5;
+        register double tmp = *x;
+        *x = tmp * sx  + *y * shx + tx;
+        *y = tmp * shy + *y * sy  + ty;
     }
 
     //------------------------------------------------------------------------
     inline void trans_affine::transform_2x2(double* x, double* y) const
     {
-        register double tx = *x;
-        *x = tx * m0 + *y * m2;
-        *y = tx * m1 + *y * m3;
+        register double tmp = *x;
+        *x = tmp * sx  + *y * shx;
+        *y = tmp * shy + *y * sy;
     }
 
     //------------------------------------------------------------------------
     inline void trans_affine::inverse_transform(double* x, double* y) const
     {
         register double d = determinant();
-        register double a = (*x - m4) * d;
-        register double b = (*y - m5) * d;
-        *x = a * m3 - b * m2;
-        *y = b * m0 - a * m1;
+        register double a = (*x - tx) * d;
+        register double b = (*y - ty) * d;
+        *x = a * sy - b * shx;
+        *y = b * sx - a * shy;
     }
 
     //------------------------------------------------------------------------
     inline double trans_affine::scale() const
     {
-        double x = 0.707106781 * m0 + 0.707106781 * m2;
-        double y = 0.707106781 * m1 + 0.707106781 * m3;
+        double x = 0.707106781 * sx  + 0.707106781 * shx;
+        double y = 0.707106781 * shy + 0.707106781 * sy;
         return sqrt(x*x + y*y);
     }
 
     //------------------------------------------------------------------------
-    inline void trans_affine::translate(double tx, double ty) 
+    inline void trans_affine::translate(double x, double y) 
     { 
-        m4 += tx; 
-        m5 += ty; 
+        tx += x; 
+        ty += y; 
     }
 
     //------------------------------------------------------------------------
@@ -320,40 +318,40 @@ namespace agg
     {
         double ca = cos(a); 
         double sa = sin(a);
-        double t0 = m0 * ca - m1 * sa;
-        double t2 = m2 * ca - m3 * sa;
-        double t4 = m4 * ca - m5 * sa;
-        m1 = m0 * sa + m1 * ca;
-        m3 = m2 * sa + m3 * ca; 
-        m5 = m4 * sa + m5 * ca;
-        m0 = t0;
-        m2 = t2;
-        m4 = t4;
+        double t0 = sx  * ca - shy * sa;
+        double t2 = shx * ca - sy * sa;
+        double t4 = tx  * ca - ty * sa;
+        shy = sx  * sa + shy * ca;
+        sy  = shx * sa + sy * ca; 
+        ty  = tx  * sa + ty * ca;
+        sx  = t0;
+        shx = t2;
+        tx  = t4;
     }
 
     //------------------------------------------------------------------------
-    inline void trans_affine::scale(double sx, double sy) 
+    inline void trans_affine::scale(double x, double y) 
     {
-        double mm0 = sx; // Possible hint for the optimizer
-        double mm3 = sy; 
-        m0 *= mm0;
-        m2 *= mm0;
-        m4 *= mm0;
-        m1 *= mm3;
-        m3 *= mm3;
-        m5 *= mm3;
+        double mm0 = x; // Possible hint for the optimizer
+        double mm3 = y; 
+        sx  *= mm0;
+        shx *= mm0;
+        tx  *= mm0;
+        shy *= mm3;
+        sy  *= mm3;
+        ty  *= mm3;
     }
 
     //------------------------------------------------------------------------
     inline void trans_affine::scale(double s) 
     {
         double m = s; // Possible hint for the optimizer
-        m0 *= m;
-        m2 *= m;
-        m4 *= m;
-        m1 *= m;
-        m3 *= m;
-        m5 *= m;
+        sx  *= m;
+        shx *= m;
+        tx  *= m;
+        shy *= m;
+        sy  *= m;
+        ty  *= m;
     }
 
     //------------------------------------------------------------------------
@@ -380,6 +378,33 @@ namespace agg
         return *this = t.multiply(*this);
     }
 
+    //------------------------------------------------------------------------
+    inline void trans_affine::scaling_abs(double* x, double* y) const
+    {
+        // Used to calculate scaling coefficients in image resampling. 
+        // When there is considerable shear this method gives us much
+        // better estimation than just sx, sy.
+        *x = sqrt(sx  * sx  + shx * shx);
+        *y = sqrt(shy * shy + sy  * sy);
+    }
+
+    //------------------------------------------------------------------------
+    inline double trans_affine::area() const
+    {
+        return sx * sy - shy * shx;
+        // Why does this work? Here is the derivation:
+        // 1) Take the points p0(0,0), px(1,0), and py(0,1) and transform 
+        //    them using to points t0, tx, and ty.
+        // 2) Create two vectors u and v by subtracting t0 from tx and ty
+        // 3) u and v define a parallelogram that we want the area of, this is
+        //    just the cross product of the vectors u and v.
+        //
+        // NB: This returns a negative "area" if the transform is reflecting
+        //
+        // Contributed by John Horigan
+    }
+
+
     //====================================================trans_affine_rotation
     // Rotation matrix. sin() and cos() are calculated twice for the same angle.
     // There's no harm because the performance of sin()/cos() is very good on all
@@ -394,12 +419,12 @@ namespace agg
     };
 
     //====================================================trans_affine_scaling
-    // Scaling matrix. sx, sy - scale coefficients by X and Y respectively
+    // Scaling matrix. x, y - scale coefficients by X and Y respectively
     class trans_affine_scaling : public trans_affine
     {
     public:
-        trans_affine_scaling(double sx, double sy) : 
-          trans_affine(sx, 0.0, 0.0, sy, 0.0, 0.0)
+        trans_affine_scaling(double x, double y) : 
+          trans_affine(x, 0.0, 0.0, y, 0.0, 0.0)
         {}
 
         trans_affine_scaling(double s) : 
@@ -412,8 +437,8 @@ namespace agg
     class trans_affine_translation : public trans_affine
     {
     public:
-        trans_affine_translation(double tx, double ty) : 
-          trans_affine(1.0, 0.0, 0.0, 1.0, tx, ty)
+        trans_affine_translation(double x, double y) : 
+          trans_affine(1.0, 0.0, 0.0, 1.0, x, y)
         {}
     };
 
@@ -422,8 +447,8 @@ namespace agg
     class trans_affine_skewing : public trans_affine
     {
     public:
-        trans_affine_skewing(double sx, double sy) : 
-          trans_affine(1.0, tan(sy), tan(sx), 1.0, 0.0, 0.0)
+        trans_affine_skewing(double x, double y) : 
+          trans_affine(1.0, tan(y), tan(x), 1.0, 0.0, 0.0)
         {}
     };
 
@@ -448,6 +473,40 @@ namespace agg
         }
     };
 
+
+    //============================================trans_affine_reflection_unit
+    // Reflection matrix. Reflect coordinates across the line through 
+    // the origin containing the unit vector (ux, uy).
+    // Contributed by John Horigan
+    class trans_affine_reflection_unit : public trans_affine
+    {
+    public:
+        trans_affine_reflection_unit(double ux, double uy) :
+          trans_affine(2.0 * ux * ux - 1.0, 
+                       2.0 * ux * uy, 
+                       2.0 * ux * uy, 
+                       2.0 * uy * uy - 1.0, 
+                       0.0, 0.0)
+        {}
+    };
+
+
+    //=================================================trans_affine_reflection
+    // Reflection matrix. Reflect coordinates across the line through 
+    // the origin at the angle a or containing the non-unit vector (x, y).
+    // Contributed by John Horigan
+    class trans_affine_reflection : public trans_affine_reflection_unit
+    {
+    public:
+        trans_affine_reflection(double a) :
+          trans_affine_reflection_unit(cos(a), sin(a))
+        {}
+
+
+        trans_affine_reflection(double x, double y) :
+          trans_affine_reflection_unit(x / sqrt(x * x + y * y), y / sqrt(x * x + y * y))
+        {}
+    };
 
 }
 
