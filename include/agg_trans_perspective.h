@@ -382,11 +382,12 @@ namespace agg
                                                 double x2, double y2,
                                                 const double* q)
     {
-        if(!square_to_quad(q)) return false;
-        double kx = 1.0 / (x2 - x1);
-        double ky = 1.0 / (y2 - y1);
-        premultiply(trans_affine(kx, 0, 0, ky, x1*fabs(kx), y1*fabs(ky)));
-        return true;
+        double r[8];
+        r[0] = r[6] = x1;
+        r[2] = r[4] = x2;
+        r[1] = r[3] = y1;
+        r[5] = r[7] = y2;
+        return quad_to_quad(r, q);
     }
 
     //------------------------------------------------------------------------
@@ -394,9 +395,12 @@ namespace agg
                                                 double x1, double y1, 
                                                 double x2, double y2)
     {
-        if(!rect_to_quad(x1, y1, x2, y2, q)) return false;
-        invert();
-        return true;
+        double r[8];
+        r[0] = r[6] = x1;
+        r[2] = r[4] = x2;
+        r[1] = r[3] = y1;
+        r[5] = r[7] = y2;
+        return quad_to_quad(q, r);
     }
 
     //------------------------------------------------------------------------
@@ -724,3 +728,4 @@ namespace agg
 }
 
 #endif
+

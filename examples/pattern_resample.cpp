@@ -122,7 +122,7 @@ public:
         if(m_gamma.value() != m_old_gamma)
         {
             m_gamma_lut.gamma(m_gamma.value());
-            load_img(0, "spheres");
+            load_img(0, "agg");
             pixfmt pixf(rbuf_img(0));
             pixf.apply_gamma_dir(m_gamma_lut);
             m_old_gamma = m_gamma.value();
