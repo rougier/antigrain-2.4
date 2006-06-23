@@ -516,6 +516,13 @@ namespace agg
         const_row_info(int x1_, int x2_, const T* ptr_) : 
             x1(x1_), x2(x2_), ptr(ptr_) {}
     };
+
+    //------------------------------------------------------------is_equal_eps
+    template<class T> inline bool is_equal_eps(T v1, T v2, T epsilon)
+    {
+        return fabs(v1 - v2) <= double(epsilon);
+    }
+
 }
 
 

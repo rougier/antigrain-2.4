@@ -128,12 +128,6 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    inline bool is_equal_eps(double v1, double v2, double epsilon)
-    {
-        return fabs(v1 - v2) < epsilon;
-    }
-
-    //------------------------------------------------------------------------
     bool trans_affine::is_identity(double epsilon) const
     {
         return is_equal_eps(sx,  1.0, epsilon) &&
@@ -142,6 +136,12 @@ namespace agg
                is_equal_eps(sy,  1.0, epsilon) &&
                is_equal_eps(tx,  0.0, epsilon) &&
                is_equal_eps(ty,  0.0, epsilon);
+    }
+
+    //------------------------------------------------------------------------
+    bool trans_affine::is_valid(double epsilon) const
+    {
+        return fabs(sx) > epsilon && fabs(sy) > epsilon;
     }
 
     //------------------------------------------------------------------------

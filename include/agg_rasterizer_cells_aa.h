@@ -644,7 +644,6 @@ namespace agg
 //        cell = cell; // Breakpoint here
 //    }
 //}
-
         // Allocate the array of cell pointers
         m_sorted_cells.allocate(m_num_cells, 16);
 

@@ -455,6 +455,7 @@ namespace agg
     template<class Clip> 
     void rasterizer_scanline_aa<Clip>::sort()
     {
+        if(m_auto_close) close_polygon();
         m_outline.sort_cells();
     }
 
