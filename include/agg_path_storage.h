@@ -795,6 +795,46 @@ namespace agg
             join_path(poly);
         }
 
+        //--------------------------------------------------------------------
+        void translate(double dx, double dy, unsigned path_id=0);
+        void translate_all_paths(double dx, double dy);
+
+        //--------------------------------------------------------------------
+        template<class Trans>
+        void transform(const Trans& trans, unsigned path_id=0)
+        {
+            unsigned num_ver = m_vertices.total_vertices();
+            for(; path_id < num_ver; path_id++)
+            {
+                double x, y;
+                unsigned cmd = m_vertices.vertex(path_id, &x, &y);
+                if(is_stop(cmd)) break;
+                if(is_vertex(cmd))
+                {
+                    trans.transform(&x, &y);
+                    m_vertices.modify_vertex(path_id, x, y);
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class Trans>
+        void transform_all_paths(const Trans& trans)
+        {
+            unsigned idx;
+            unsigned num_ver = m_vertices.total_vertices();
+            for(idx = 0; idx < num_ver; idx++)
+            {
+                double x, y;
+                if(is_vertex(m_vertices.vertex(idx, &x, &y)))
+                {
+                    trans.transform(&x, &y);
+                    m_vertices.modify_vertex(idx, x, y);
+                }
+            }
+        }
+
+
 
     private:
         unsigned perceive_polygon_orientation(unsigned start, unsigned end);
@@ -1170,7 +1210,6 @@ namespace agg
         return m_vertices.vertex(m_iterator++, x, y);
     }
 
-
     //------------------------------------------------------------------------
     template<class VC> 
     unsigned path_base<VC>::perceive_polygon_orientation(unsigned start,
@@ -1190,7 +1229,6 @@ namespace agg
         }
         return (area < 0.0) ? path_flags_cw : path_flags_ccw;
     }
-
 
     //------------------------------------------------------------------------
     template<class VC> 
@@ -1276,7 +1314,6 @@ namespace agg
         return end;
     }
 
-
     //------------------------------------------------------------------------
     template<class VC> 
     unsigned path_base<VC>::arrange_orientations(unsigned start, 
@@ -1297,7 +1334,6 @@ namespace agg
         return start;
     }
 
-
     //------------------------------------------------------------------------
     template<class VC> 
     void path_base<VC>::arrange_orientations_all_paths(path_flags_e orientation)
@@ -1311,7 +1347,6 @@ namespace agg
             }
         }
     }
-
 
     //------------------------------------------------------------------------
     template<class VC> 
@@ -1329,7 +1364,6 @@ namespace agg
         }
     }
 
-
     //------------------------------------------------------------------------
     template<class VC> 
     void path_base<VC>::flip_y(double y1, double y2)
@@ -1346,9 +1380,42 @@ namespace agg
         }
     }
 
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::translate(double dx, double dy, unsigned path_id)
+    {
+        unsigned num_ver = m_vertices.total_vertices();
+        for(; path_id < num_ver; path_id++)
+        {
+            double x, y;
+            unsigned cmd = m_vertices.vertex(path_id, &x, &y);
+            if(is_stop(cmd)) break;
+            if(is_vertex(cmd))
+            {
+                x += dx;
+                y += dy;
+                m_vertices.modify_vertex(path_id, x, y);
+            }
+        }
+    }
 
-
-
+    //------------------------------------------------------------------------
+    template<class VC> 
+    void path_base<VC>::translate_all_paths(double dx, double dy)
+    {
+        unsigned idx;
+        unsigned num_ver = m_vertices.total_vertices();
+        for(idx = 0; idx < num_ver; idx++)
+        {
+            double x, y;
+            if(is_vertex(m_vertices.vertex(idx, &x, &y)))
+            {
+                x += dx;
+                y += dy;
+                m_vertices.modify_vertex(idx, x, y);
+            }
+        }
+    }
 
     //-----------------------------------------------------vertex_stl_storage
     template<class Container> class vertex_stl_storage

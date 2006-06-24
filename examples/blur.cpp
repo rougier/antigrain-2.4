@@ -34,9 +34,7 @@ class the_application : public agg::platform_support
     agg::cbox_ctrl<agg::rgba8>    m_channel_b;
 
     agg::path_storage             m_path;
-    agg::trans_affine             m_shape_mtx;
-    agg::conv_transform<agg::path_storage> m_shape_trans;
-    typedef agg::conv_curve<agg::conv_transform<agg::path_storage> > shape_type;
+    typedef agg::conv_curve<agg::path_storage> shape_type;
     shape_type                    m_shape;
 
     agg::rasterizer_scanline_aa<> m_ras;
@@ -58,8 +56,7 @@ public:
         m_channel_r  (10.0, 80.0,  "Red", !flip_y),
         m_channel_g  (10.0, 95.0,  "Green", !flip_y),
         m_channel_b  (10.0, 110.0, "Blue", !flip_y),
-        m_shape_trans(m_path, m_shape_mtx),
-        m_shape(m_shape_trans)
+        m_shape(m_path)
     {
         add_ctrl(m_method);
         m_method.text_size(8);
@@ -126,8 +123,10 @@ public:
         m_path.curve3(22.41, 4.74, 28.47, 9.62);
         m_path.close_polygon();
 
-        m_shape_mtx *= agg::trans_affine_scaling(4.0);
-        m_shape_mtx *= agg::trans_affine_translation(150, 100);
+        agg::trans_affine shape_mtx;
+        shape_mtx *= agg::trans_affine_scaling(4.0);
+        shape_mtx *= agg::trans_affine_translation(150, 100);
+        m_path.transform(shape_mtx);
 
         agg::bounding_rect_single(m_shape, 0, 
                                   &m_shape_bounds.x1, &m_shape_bounds.y1, 
