@@ -658,10 +658,10 @@ namespace agg
                 calc_type dg = p[Order::G] + sg;
                 calc_type db = p[Order::B] + sb;
                 calc_type da = p[Order::A] + sa;
-                p[Order::R] = (dr > base_mask) ? base_mask : dr;
-                p[Order::G] = (dg > base_mask) ? base_mask : dg;
-                p[Order::B] = (db > base_mask) ? base_mask : db;
-                p[Order::A] = (da > base_mask) ? base_mask : da;
+                p[Order::R] = (dr > base_mask) ? (value_type)base_mask : dr;
+                p[Order::G] = (dg > base_mask) ? (value_type)base_mask : dg;
+                p[Order::B] = (db > base_mask) ? (value_type)base_mask : db;
+                p[Order::A] = (da > base_mask) ? (value_type)base_mask : da;
             }
         }
     };
