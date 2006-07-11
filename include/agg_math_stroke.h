@@ -80,12 +80,12 @@ namespace agg
         double inner_miter_limit() const { return m_inner_miter_limit; }
         double approximation_scale() const { return m_approx_scale; }
 
-        void calc_cap(VertexConsumer& out_vertices,
+        void calc_cap(VertexConsumer& vc,
                       const vertex_dist& v0, 
                       const vertex_dist& v1, 
                       double len);
 
-        void calc_join(VertexConsumer& out_vertices,
+        void calc_join(VertexConsumer& vc,
                        const vertex_dist& v0, 
                        const vertex_dist& v1, 
                        const vertex_dist& v2,
@@ -93,12 +93,17 @@ namespace agg
                        double len2);
 
     private:
-        void calc_arc(VertexConsumer& out_vertices,
+        AGG_INLINE void add_vertex(VertexConsumer& vc, double x, double y)
+        {
+            vc.add(coord_type(x, y));
+        }
+
+        void calc_arc(VertexConsumer& vc,
                       double x,   double y, 
                       double dx1, double dy1, 
                       double dx2, double dy2);
 
-        void calc_miter(VertexConsumer& out_vertices,
+        void calc_miter(VertexConsumer& vc,
                         const vertex_dist& v0, 
                         const vertex_dist& v1, 
                         const vertex_dist& v2,
@@ -110,6 +115,7 @@ namespace agg
 
         double       m_width;
         double       m_width_abs;
+        double       m_width_eps;
         int          m_width_sign;
         double       m_miter_limit;
         double       m_inner_miter_limit;
@@ -123,6 +129,7 @@ namespace agg
     template<class VC> math_stroke<VC>::math_stroke() :
         m_width(0.5),
         m_width_abs(0.5),
+        m_width_eps(0.5/1024.0),
         m_width_sign(1),
         m_miter_limit(4.0),
         m_inner_miter_limit(1.01),
@@ -147,6 +154,7 @@ namespace agg
             m_width_abs  = m_width;
             m_width_sign = 1;
         }
+        m_width_eps = m_width / 1024.0;
     }
 
     //-----------------------------------------------------------------------
@@ -157,7 +165,7 @@ namespace agg
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_arc(VC& out_vertices,
+    void math_stroke<VC>::calc_arc(VC& vc,
                                    double x,   double y, 
                                    double dx1, double dy1, 
                                    double dx2, double dy2)
@@ -169,7 +177,7 @@ namespace agg
 
         da = acos(m_width_abs / (m_width_abs + 0.125 / m_approx_scale)) * 2;
 
-        out_vertices.add(coord_type(x + dx1, y + dy1));
+        add_vertex(vc, x + dx1, y + dy1);
         if(m_width_sign > 0)
         {
             if(a1 > a2) a2 += 2 * pi;
@@ -178,8 +186,7 @@ namespace agg
             a1 += da;
             for(i = 0; i < n; i++)
             {
-                out_vertices.add(coord_type(x + cos(a1) * m_width, 
-                                            y + sin(a1) * m_width));
+                add_vertex(vc, x + cos(a1) * m_width, y + sin(a1) * m_width);
                 a1 += da;
             }
         }
@@ -191,17 +198,16 @@ namespace agg
             a1 -= da;
             for(i = 0; i < n; i++)
             {
-                out_vertices.add(coord_type(x + cos(a1) * m_width, 
-                                            y + sin(a1) * m_width));
+                add_vertex(vc, x + cos(a1) * m_width, y + sin(a1) * m_width);
                 a1 -= da;
             }
         }
-        out_vertices.add(coord_type(x + dx2, y + dy2));
+        add_vertex(vc, x + dx2, y + dy2);
     }
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_miter(VC& out_vertices,
+    void math_stroke<VC>::calc_miter(VC& vc,
                                      const vertex_dist& v0, 
                                      const vertex_dist& v1, 
                                      const vertex_dist& v2,
@@ -231,7 +237,7 @@ namespace agg
             {
                 // Inside the miter limit
                 //---------------------
-                out_vertices.add(coord_type(xi, yi));
+                add_vertex(vc, xi, yi);
                 miter_limit_exceeded = false;
             }
             intersection_failed = false;
@@ -254,7 +260,7 @@ namespace agg
                 // This case means that the next segment continues 
                 // the previous one (straight line)
                 //-----------------
-                out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
+                add_vertex(vc, v1.x + dx1, v1.y - dy1);
                 miter_limit_exceeded = false;
             }
         }
@@ -270,12 +276,12 @@ namespace agg
                 // we use a simple bevel join instead of
                 // "smart" bevel
                 //-------------------
-                out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
-                out_vertices.add(coord_type(v1.x + dx2, v1.y - dy2));
+                add_vertex(vc, v1.x + dx1, v1.y - dy1);
+                add_vertex(vc, v1.x + dx2, v1.y - dy2);
                 break;
 
             case miter_join_round:
-                calc_arc(out_vertices, v1.x, v1.y, dx1, -dy1, dx2, -dy2);
+                calc_arc(vc, v1.x, v1.y, dx1, -dy1, dx2, -dy2);
                 break;
 
             default:
@@ -284,10 +290,10 @@ namespace agg
                 if(intersection_failed)
                 {
                     mlimit *= m_width_sign;
-                    out_vertices.add(coord_type(v1.x + dx1 + dy1 * mlimit, 
-                                                v1.y - dy1 + dx1 * mlimit));
-                    out_vertices.add(coord_type(v1.x + dx2 - dy2 * mlimit, 
-                                                v1.y - dy2 - dx2 * mlimit));
+                    add_vertex(vc, v1.x + dx1 + dy1 * mlimit, 
+                                   v1.y - dy1 + dx1 * mlimit);
+                    add_vertex(vc, v1.x + dx2 - dy2 * mlimit, 
+                                   v1.y - dy2 - dx2 * mlimit);
                 }
                 else
                 {
@@ -296,10 +302,10 @@ namespace agg
                     double x2 = v1.x + dx2;
                     double y2 = v1.y - dy2;
                     di = (lim - dbevel) / (di - dbevel);
-                    out_vertices.add(coord_type(x1 + (xi - x1) * di, 
-                                                y1 + (yi - y1) * di));
-                    out_vertices.add(coord_type(x2 + (xi - x2) * di, 
-                                                y2 + (yi - y2) * di));
+                    add_vertex(vc, x1 + (xi - x1) * di, 
+                                   y1 + (yi - y1) * di);
+                    add_vertex(vc, x2 + (xi - x2) * di, 
+                                   y2 + (yi - y2) * di);
                 }
                 break;
             }
@@ -308,12 +314,12 @@ namespace agg
 
     //--------------------------------------------------------stroke_calc_cap
     template<class VC> 
-    void math_stroke<VC>::calc_cap(VC& out_vertices,
+    void math_stroke<VC>::calc_cap(VC& vc,
                                    const vertex_dist& v0, 
                                    const vertex_dist& v1, 
                                    double len)
     {
-        out_vertices.remove_all();
+        vc.remove_all();
 
         double dx1 = (v1.y - v0.y) / len;
         double dy1 = (v1.x - v0.x) / len;
@@ -330,8 +336,8 @@ namespace agg
                 dx2 = dy1 * m_width_sign;
                 dy2 = dx1 * m_width_sign;
             }
-            out_vertices.add(coord_type(v0.x - dx1 - dx2, v0.y + dy1 - dy2));
-            out_vertices.add(coord_type(v0.x + dx1 - dx2, v0.y - dy1 - dy2));
+            add_vertex(vc, v0.x - dx1 - dx2, v0.y + dy1 - dy2);
+            add_vertex(vc, v0.x + dx1 - dx2, v0.y - dy1 - dy2);
         }
         else
         {
@@ -341,15 +347,15 @@ namespace agg
             int n = int(pi / da);
 
             da = pi / (n + 1);
-            out_vertices.add(coord_type(v0.x - dx1, v0.y + dy1));
+            add_vertex(vc, v0.x - dx1, v0.y + dy1);
             if(m_width_sign > 0)
             {
                 a1 = atan2(dy1, -dx1);
                 a1 += da;
                 for(i = 0; i < n; i++)
                 {
-                    out_vertices.add(coord_type(v0.x + cos(a1) * m_width, 
-                                                v0.y + sin(a1) * m_width));
+                    add_vertex(vc, v0.x + cos(a1) * m_width, 
+                                   v0.y + sin(a1) * m_width);
                     a1 += da;
                 }
             }
@@ -359,18 +365,18 @@ namespace agg
                 a1 -= da;
                 for(i = 0; i < n; i++)
                 {
-                    out_vertices.add(coord_type(v0.x + cos(a1) * m_width, 
-                                                v0.y + sin(a1) * m_width));
+                    add_vertex(vc, v0.x + cos(a1) * m_width, 
+                                   v0.y + sin(a1) * m_width);
                     a1 -= da;
                 }
             }
-            out_vertices.add(coord_type(v0.x + dx1, v0.y - dy1));
+            add_vertex(vc, v0.x + dx1, v0.y - dy1);
         }
     }
 
     //-----------------------------------------------------------------------
     template<class VC> 
-    void math_stroke<VC>::calc_join(VC& out_vertices,
+    void math_stroke<VC>::calc_join(VC& vc,
                                     const vertex_dist& v0, 
                                     const vertex_dist& v1, 
                                     const vertex_dist& v2,
@@ -382,7 +388,7 @@ namespace agg
         double dx2 = m_width * (v2.y - v1.y) / len2;
         double dy2 = m_width * (v2.x - v1.x) / len2;
 
-        out_vertices.remove_all();
+        vc.remove_all();
 
         double cp = cross_product(v0.x, v0.y, v1.x, v1.y, v2.x, v2.y);
         if(cp != 0 && (cp > 0) == (m_width > 0))
@@ -398,12 +404,12 @@ namespace agg
             switch(m_inner_join)
             {
             default: // inner_bevel
-                out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
-                out_vertices.add(coord_type(v1.x + dx2, v1.y - dy2));
+                add_vertex(vc, v1.x + dx1, v1.y - dy1);
+                add_vertex(vc, v1.x + dx2, v1.y - dy2);
                 break;
 
             case inner_miter:
-                calc_miter(out_vertices,
+                calc_miter(vc,
                            v0, v1, v2, dx1, dy1, dx2, dy2, 
                            miter_join_revert, 
                            limit, 0);
@@ -414,7 +420,7 @@ namespace agg
                 cp = (dx1-dx2) * (dx1-dx2) + (dy1-dy2) * (dy1-dy2);
                 if(cp < len1 * len1 && cp < len2 * len2)
                 {
-                    calc_miter(out_vertices,
+                    calc_miter(vc,
                                v0, v1, v2, dx1, dy1, dx2, dy2, 
                                miter_join_revert, 
                                limit, 0);
@@ -423,17 +429,17 @@ namespace agg
                 {
                     if(m_inner_join == inner_jag)
                     {
-                        out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
-                        out_vertices.add(coord_type(v1.x,       v1.y      ));
-                        out_vertices.add(coord_type(v1.x + dx2, v1.y - dy2));
+                        add_vertex(vc, v1.x + dx1, v1.y - dy1);
+                        add_vertex(vc, v1.x,       v1.y      );
+                        add_vertex(vc, v1.x + dx2, v1.y - dy2);
                     }
                     else
                     {
-                        out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
-                        out_vertices.add(coord_type(v1.x,       v1.y      ));
-                        calc_arc(out_vertices, v1.x, v1.y, dx2, -dy2, dx1, -dy1);
-                        out_vertices.add(coord_type(v1.x,       v1.y      ));
-                        out_vertices.add(coord_type(v1.x + dx2, v1.y - dy2));
+                        add_vertex(vc, v1.x + dx1, v1.y - dy1);
+                        add_vertex(vc, v1.x,       v1.y      );
+                        calc_arc(vc, v1.x, v1.y, dx2, -dy2, dx1, -dy1);
+                        add_vertex(vc, v1.x,       v1.y      );
+                        add_vertex(vc, v1.x + dx2, v1.y - dy2);
                     }
                 }
                 break;
@@ -470,7 +476,7 @@ namespace agg
                 // the same as in round joins and caps. You can safely comment 
                 // out this entire "if".
                 //-------------------
-                if(m_approx_scale * (m_width_abs - dbevel) < 0.0625)
+                if(m_approx_scale * (m_width_abs - dbevel) < m_width_eps)
                 {
                     if(calc_intersection(v0.x + dx1, v0.y - dy1,
                                          v1.x + dx1, v1.y - dy1,
@@ -478,11 +484,11 @@ namespace agg
                                          v2.x + dx2, v2.y - dy2,
                                          &dx, &dy))
                     {
-                        out_vertices.add(coord_type(dx, dy));
+                        add_vertex(vc, dx, dy);
                     }
                     else
                     {
-                        out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
+                        add_vertex(vc, v1.x + dx1, v1.y - dy1);
                     }
                     return;
                 }
@@ -493,7 +499,7 @@ namespace agg
             case miter_join:
             case miter_join_revert:
             case miter_join_round:
-                calc_miter(out_vertices, 
+                calc_miter(vc, 
                            v0, v1, v2, dx1, dy1, dx2, dy2, 
                            m_line_join, 
                            m_miter_limit,
@@ -501,12 +507,12 @@ namespace agg
                 break;
 
             case round_join:
-                calc_arc(out_vertices, v1.x, v1.y, dx1, -dy1, dx2, -dy2);
+                calc_arc(vc, v1.x, v1.y, dx1, -dy1, dx2, -dy2);
                 break;
 
             default: // Bevel join
-                out_vertices.add(coord_type(v1.x + dx1, v1.y - dy1));
-                out_vertices.add(coord_type(v1.x + dx2, v1.y - dy2));
+                add_vertex(vc, v1.x + dx1, v1.y - dy1);
+                add_vertex(vc, v1.x + dx2, v1.y - dy2);
                 break;
             }
         }
