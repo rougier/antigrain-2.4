@@ -19,6 +19,7 @@ all: aa_demo.exe \
      alpha_mask3.exe \
      bezier_div.exe \
      blur.exe \
+     blend_color.exe \
      bspline.exe \
      circles.exe \
      component_rendering.exe \
@@ -119,6 +120,12 @@ blur.exe: blur.obj agg.lib
 	$(LINK) $**
 
 blur.obj: ..\blur.cpp
+	$(CXX) $** -o$@
+
+blend_color.exe: blend_color.obj agg.lib
+	$(LINK) $**
+
+blend_color.obj: ..\blend_color.cpp
 	$(CXX) $** -o$@
 
 bspline.exe: bspline.obj interactive_polygon.obj agg.lib

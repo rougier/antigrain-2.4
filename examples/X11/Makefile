@@ -75,6 +75,7 @@ base:
 	make mol_view
 	make blur
 	make rasterizer_compound
+	make blend_color
 	
 freetype:
 	make freetype_test
@@ -242,6 +243,9 @@ rasterizers2: ../rasterizers2.o $(PLATFORMSOURCES)
 
 rasterizer_compound: ../rasterizer_compound.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o rasterizer_compound $(LIBS)
+
+blend_color: ../blend_color.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o blend_color $(LIBS)
 
 rounded_rect: ../rounded_rect.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o rounded_rect $(LIBS)

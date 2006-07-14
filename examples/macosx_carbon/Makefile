@@ -25,6 +25,7 @@ all:
 	make alpha_mask3
 	make bezier_div
 	make blur
+	make blend_color
 	make bspline
 	make circles
 	make component_rendering
@@ -91,6 +92,9 @@ bezier_div: ../bezier_div.o ../interactive_polygon.o $(PLATFORMSOURCES)  bezier_
 
 blur: ../blur.o $(PLATFORMSOURCES) blur.app
 	$(CXX) $(CXXFLAGS) ../blur.o $(PLATFORMSOURCES) -o blur.app/Contents/MacOS/blur $(LIBS)
+
+blend_color: ../blend_color.o $(PLATFORMSOURCES) blend_color.app
+	$(CXX) $(CXXFLAGS) ../blend_color.o $(PLATFORMSOURCES) -o blend_color.app/Contents/MacOS/blend_color $(LIBS)
 
 bspline: ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES) bspline.app
 	$(CXX) $(CXXFLAGS) ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES) -o bspline.app/Contents/MacOS/bspline $(LIBS)

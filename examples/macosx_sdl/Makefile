@@ -27,6 +27,7 @@ base:
 	make alpha_mask3
 	make bspline
 	make blur
+	make blend_color
 	make bezier_div
 	make circles
 	make component_rendering
@@ -106,6 +107,9 @@ bezier_div: ../bezier_div.o ../interactive_polygon.o $(PLATFORMSOURCES)
 
 blur: ../blur.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o blur $(LIBS)
+
+blend_color: ../blend_color.o $(PLATFORMSOURCES)
+	$(CXX) $(CXXFLAGS) $^ -o blend_color $(LIBS)
 
 bspline: ../bspline.o ../interactive_polygon.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o bspline $(LIBS)
@@ -256,6 +260,8 @@ clean:
 	rm -f alpha_mask
 	rm -f alpha_mask2
 	rm -f alpha_mask3
+	rm -f blur
+	rm -f blend_color
 	rm -f bezier_div
 	rm -f bspline
 	rm -f circles
