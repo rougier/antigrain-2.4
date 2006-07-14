@@ -722,6 +722,74 @@ namespace agg
             }
         }
 
+        //--------------------------------------------------------------------
+        template<class SrcPixelFormatRenderer>
+        void blend_from_color(const SrcPixelFormatRenderer& from, 
+                              const color_type& color,
+                              int xdst, int ydst,
+                              int xsrc, int ysrc,
+                              unsigned len,
+                              int8u cover)
+        {
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            if(psrc)
+            {
+                value_type* pdst = 
+                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * 3;
+                do 
+                {
+                    copy_or_blend_pix(pdst, 
+                                      color, 
+                                      (*psrc * cover + base_mask) >> base_shift);
+                    ++psrc;
+                    pdst += 3;
+                }
+                while(--len);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class SrcPixelFormatRenderer>
+        void blend_from_lut(const SrcPixelFormatRenderer& from, 
+                            const color_type* color_lut,
+                            int xdst, int ydst,
+                            int xsrc, int ysrc,
+                            unsigned len,
+                            int8u cover)
+        {
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            if(psrc)
+            {
+                value_type* pdst = 
+                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * 3;
+
+                if(cover == 255)
+                {
+                    do 
+                    {
+                        const color_type& color = color_lut[*psrc];
+                        m_blender.blend_pix(pdst, 
+                                            color.r, color.g, color.b, color.a);
+                        ++psrc;
+                        pdst += 3;
+                    }
+                    while(--len);
+                }
+                else
+                {
+                    do 
+                    {
+                        copy_or_blend_pix(pdst, color_lut[*psrc], cover);
+                        ++psrc;
+                        pdst += 3;
+                    }
+                    while(--len);
+                }
+            }
+        }
+
     private:
         rbuf_type* m_rbuf;
         Blender    m_blender;

@@ -2334,13 +2334,12 @@ namespace agg
                               unsigned len,
                               int8u cover)
         {
-            typedef typename SrcPixelFormatRenderer::order_type src_order;
-            const value_type* psrc = (value_type*)from.row_ptr(ysrc);
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
                 value_type* pdst = 
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
-
                 do 
                 {
                     cob_type::copy_or_blend_pix(pdst, 
@@ -2362,8 +2361,8 @@ namespace agg
                             unsigned len,
                             int8u cover)
         {
-            typedef typename SrcPixelFormatRenderer::order_type src_order;
-            const value_type* psrc = (value_type*)from.row_ptr(ysrc);
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
                 value_type* pdst = 
@@ -2773,6 +2772,63 @@ namespace agg
                                             cover);
                     psrc += incp;
                     pdst += incp;
+                }
+                while(--len);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class SrcPixelFormatRenderer>
+        void blend_from_color(const SrcPixelFormatRenderer& from, 
+                              const color_type& color,
+                              int xdst, int ydst,
+                              int xsrc, int ysrc,
+                              unsigned len,
+                              int8u cover)
+        {
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            if(psrc)
+            {
+                value_type* pdst = 
+                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
+                do 
+                {
+                    blender_type::blend_pix(m_comp_op,
+                                            pdst, 
+                                            color.r, color.g, color.b, color.a,
+                                            (*psrc * cover + base_mask) >> base_shift);
+                    ++psrc;
+                    pdst += 4;
+                }
+                while(--len);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        template<class SrcPixelFormatRenderer>
+        void blend_from_lut(const SrcPixelFormatRenderer& from, 
+                            const color_type* color_lut,
+                            int xdst, int ydst,
+                            int xsrc, int ysrc,
+                            unsigned len,
+                            int8u cover)
+        {
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            if(psrc)
+            {
+                value_type* pdst = 
+                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
+                do 
+                {
+                    const color_type& color = color_lut[*psrc];
+                    blender_type::blend_pix(m_comp_op,
+                                            pdst, 
+                                            color.r, color.g, color.b, color.a,
+                                            cover);
+                    ++psrc;
+                    pdst += 4;
                 }
                 while(--len);
             }

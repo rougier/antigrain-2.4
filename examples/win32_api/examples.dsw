@@ -87,6 +87,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "blend_color"=".\blend_color\blend_color.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "blur"=".\blur\blur.dsp" - Package Owner=<4>
 
 Package=<5>
