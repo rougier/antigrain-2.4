@@ -261,15 +261,15 @@ simple_blur: ../simple_blur.o ../parse_lion.o $(PLATFORMSOURCES)
 
 trans_polar: ../trans_polar.o $(PLATFORMSOURCES) 
 	$(CXX) $(CXXFLAGS) $^ -o trans_polar $(LIBS)
-	
+
 freetype_test: ../freetype_test.o ../../font_freetype/agg_font_freetype.o $(PLATFORMSOURCES)  timesi.ttf
 	$(CXX) $(CXXFREETYPEFLAGS) ../freetype_test.o ../../font_freetype/agg_font_freetype.o $(PLATFORMSOURCES) -o freetype_test $(LIBS) -lfreetype
 	
 trans_curve1_ft: ../trans_curve1_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) timesi.ttf
-	$(CXX) $(CXXFLAGS) ../trans_curve1_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) -o trans_curve1_ft $(LIBS) -lfreetype
+	$(CXX) $(CXXFREETYPEFLAGS) ../trans_curve1_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) -o trans_curve1_ft $(LIBS) -lfreetype
 	
 trans_curve2_ft: ../trans_curve2_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) timesi.ttf
-	$(CXX) $(CXXFLAGS) ../trans_curve2_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) -o trans_curve2_ft $(LIBS) -lfreetype
+	$(CXX) $(CXXFREETYPEFLAGS) ../trans_curve2_ft.o ../../font_freetype/agg_font_freetype.o  ../interactive_polygon.o $(PLATFORMSOURCES) -o trans_curve2_ft $(LIBS) -lfreetype
 	
 gpc_test: ../gpc_test.o ../make_arrows.o ../make_gb_poly.o $(PLATFORMSOURCES)
 	$(CXX) $(CXXFLAGS) $^ -o gpc_test $(LIBS)
@@ -286,7 +286,7 @@ clean:
 	rm -rf bezier_div
 	rm -rf bspline
 	rm -rf blur
-	rn -rf blend_color
+	rm -rf blend_color
 	rm -rf circles
 	rm -rf component_rendering
 	rm -rf conv_contour
