@@ -231,6 +231,7 @@ namespace agg
 
     public:
         //--------------------------------------------------------------------
+                 pixfmt_alpha_blend_rgb() : m_rbuf(0) {}
         explicit pixfmt_alpha_blend_rgb(rbuf_type& rb) :
             m_rbuf(&rb)
         {}

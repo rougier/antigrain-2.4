@@ -447,8 +447,6 @@ public:
 
 };
 
-
-
 int agg_main(int argc, char* argv[])
 {
     HDC dc = ::GetDC(0);

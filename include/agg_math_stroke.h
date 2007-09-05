@@ -478,18 +478,7 @@ namespace agg
                 //-------------------
                 if(m_approx_scale * (m_width_abs - dbevel) < m_width_eps)
                 {
-                    if(calc_intersection(v0.x + dx1, v0.y - dy1,
-                                         v1.x + dx1, v1.y - dy1,
-                                         v1.x + dx2, v1.y - dy2,
-                                         v2.x + dx2, v2.y - dy2,
-                                         &dx, &dy))
-                    {
-                        add_vertex(vc, dx, dy);
-                    }
-                    else
-                    {
-                        add_vertex(vc, v1.x + dx1, v1.y - dy1);
-                    }
+                    add_vertex(vc, v1.x + dx1, v1.y - dy1);
                     return;
                 }
             }

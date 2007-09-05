@@ -27,6 +27,7 @@
 #include "agg_conv_stroke.h"
 #include "agg_conv_curve.h"
 #include "agg_polygon_ctrl.h"
+#include "agg_path_storage.h"
 
 
 namespace agg
@@ -186,6 +187,77 @@ namespace agg
     };
 
 
+
+
+
+
+
+
+    //------------------------------------------------------line_ctrl_impl
+    class line_ctrl_impl : public ctrl
+    {
+    public:
+        line_ctrl_impl();
+
+        void line(double x1, double y1, 
+                  double x2, double y2);
+
+        double x1() const { return m_poly.xn(0); }
+        double y1() const { return m_poly.yn(0); }
+        double x2() const { return m_poly.xn(1); }
+        double y2() const { return m_poly.yn(1); }
+        line_adaptor& line();
+
+        void x1(double x) { m_poly.xn(0) = x; }
+        void y1(double y) { m_poly.yn(0) = y; }
+        void x2(double x) { m_poly.xn(1) = x; }
+        void y2(double y) { m_poly.yn(1) = y; }
+
+        void   line_width(double w) { m_stroke.width(w); }
+        double line_width() const   { return m_stroke.width(); }
+
+        void   point_radius(double r) { m_poly.point_radius(r); }
+        double point_radius() const   { return m_poly.point_radius(); }
+
+        virtual bool in_rect(double x, double y) const;
+        virtual bool on_mouse_button_down(double x, double y);
+        virtual bool on_mouse_button_up(double x, double y);
+        virtual bool on_mouse_move(double x, double y, bool button_flag);
+        virtual bool on_arrow_keys(bool left, bool right, bool down, bool up);
+
+        // Vertex source interface
+        unsigned num_paths() { return 3; };
+        void     rewind(unsigned path_id);
+        unsigned vertex(double* x, double* y);
+
+    private:
+        line_adaptor              m_line;
+        ellipse                   m_ellipse;
+        conv_stroke<line_adaptor> m_stroke;
+        polygon_ctrl_impl         m_poly;
+        unsigned                  m_idx;
+    };
+
+
+
+    //----------------------------------------------------------curve3_ctrl
+    template<class ColorT> class line_ctrl : public line_ctrl_impl
+    {
+    public:
+        line_ctrl() :
+            m_color(rgba(0.0, 0.0, 0.0))
+        {
+        }
+          
+        void line_color(const ColorT& c) { m_color = c; }
+        const ColorT& color(unsigned i) const { return m_color; } 
+
+    private:
+        line_ctrl(const line_ctrl<ColorT>&);
+        const line_ctrl<ColorT>& operator = (const line_ctrl<ColorT>&);
+
+        ColorT m_color;
+    };
 
 
 }
